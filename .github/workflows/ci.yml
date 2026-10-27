@@ -6,6 +6,7 @@ on:
   pull_request:
   workflow_dispatch:
 
+# Acciones fijadas por SHA (inmutables): una etiqueta puede moverse, un commit no.
 permissions:
   contents: read
 
@@ -20,10 +21,10 @@ env:
 jobs:
   quality:
     name: Lint y tipos
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e  # v10.3.2
         with:
           version: ${{ env.UV_VERSION }}
           python-version: ${{ env.PYTHON_VERSION }}
@@ -38,7 +39,7 @@ jobs:
 
   tests:
     name: Pruebas (unitarias + integración con PostgreSQL)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       postgres:
         image: postgres:16-alpine
@@ -58,8 +59,8 @@ jobs:
       DATAPULSE_TEST_DB_USER: datapulse_admin
       DATAPULSE_TEST_DB_PASSWORD: ci-only-password
     steps:
-      - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e  # v10.3.2
         with:
           version: ${{ env.UV_VERSION }}
           python-version: ${{ env.PYTHON_VERSION }}
@@ -76,12 +77,12 @@ jobs:
 
   security:
     name: Seguridad
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           fetch-depth: 0  # gitleaks revisa todo el historial, no solo el último commit
-      - uses: astral-sh/setup-uv@v10
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e  # v10.3.2
         with:
           version: ${{ env.UV_VERSION }}
           python-version: ${{ env.PYTHON_VERSION }}
@@ -94,16 +95,16 @@ jobs:
           uv export --frozen --no-dev --no-hashes --no-emit-project --format requirements-txt > /tmp/requirements.txt
           uv run pip-audit -r /tmp/requirements.txt --progress-spinner off
       - name: Secretos en el historial (gitleaks)
-        uses: gitleaks/gitleaks-action@v3
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e  # v3.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   docker:
     name: Docker (build + compose real)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [quality, tests]
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       - name: Generar .env efímero con contraseñas aleatorias
         run: |
           cp .env.example .env
