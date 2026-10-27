@@ -65,8 +65,10 @@ def _record(recorder: RunRecorder, outcome: BatchOutcome) -> BatchOutcome:
     return outcome
 
 
-def ingest_customers_file(engine: Engine, recorder: RunRecorder, path: Path) -> BatchOutcome:
-    with recorder.task(f"ingest:{path.name}") as task:
+def ingest_customers_file(
+    engine: Engine, recorder: RunRecorder, path: Path, *, attempt: int = 1
+) -> BatchOutcome:
+    with recorder.task(f"ingest:{path.name}", attempt=attempt) as task:
         data = path.read_bytes()
         try:
             data.decode("utf-8")  # estricto: Polars aceptaría bytes inválidos sin avisar
@@ -80,8 +82,10 @@ def ingest_customers_file(engine: Engine, recorder: RunRecorder, path: Path) -> 
     return _record(recorder, outcome)
 
 
-def ingest_orders_file(engine: Engine, recorder: RunRecorder, path: Path) -> BatchOutcome:
-    with recorder.task(f"ingest:{path.name}") as task:
+def ingest_orders_file(
+    engine: Engine, recorder: RunRecorder, path: Path, *, attempt: int = 1
+) -> BatchOutcome:
+    with recorder.task(f"ingest:{path.name}", attempt=attempt) as task:
         data = path.read_bytes()
         try:
             document = json.loads(data.decode("utf-8"))
@@ -106,6 +110,7 @@ def ingest_products(
     *,
     base_url: str,
     overlap: timedelta = timedelta(hours=1),
+    attempt: int = 1,
 ) -> BatchOutcome:
     """Carga incremental: solo productos con ``updatedAt`` posterior a la marca de agua.
 
@@ -113,7 +118,7 @@ def ingest_products(
     filtra en el cliente. La ventana de solapamiento (``overlap``) recoge cambios
     que llegaron tarde; los ya cargados se descartan por hash de registro.
     """
-    with recorder.task("ingest:products_api") as task:
+    with recorder.task("ingest:products_api", attempt=attempt) as task:
         watermark = read_watermark(engine, PRODUCTS_SOURCE)
         since = watermark - overlap if watermark is not None else None
         fetched = client.fetch_all()

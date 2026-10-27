@@ -1,6 +1,6 @@
 # DataPulse - entorno local reproducible.
-# Fase 1: base de datos + migraciones. Fase 2: API simulada (mock-source).
-# Las fases siguientes añaden prefect-server, worker, api y dashboard.
+# Fase 1: base de datos + migraciones. Fase 2: API simulada. Fase 4: Prefect.
+# Las fases siguientes añaden api y dashboard.
 #
 # Uso:  cp .env.example .env   (y cambia las contraseñas)
 #       docker compose up --build
@@ -71,5 +71,51 @@ services:
       timeout: 3s
       retries: 20
 
+  # Orquestador. Su metadata (estados, programación) va en SQLite dentro de su propio
+  # volumen: separada de los datos de negocio y sin otro servidor de base de datos.
+  prefect-server:
+    build: .
+    image: datapulse-app:local
+    restart: unless-stopped
+    command: ["prefect", "server", "start", "--host", "0.0.0.0", "--port", "4200"]
+    environment:
+      PREFECT_UI_API_URL: http://localhost:${PREFECT_HOST_PORT:-4200}/api
+      PREFECT_SERVER_ANALYTICS_ENABLED: "false"
+    volumes:
+      - prefect:/var/lib/prefect
+    ports:
+      - "127.0.0.1:${PREFECT_HOST_PORT:-4200}:4200"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:4200/api/health', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  # Worker: registra los despliegues programados y ejecuta los flujos como datapulse_pipeline.
+  worker:
+    build: .
+    image: datapulse-app:local
+    restart: unless-stopped
+    command: ["python", "-m", "datapulse.flows", "serve"]
+    environment:
+      <<: *db-env
+      DATAPULSE_DB_USER: datapulse_pipeline
+      DATAPULSE_DB_PASSWORD: ${DATAPULSE_PIPELINE_DB_PASSWORD:?Define DATAPULSE_PIPELINE_DB_PASSWORD}
+      PREFECT_API_URL: http://prefect-server:4200/api
+      DATAPULSE_INGEST_PRODUCTS_API_URL: ${DATAPULSE_INGEST_PRODUCTS_API_URL:-http://mock-source:8081}
+      DATAPULSE_INGEST_LANDING_DIR: /app/data/landing
+      DATAPULSE_FLOW_DAILY_CRON: ${DATAPULSE_FLOW_DAILY_CRON:-0 6 * * *}
+    volumes:
+      - ./data/landing:/app/data/landing
+      - ./data/samples:/app/data/samples:ro
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      prefect-server:
+        condition: service_healthy
+      mock-source:
+        condition: service_healthy
+
 volumes:
   pgdata:
+  prefect:

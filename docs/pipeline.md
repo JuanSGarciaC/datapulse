@@ -1,4 +1,4 @@
-# Pipeline de ingesta (fase 3)
+# Pipeline: ingesta (fase 3) y orquestación (fase 4)
 
 ```mermaid
 flowchart LR
@@ -52,3 +52,31 @@ uv run python -m datapulse.ingestion products            # o --base-url https://
 
 Cada comando imprime un resumen JSON por lote y deja la traza en `ops.pipeline_runs`,
 `ops.task_runs`, `ops.ingestion_registry` y `ops.quality_results`.
+
+## Orquestación con Prefect (fase 4)
+
+| Flujo | Qué hace | Programación (worker) |
+|-------|----------|-----------------------|
+| `ingest-files` | Archivos de `data/landing/<fuente>/`, en orden de nombre | — (lo llama `daily-pipeline`) |
+| `ingest-products` | Carga incremental de la API | Cada 60 min (`products-incremental`) |
+| `daily-pipeline` | Clientes → pedidos → productos → transformación | `0 6 * * *` UTC (`daily`) |
+
+**Reintentos en dos niveles:**
+
+| Nivel | Ante qué | Cómo |
+|-------|----------|------|
+| Petición HTTP (`ingestion/rest.py`) | Red, 429, 5xx | `Retry-After` o backoff exponencial con jitter, hasta `DATAPULSE_INGEST_MAX_RETRIES` |
+| Tarea de Prefect | La fuente sigue caída tras los reintentos HTTP, BD no disponible, bloqueo concurrente | `retries=2`, `retry_delay_seconds=10`, solo si `is_transient()` |
+| — | Contrato roto, `ValueError`, archivo inexistente | **No se reintenta**: falla al instante y se ve en el dashboard |
+
+Cada intento de tarea queda en `ops.task_runs` con su número de intento. Cada flujo queda en
+`ops.pipeline_runs` enlazado con el `flow_run.id` de Prefect (`orchestrator_run_id`).
+
+**Aislamiento de fallos:** si la API de productos cae, `daily-pipeline` carga igual clientes y
+pedidos y termina en fallo al final. Una re-ejecución recupera lo pendiente sin duplicar nada.
+
+```powershell
+uv run python -m datapulse.flows seed-landing      # copia los ejemplos a data/landing
+uv run python -m datapulse.flows run daily         # ejecuta ahora (Prefect efímero si no hay servidor)
+docker compose up -d                               # servidor de Prefect en http://localhost:4200 + worker
+```

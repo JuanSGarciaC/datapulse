@@ -158,6 +158,28 @@ jobs:
           test "$(curl -s -o /dev/null -w '%{http_code}' "$base/products?skip=30")" = "503"
           test "$(curl -s -o /dev/null -w '%{http_code}' "$base/products?skip=30")" = "200"
           test "$(curl -s -o /dev/null -w '%{http_code}' "$base/_mock/state")" = "401"
+      - name: Orquestación en contenedores (Prefect server + flujo diario + worker)
+        run: |
+          set -a; . ./.env; set +a
+          for src in customers orders; do
+            mkdir -p "data/landing/$src" && cp data/samples/$src/* "data/landing/$src/"
+          done
+          chmod -R a+rX data
+          docker compose up -d --wait prefect-server
+          docker compose run --rm -T worker python -m datapulse.flows run daily --no-transform \
+            | tee /tmp/flow.json
+          grep -q '"state": "COMPLETED"' /tmp/flow.json
+          counts=$(docker compose exec -T -e PGPASSWORD="$DATAPULSE_DB_PASSWORD" postgres \
+            psql -U "$DATAPULSE_DB_USER" -d datapulse -tAc \
+            "select (select count(*) from raw.customers)||','||(select count(*) from raw.orders)||','||(select count(distinct product_id) from raw.products)")
+          echo "raw counts: $counts"; test "$counts" = "263,448,197"
+          docker compose up -d worker
+          for i in $(seq 1 30); do
+            names=$(curl -fsS -X POST "http://127.0.0.1:${PREFECT_HOST_PORT}/api/deployments/filter" \
+              -H 'content-type: application/json' -d '{}' | python3 -c 'import sys,json; print(sorted(d["name"] for d in json.load(sys.stdin)))' || true)
+            echo "$names" | grep -q "daily" && break; sleep 2
+          done
+          echo "despliegues: $names"; echo "$names" | grep -q "products-incremental"
       - name: Imagen ejecuta como usuario no root
         run: test "$(docker run --rm --entrypoint id datapulse-app:local -u)" = "10001"
       - name: Logs ante fallo

@@ -1,6 +1,6 @@
 # Arquitectura de DataPulse
 
-> Estado: **Fases 1 y 2 implementadas** (fundaciones; datos sintéticos y API simulada).
+> Estado: **Fases 1 a 4 implementadas** (fundaciones, datos y API simulada, ingesta, orquestación).
 > Los componentes marcados con *(fase N)* están diseñados pero aún no existen en el código.
 
 ## Vista general
@@ -13,8 +13,8 @@ flowchart LR
         API[API REST paginada<br/>DummyJSON real o mock-source]
     end
 
-    subgraph Orquestación["Prefect · fase 4"]
-        EX[extract] --> VA[validate<br/>contratos · fase 3] --> LO[load_raw]
+    subgraph Orquestación["Prefect"]
+        EX[extract] --> VA[validate<br/>contratos] --> LO[load_raw]
         VA -- filas inválidas --> Q[(raw.quarantine)]
     end
 
@@ -94,8 +94,8 @@ Los estados se validan con `CHECK` constraints (no `ENUM`), ver ADR-0003.
 | `postgres`      | 1 ✅ | Almacenamiento de todas las capas                     |
 | `migrate`       | 1 ✅ | Migraciones + usuarios de servicio (one-shot, idempotente) |
 | `mock-source`   | 2 ✅ | API externa simulada con fallos inyectables (prueba)  |
-| `prefect-server`| 4    | Estado de flujos, programación, UI                   |
-| `worker`        | 4    | Ejecuta los flujos                                   |
+| `prefect-server`| 4 ✅ | Estado de flujos, programación, UI                   |
+| `worker`        | 4 ✅ | Ejecuta los flujos                                   |
 | `api`           | 6    | Indicadores y resultados de pipelines                 |
 | `dashboard`     | 7    | Calidad, volúmenes, tiempos y errores                 |
 
