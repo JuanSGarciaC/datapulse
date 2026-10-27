@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 import pytest
 from prefect.states import Completed, Failed
@@ -53,3 +54,29 @@ def test_deployments_have_schedules(monkeypatch: pytest.MonkeyPatch) -> None:
     assert daily.name == "daily"
     assert daily.schedules[0].schedule.cron == "30 5 * * *"
     assert products.parameters == {"trigger": "schedule"}
+
+
+def test_dbt_nodes_are_qualified_with_their_schema() -> None:
+    from datapulse.transform.dbt import _qualified  # noqa: PLC0415
+
+    assert _qualified("model.datapulse.stg_orders") == "staging.stg_orders"
+    assert _qualified("model.datapulse.fct_order_items") == "marts.fct_order_items"
+    assert _qualified("source.datapulse.raw.orders") == "raw.orders"
+
+
+def test_dbt_configuration_errors_raise_transform_error(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    from datapulse.transform.dbt import TransformError, run_build  # noqa: PLC0415
+
+    monkeypatch.setenv("DATAPULSE_DBT_PROJECT_DIR", str(tmp_path / "no-existe"))
+    monkeypatch.setenv("DATAPULSE_DBT_TARGET_DIR", str(tmp_path / "target"))
+    with pytest.raises(TransformError, match="dbt no pudo ejecutarse"):
+        run_build()
+
+
+def test_transform_errors_are_not_retried() -> None:
+    from datapulse.transform.dbt import TransformError  # noqa: PLC0415
+
+    state: Any = Failed(data=TransformError("prueba en error"))
+    assert is_transient(None, None, state) is False  # type: ignore[arg-type]

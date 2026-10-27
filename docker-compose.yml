@@ -101,6 +101,9 @@ services:
       <<: *db-env
       DATAPULSE_DB_USER: datapulse_pipeline
       DATAPULSE_DB_PASSWORD: ${DATAPULSE_PIPELINE_DB_PASSWORD:?Define DATAPULSE_PIPELINE_DB_PASSWORD}
+      # dbt usa su propio usuario (dp_transform): el worker no escribe en marts con el del pipeline.
+      DATAPULSE_DBT_DB_USER: datapulse_dbt
+      DATAPULSE_DBT_DB_PASSWORD: ${DATAPULSE_DBT_DB_PASSWORD:?Define DATAPULSE_DBT_DB_PASSWORD}
       PREFECT_API_URL: http://prefect-server:4200/api
       DATAPULSE_INGEST_PRODUCTS_API_URL: ${DATAPULSE_INGEST_PRODUCTS_API_URL:-http://mock-source:8081}
       DATAPULSE_INGEST_LANDING_DIR: /app/data/landing

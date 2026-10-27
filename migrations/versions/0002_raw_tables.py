@@ -130,5 +130,7 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    # CASCADE: las vistas de staging (dbt) dependen de estas tablas. dbt las recrea en su
+    # siguiente ejecución; sin CASCADE el downgrade fallaría en cuanto dbt haya corrido.
     for table in ("quarantine", "products", "orders", "customers"):
-        op.drop_table(table, schema="raw")
+        op.execute(f"DROP TABLE IF EXISTS raw.{table} CASCADE")

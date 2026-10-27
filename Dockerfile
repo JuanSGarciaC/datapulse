@@ -31,6 +31,9 @@ LABEL org.opencontainers.image.title="datapulse" \
 
 ENV PATH="/app/.venv/bin:${PATH}" \
     PREFECT_HOME=/var/lib/prefect \
+    DATAPULSE_DBT_PROJECT_DIR=/app/dbt \
+    DATAPULSE_DBT_TARGET_DIR=/tmp/dbt \
+    DBT_SEND_ANONYMOUS_USAGE_STATS=false \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
@@ -45,6 +48,8 @@ RUN mkdir -p /var/lib/prefect /app/data/landing \
 COPY --from=builder --chown=app:app /app/.venv /app/.venv
 COPY --chown=app:app alembic.ini ./
 COPY --chown=app:app migrations ./migrations
+# Proyecto dbt (solo lectura); target y logs se escriben en DATAPULSE_DBT_TARGET_DIR.
+COPY --chown=root:root dbt ./dbt
 
 USER app
 

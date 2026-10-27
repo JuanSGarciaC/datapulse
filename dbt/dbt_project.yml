@@ -1,0 +1,28 @@
+name: datapulse
+version: "1.0.0"
+config-version: 2
+profile: datapulse
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+analysis-paths: ["analyses"]
+target-path: "target"
+clean-targets: ["target", "logs"]
+
+flags:
+  send_anonymous_usage_stats: false
+  partial_parse: true
+
+models:
+  datapulse:
+    staging:
+      +schema: staging
+      +materialized: view
+    marts:
+      +schema: marts
+      +materialized: table
+
+tests:
+  datapulse:
+    +store_failures: false

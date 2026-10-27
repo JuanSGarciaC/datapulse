@@ -27,6 +27,7 @@ data/landing/*
 dbt/target/
 dbt/logs/
 dbt/dbt_packages/
+dbt/.user.yml
 
 # Prefect
 .prefect/

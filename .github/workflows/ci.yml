@@ -158,7 +158,7 @@ jobs:
           test "$(curl -s -o /dev/null -w '%{http_code}' "$base/products?skip=30")" = "503"
           test "$(curl -s -o /dev/null -w '%{http_code}' "$base/products?skip=30")" = "200"
           test "$(curl -s -o /dev/null -w '%{http_code}' "$base/_mock/state")" = "401"
-      - name: Orquestación en contenedores (Prefect server + flujo diario + worker)
+      - name: Orquestación en contenedores (Prefect + ingesta + dbt + worker)
         run: |
           set -a; . ./.env; set +a
           for src in customers orders; do
@@ -166,13 +166,17 @@ jobs:
           done
           chmod -R a+rX data
           docker compose up -d --wait prefect-server
-          docker compose run --rm -T worker python -m datapulse.flows run daily --no-transform \
+          docker compose run --rm -T worker python -m datapulse.flows run daily \
             | tee /tmp/flow.json
           grep -q '"state": "COMPLETED"' /tmp/flow.json
           counts=$(docker compose exec -T -e PGPASSWORD="$DATAPULSE_DB_PASSWORD" postgres \
             psql -U "$DATAPULSE_DB_USER" -d datapulse -tAc \
             "select (select count(*) from raw.customers)||','||(select count(*) from raw.orders)||','||(select count(distinct product_id) from raw.products)")
           echo "raw counts: $counts"; test "$counts" = "263,448,197"
+          # Los marts de dbt existen y el usuario de la API (solo lectura) puede consultarlos.
+          sales=$(docker compose exec -T -e PGPASSWORD="$DATAPULSE_API_DB_PASSWORD" postgres \
+            psql -U datapulse_api -d datapulse -tAc "select count(*) from marts.fct_daily_sales")
+          echo "fct_daily_sales: $sales"; test "$sales" -gt 0
           docker compose up -d worker
           for i in $(seq 1 30); do
             names=$(curl -fsS -X POST "http://127.0.0.1:${PREFECT_HOST_PORT}/api/deployments/filter" \

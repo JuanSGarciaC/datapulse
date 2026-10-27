@@ -1,6 +1,6 @@
 # Comandos para Linux/macOS/CI. En Windows usa scripts/dev.ps1 (mismos nombres).
 
-.PHONY: ingest-samples
+.PHONY: ingest-samples dbt-build dbt-docs
 .PHONY: help setup fmt lint typecheck test test-unit test-live security check migrate generate mock up down logs
 
 help:            ## Lista los comandos
@@ -48,6 +48,13 @@ ingest-samples:  ## Carga data/samples (requiere postgres y mock-source levantad
 	uv run python -m datapulse.ingestion customers data/samples/customers/*.csv
 	uv run python -m datapulse.ingestion orders data/samples/orders/*.json
 	uv run python -m datapulse.ingestion products
+
+dbt-build:       ## dbt build (modelos + pruebas) como datapulse_dbt
+	uv run dbt build --project-dir dbt --profiles-dir dbt
+
+dbt-docs:        ## Genera y sirve la documentación y el linaje de dbt
+	uv run dbt docs generate --project-dir dbt --profiles-dir dbt
+	uv run dbt docs serve --project-dir dbt --profiles-dir dbt --port 8088
 
 up:              ## Levanta el entorno Docker
 	docker compose up --build -d

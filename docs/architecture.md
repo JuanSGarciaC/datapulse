@@ -1,6 +1,6 @@
 # Arquitectura de DataPulse
 
-> Estado: **Fases 1 a 4 implementadas** (fundaciones, datos y API simulada, ingesta, orquestación).
+> Estado: **Fases 1 a 5 implementadas** (fundaciones, datos y API simulada, ingesta, orquestación, modelado dbt). Modelo detallado en [data-model.md](data-model.md).
 > Los componentes marcados con *(fase N)* están diseñados pero aún no existen en el código.
 
 ## Vista general
@@ -29,7 +29,7 @@ flowchart LR
     JSON --> EX
     API --> EX
     LO --> RAW
-    RAW -- dbt · fase 5 --> STG -- dbt --> MART
+    RAW -- dbt --> STG -- dbt --> MART
     Orquestación -. métricas y estado .-> OPS
     MART --> FAPI[FastAPI solo lectura · fase 6]
     OPS --> FAPI
