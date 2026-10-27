@@ -7,7 +7,7 @@
 Plataforma de ingeniería de datos que convierte archivos (CSV, JSON) y APIs REST paginadas en
 información **confiable, trazable e idempotente** para análisis de negocio.
 
-> **Estado del proyecto: Fase 2 de 8 — Datos sintéticos y fuente simulada.** Lo que existe hoy está implementado y
+> **Estado del proyecto: Fase 3 de 8 — Ingesta, validación e idempotencia.** Lo que existe hoy está implementado y
 > probado; lo que está en el roadmap está **diseñado pero no implementado**. Ver [Roadmap](#roadmap).
 
 ## Qué demuestra este proyecto
@@ -22,7 +22,8 @@ información **confiable, trazable e idempotente** para análisis de negocio.
 | Calidad de código | ruff, mypy estricto (código y pruebas), bandit, pip-audit, cobertura ≥ 90 % | `.github/workflows/ci.yml` |
 | Datos reproducibles | Generador determinista con 37 defectos documentados (respuesta conocida) | [sources.md](docs/sources.md) |
 | Pruebas de contrato | Una suite contra la API simulada **y** contra DummyJSON real | [ADR-0006](docs/adr/0006-public-api-and-mock-contract.md) |
-| Resiliencia (preparada) | API simulada con fallos por offset, 429 + `Retry-After`, latencia y reloj de catálogo | `src/datapulse/mock_source/` |
+| Resiliencia | Reintentos con `Retry-After` y backoff con jitter; carga atómica por lote; bloqueo por fuente | [pipeline.md](docs/pipeline.md) |
+| Calidad de datos | Contratos por fuente, cuarentena con motivo, presupuesto de errores, cambios de esquema | [ADR-0007](docs/adr/0007-validation-design.md) |
 
 ## Stack
 
@@ -88,6 +89,7 @@ docker compose up -d postgres            # solo la base de datos
 .\scripts\dev.ps1 generate               # regenera data/samples (mismos bytes siempre)
 .\scripts\dev.ps1 mock                   # API simulada en http://127.0.0.1:8081
 .\scripts\dev.ps1 test-live              # contrato contra DummyJSON real (internet)
+.\scripts\dev.ps1 ingest-samples         # carga los datos de ejemplo (necesita postgres + mock)
 ```
 
 > Si PowerShell bloquea el script: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
@@ -101,6 +103,7 @@ En Linux/macOS los mismos comandos existen en el `Makefile` (`make setup`, `make
 | Unitarias (`tests/unit`) | Configuración, escapado de URL, redacción de secretos, logging JSON, validación de contraseñas | Nada |
 | Unitarias (`tests/unit`) — fase 2 | Generador (reproducibilidad, independencia de flujos, cada defecto presente en los archivos), API simulada (fallos, rate limit, reloj, admin) | Nada |
 | Integración (`tests/integration`) | Migraciones contra PostgreSQL real: estructura, ida y vuelta, constraints, deriva, matriz de permisos, bootstrap de punta a punta | PostgreSQL |
+| Integración — fase 3 | Respuesta conocida contra `manifest.json`, idempotencia al re-ingerir, incremental por marca de agua, atomicidad ante fallos, bloqueo concurrente, permisos de `dp_pipeline` | PostgreSQL |
 | Contrato (`tests/contract`) | La misma suite contra la API simulada y contra DummyJSON real (`-m live`) | Internet para `live` |
 
 ```powershell
@@ -123,6 +126,8 @@ src/datapulse/
   synthetic/             generador determinista de datos con defectos documentados
   mock_source/           API simulada (contrato DummyJSON + fallos inyectables)
   sources/contracts.py   contrato de la API de productos (Pydantic)
+  validation/            contratos por fuente, motor tabular (Polars), validador de pedidos
+  ingestion/             cliente REST con reintentos, carga idempotente, casos de uso y CLI
 data/samples/            datos de ejemplo versionados + manifest.json
 migrations/              migraciones Alembic (raw, ops, roles y permisos)
 tests/{unit,integration}
@@ -146,7 +151,7 @@ scripts/dev.ps1          comandos para Windows
 |------|-----------|--------|
 | 1 | Fundaciones: configuración, migraciones, roles, CI, Docker | ✅ Implementada |
 | 2 | Datos sintéticos reproducibles + API simulada con fallos inyectables | ✅ Implementada |
-| 3 | Ingesta CSV/JSON/REST, contratos de validación, cuarentena, idempotencia | Pendiente |
+| 3 | Ingesta CSV/JSON/REST, contratos de validación, cuarentena, idempotencia | ✅ Implementada |
 | 4 | Orquestación con Prefect: reintentos, registro de ejecuciones, recuperación | Pendiente |
 | 5 | dbt: staging, snapshot SCD2, modelo estrella, pruebas y conciliación | Pendiente |
 | 6 | API de indicadores y resultados de pipelines | Pendiente |

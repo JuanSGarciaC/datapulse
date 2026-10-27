@@ -1,6 +1,6 @@
 # ADR-0004: Estrategia de idempotencia y carga incremental
 
-- **Estado:** aceptada (fase 1: estructura en `ops`; fases 3–5: implementación)
+- **Estado:** aceptada; implementada en fase 3 (archivo, API, registro). Modelos dbt: fase 5
 - **Fecha:** 2026-10-27
 
 ## Objetivo

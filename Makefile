@@ -1,4 +1,6 @@
 # Comandos para Linux/macOS/CI. En Windows usa scripts/dev.ps1 (mismos nombres).
+
+.PHONY: ingest-samples
 .PHONY: help setup fmt lint typecheck test test-unit test-live security check migrate generate mock up down logs
 
 help:            ## Lista los comandos
@@ -41,6 +43,11 @@ generate:        ## Regenera data/samples (determinista, seed 42)
 
 mock:            ## API simulada en http://127.0.0.1:8081 (docs en /docs)
 	uv run python -m datapulse.mock_source
+
+ingest-samples:  ## Carga data/samples (requiere postgres y mock-source levantados)
+	uv run python -m datapulse.ingestion customers data/samples/customers/*.csv
+	uv run python -m datapulse.ingestion orders data/samples/orders/*.json
+	uv run python -m datapulse.ingestion products
 
 up:              ## Levanta el entorno Docker
 	docker compose up --build -d
