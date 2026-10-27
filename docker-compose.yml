@@ -1,0 +1,52 @@
+# DataPulse - entorno local reproducible.
+# Fase 1: base de datos + migraciones. Las fases siguientes añaden prefect-server,
+# worker, api, dashboard y mock-source (ver docs/architecture.md).
+#
+# Uso:  cp .env.example .env   (y cambia las contraseñas)
+#       docker compose up --build
+
+name: datapulse
+
+x-db-env: &db-env
+  DATAPULSE_ENV: ${DATAPULSE_ENV:-dev}
+  DATAPULSE_LOG_LEVEL: ${DATAPULSE_LOG_LEVEL:-INFO}
+  DATAPULSE_DB_HOST: postgres
+  DATAPULSE_DB_PORT: "5432"
+  DATAPULSE_DB_NAME: ${DATAPULSE_DB_NAME:-datapulse}
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DATAPULSE_DB_NAME:-datapulse}
+      POSTGRES_USER: ${DATAPULSE_DB_USER:-datapulse_admin}
+      POSTGRES_PASSWORD: ${DATAPULSE_DB_PASSWORD:?Define DATAPULSE_DB_PASSWORD en .env}
+    # Solo se publica en la interfaz local: la base no queda expuesta a la red.
+    ports:
+      - "127.0.0.1:${POSTGRES_HOST_PORT:-5433}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  migrate:
+    build: .
+    image: datapulse-app:local
+    restart: "no"
+    environment:
+      <<: *db-env
+      DATAPULSE_DB_USER: ${DATAPULSE_DB_USER:-datapulse_admin}
+      DATAPULSE_DB_PASSWORD: ${DATAPULSE_DB_PASSWORD:?Define DATAPULSE_DB_PASSWORD en .env}
+      DATAPULSE_PIPELINE_DB_PASSWORD: ${DATAPULSE_PIPELINE_DB_PASSWORD:?Define DATAPULSE_PIPELINE_DB_PASSWORD}
+      DATAPULSE_DBT_DB_PASSWORD: ${DATAPULSE_DBT_DB_PASSWORD:?Define DATAPULSE_DBT_DB_PASSWORD}
+      DATAPULSE_API_DB_PASSWORD: ${DATAPULSE_API_DB_PASSWORD:?Define DATAPULSE_API_DB_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:
