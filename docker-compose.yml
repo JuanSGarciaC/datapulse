@@ -1,6 +1,6 @@
 # DataPulse - entorno local reproducible.
-# Fase 1: base de datos + migraciones. Fase 2: API simulada. Fase 4: Prefect.
-# Las fases siguientes añaden api y dashboard.
+# Fases 1-6: base de datos, migraciones, API simulada, Prefect (servidor + worker) y API.
+# La fase 7 añade el dashboard.
 #
 # Uso:  cp .env.example .env   (y cambia las contraseñas)
 #       docker compose up --build
@@ -118,6 +118,33 @@ services:
         condition: service_healthy
       mock-source:
         condition: service_healthy
+
+  # API de indicadores: solo lectura (datapulse_api → dp_reader).
+  api:
+    build: .
+    image: datapulse-app:local
+    restart: unless-stopped
+    command: ["python", "-m", "datapulse.api"]
+    environment:
+      <<: *db-env
+      DATAPULSE_DB_USER: datapulse_api
+      DATAPULSE_DB_PASSWORD: ${DATAPULSE_API_DB_PASSWORD:?Define DATAPULSE_API_DB_PASSWORD}
+      DATAPULSE_API_HOST: 0.0.0.0
+      DATAPULSE_API_PORT: "8000"
+      DATAPULSE_API_KEYS: ${DATAPULSE_API_KEYS:?Define DATAPULSE_API_KEYS}
+      DATAPULSE_API_ADMIN_KEY: ${DATAPULSE_API_ADMIN_KEY:-}
+      DATAPULSE_API_DOCS_ENABLED: ${DATAPULSE_API_DOCS_ENABLED:-true}
+      PREFECT_API_URL: http://prefect-server:4200/api
+    ports:
+      - "127.0.0.1:${API_HOST_PORT:-8000}:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
 
 volumes:
   pgdata:

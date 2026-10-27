@@ -110,13 +110,27 @@ def test_bootstrap_main_end_to_end(
     passwords = {"pipeline": "pipe-pwd-1", "dbt": "dbt-pwd-1", "api": "api-pwd-1"}
     for svc, pwd in passwords.items():
         monkeypatch.setenv(f"DATAPULSE_{svc.upper()}_DB_PASSWORD", pwd)
+    # Prefijo propio: la prueba no cambia las contraseñas de los usuarios reales de la app
+    # (los roles son globales del clúster y la base de pruebas comparte servidor).
+    prefix = f"dp_it_{uuid.uuid4().hex[:6]}_"
+    monkeypatch.setenv("DATAPULSE_SERVICE_USER_PREFIX", prefix)
 
-    assert bootstrap_main() == 0
-    assert bootstrap_main() == 0  # idempotente
+    try:
+        assert bootstrap_main() == 0
+        assert bootstrap_main() == 0  # idempotente
+        _assert_service_logins(migrated_db, test_db, prefix, passwords)
+    finally:
+        with migrated_db.begin() as conn:
+            for svc in passwords:
+                conn.execute(text(f'DROP ROLE IF EXISTS "{prefix}{svc}"'))
 
+
+def _assert_service_logins(
+    migrated_db: Engine, test_db: DatabaseSettings, prefix: str, passwords: dict[str, str]
+) -> None:
     expected = {"pipeline": "dp_pipeline", "dbt": "dp_transform", "api": "dp_reader"}
     for svc, group in expected.items():
-        url = migrated_db.url.set(username=f"datapulse_{svc}", password=passwords[svc])
+        url = migrated_db.url.set(username=f"{prefix}{svc}", password=passwords[svc])
         engine = build_engine(
             DatabaseSettings.model_validate(
                 {

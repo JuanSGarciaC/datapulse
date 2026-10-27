@@ -52,6 +52,9 @@ def pipeline_engine(migrated_db: Engine) -> Iterator[Engine]:
     def _as_pipeline(dbapi_conn: Any, _: Any) -> None:
         with dbapi_conn.cursor() as cur:
             cur.execute("SET ROLE dp_pipeline")
+        # Confirmar: SET ROLE dentro de la transacción implícita se perdería con el
+        # ROLLBACK que hace el pool al devolver la conexión.
+        dbapi_conn.commit()
 
     yield engine
     engine.dispose()
@@ -359,6 +362,9 @@ def test_run_and_task_tracking(pipeline_engine: Engine, migrated_db: Engine) -> 
 
 def test_pipeline_role_cannot_rewrite_raw(pipeline_engine: Engine) -> None:
     ingest_all_files(pipeline_engine)
+    for _ in range(3):
+        with pipeline_engine.connect() as conn:
+            assert conn.execute(text("SELECT current_user")).scalar_one() == "dp_pipeline"
     from sqlalchemy.exc import ProgrammingError  # noqa: PLC0415
 
     with (

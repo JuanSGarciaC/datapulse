@@ -128,7 +128,7 @@ jobs:
       - name: Generar .env efímero con contraseñas aleatorias
         run: |
           cp .env.example .env
-          for var in DATAPULSE_DB_PASSWORD DATAPULSE_PIPELINE_DB_PASSWORD DATAPULSE_DBT_DB_PASSWORD DATAPULSE_API_DB_PASSWORD DATAPULSE_MOCK_ADMIN_TOKEN; do
+          for var in DATAPULSE_DB_PASSWORD DATAPULSE_PIPELINE_DB_PASSWORD DATAPULSE_DBT_DB_PASSWORD DATAPULSE_API_DB_PASSWORD DATAPULSE_MOCK_ADMIN_TOKEN DATAPULSE_API_KEYS DATAPULSE_API_ADMIN_KEY; do
             sed -i "s|^${var}=.*|${var}=$(openssl rand -hex 16)|" .env
           done
       - name: Validar docker-compose.yml
@@ -184,6 +184,16 @@ jobs:
             echo "$names" | grep -q "daily" && break; sleep 2
           done
           echo "despliegues: $names"; echo "$names" | grep -q "products-incremental"
+      - name: API de indicadores en contenedor (auth + datos reales)
+        run: |
+          set -a; . ./.env; set +a
+          docker compose up -d --wait api
+          base="http://127.0.0.1:${API_HOST_PORT}"
+          test "$(curl -s -o /dev/null -w '%{http_code}' "$base/v1/kpis/summary")" = "401"
+          curl -fsS -H "X-API-Key: $DATAPULSE_API_KEYS" "$base/v1/kpis/summary" | tee /tmp/kpis.json
+          python3 -c 'import json; d=json.load(open("/tmp/kpis.json")); assert d["orders"] > 0 and float(d["revenue"]) > 0, d'
+          curl -fsS -H "X-API-Key: $DATAPULSE_API_KEYS" "$base/v1/quality/summary?layer=post_transform" > /dev/null
+          curl -fsS "$base/health/ready" | grep -q '"database":"up"'
       - name: Imagen ejecuta como usuario no root
         run: test "$(docker run --rm --entrypoint id datapulse-app:local -u)" = "10001"
       - name: Logs ante fallo

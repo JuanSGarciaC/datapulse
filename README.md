@@ -7,7 +7,7 @@
 Plataforma de ingeniería de datos que convierte archivos (CSV, JSON) y APIs REST paginadas en
 información **confiable, trazable e idempotente** para análisis de negocio.
 
-> **Estado del proyecto: Fase 5 de 8 — Modelado analítico con dbt.** Lo que existe hoy está implementado y
+> **Estado del proyecto: Fase 6 de 8 — API de indicadores.** Lo que existe hoy está implementado y
 > probado; lo que está en el roadmap está **diseñado pero no implementado**. Ver [Roadmap](#roadmap).
 
 ## Qué demuestra este proyecto
@@ -24,6 +24,7 @@ información **confiable, trazable e idempotente** para análisis de negocio.
 | Pruebas de contrato | Una suite contra la API simulada **y** contra DummyJSON real | [ADR-0006](docs/adr/0006-public-api-and-mock-contract.md) |
 | Resiliencia | Reintentos con `Retry-After` y backoff con jitter; carga atómica por lote; bloqueo por fuente | [pipeline.md](docs/pipeline.md) |
 | Calidad de datos | Contratos por fuente, cuarentena con motivo, presupuesto de errores, cambios de esquema | [ADR-0007](docs/adr/0007-validation-design.md) |
+| API segura | Solo lectura con rol `dp_reader`, API key en tiempo constante, SQL sin interpolación, validación antes de conectar | [api.md](docs/api.md) |
 | Modelado analítico | Estrella con SCD2 *point-in-time*, incremental probado igual a *full refresh*, conciliaciones | [data-model.md](docs/data-model.md), [ADR-0008](docs/adr/0008-scd2-and-incremental-models.md) |
 
 ## Stack
@@ -36,7 +37,7 @@ información **confiable, trazable e idempotente** para análisis de negocio.
 | Orquestación | Prefect 3.9 | La opción más simple que es orquestación real ([ADR-0001](docs/adr/0001-orchestration-prefect.md)) |
 | DataFrames *(fase 3)* | Polars 2.1 | Tipado estricto, ideal para validar ([ADR-0002](docs/adr/0002-dataframes-polars.md)) |
 | Transformación | dbt-core 1.12 + dbt-postgres 1.11 | SQL versionado, pruebas y linaje; ejecutado con `dbtRunner` |
-| API simulada / API *(fase 6)* | FastAPI 0.150 | Limitado por Prefect 3.9 (ver ADR-0001) |
+| API y API simulada | FastAPI 0.150 | Limitado por Prefect 3.9 (ver ADR-0001) |
 | Cliente HTTP | httpx2 2.16 | Sucesor de httpx; Starlette 1.10 depreca httpx (ADR-0006) |
 | API pública | [DummyJSON](https://dummyjson.com) | Gratuita, e-commerce, paginación real (ADR-0006) |
 | Dashboard *(fase 7)* | Streamlit | Python de punta a punta y consume la API |
@@ -61,6 +62,7 @@ servicio. Quedan disponibles **solo en tu máquina**:
 |----------|-----------|
 | PostgreSQL | `localhost:5433` |
 | Prefect (UI) | <http://localhost:4200> |
+| API de indicadores (Swagger) | <http://localhost:8000/docs> |
 | API simulada (Swagger) | <http://localhost:8081/docs> |
 
 Para provocar fallos en la API simulada (necesita el token de `.env`):
@@ -109,6 +111,7 @@ En Linux/macOS los mismos comandos existen en el `Makefile` (`make setup`, `make
 | Integración — fase 3 | Respuesta conocida contra `manifest.json`, idempotencia al re-ingerir, incremental por marca de agua, atomicidad ante fallos, bloqueo concurrente, permisos de `dp_pipeline` | PostgreSQL |
 | Integración — fase 4 | Prefect real (servidor efímero): flujo diario, reintento de tarea tras caída de la fuente, aislamiento de fallos y recuperación | PostgreSQL |
 | Integración — fase 5 | dbt real: granularidad, SCD2 *point-in-time*, versiones tardías, avisos de huérfanos exactos, incremental = *full refresh*, permisos de lectura | PostgreSQL |
+| API — fase 6 | Unitarias (auth, validación, errores, cabeceras) e integración contra almacén real con rol `dp_reader`: cada KPI se compara con un cálculo SQL independiente | PostgreSQL |
 | Contrato (`tests/contract`) | La misma suite contra la API simulada y contra DummyJSON real (`-m live`) | Internet para `live` |
 
 ```powershell
@@ -135,6 +138,7 @@ src/datapulse/
   ingestion/             cliente REST con reintentos, carga idempotente, casos de uso y CLI
   flows/                 flujos y despliegues de Prefect (reintentos de tarea, programación)
   transform/             dbt desde Python (dbtRunner) y registro de sus pruebas en ops
+  api/                   API de indicadores (FastAPI, solo lectura)
 dbt/                     modelos staging y marts, pruebas genéricas y singulares
 data/samples/            datos de ejemplo versionados + manifest.json
 migrations/              migraciones Alembic (raw, ops, roles y permisos)
@@ -162,7 +166,7 @@ scripts/dev.ps1          comandos para Windows
 | 3 | Ingesta CSV/JSON/REST, contratos de validación, cuarentena, idempotencia | ✅ Implementada |
 | 4 | Orquestación con Prefect: reintentos, registro de ejecuciones, recuperación | ✅ Implementada |
 | 5 | dbt: staging, SCD2, modelo estrella, pruebas y conciliación | ✅ Implementada |
-| 6 | API de indicadores y resultados de pipelines | Pendiente |
+| 6 | API de indicadores y resultados de pipelines | ✅ Implementada |
 | 7 | Dashboard de calidad, volúmenes, tiempos y errores | Pendiente |
 | 8 | Integración final, pruebas E2E y documentación de despliegue | Pendiente |
 
