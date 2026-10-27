@@ -40,6 +40,12 @@ from datapulse.ingestion.service import (
     ingest_products,
 )
 from datapulse.observability.runs import RunRecorder, Trigger
+from datapulse.transform.dbt import (
+    TransformError,
+    failed_nodes,
+    record_test_results,
+    run_build,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +54,7 @@ PATTERNS: dict[FileSource, str] = {"customers": "*.csv", "orders": "*.json"}
 # Errores que no se arreglan reintentando: reintentar solo retrasaría la alerta.
 NON_RETRYABLE: tuple[type[BaseException], ...] = (
     ContractViolationError,
+    TransformError,  # una prueba de datos en error no se arregla reintentando
     ValueError,
     TypeError,
     KeyError,
@@ -197,14 +204,44 @@ def daily_pipeline(
     summary: dict[str, Any] = {name: state.type.value for name, state in states.items()}
     failed = [name for name, state in states.items() if state.is_failed()]
     if transform and not failed:
-        summary["transform"] = run_transform(trigger=trigger)
+        state = transform_flow(trigger=trigger, return_state=True)
+        summary["transform"] = state.type.value
+        if state.is_failed():
+            failed.append("transform")
     if failed:
-        raise RuntimeError(f"fuentes con fallo: {failed}")
+        raise RuntimeError(f"etapas con fallo: {failed}")
     return summary
 
 
-def run_transform(trigger: Trigger) -> str:  # pragma: no cover - se sustituye en la fase 5
-    return "pendiente (fase 5)"
+@task(name="dbt-build", **_TASK_OPTIONS)
+def dbt_build_task(recorder: RunRecorder, full_refresh: bool) -> dict[str, Any]:
+    with recorder.task("dbt:build", attempt=task_run.get_run_count()) as handle:
+        outcome = run_build(full_refresh=full_refresh)
+        record_test_results(recorder.engine, recorder.run_id, outcome)
+        handle.rows_out = outcome.count("model")
+        summary = outcome.as_dict()
+        recorder.add(partial=summary["tests_warn"] > 0)
+        if not outcome.success:
+            raise TransformError(f"dbt con fallos: {failed_nodes(outcome)}")
+    return summary
+
+
+@flow(name="transform")
+def transform_flow(full_refresh: bool = False, trigger: Trigger = "manual") -> dict[str, Any]:
+    """dbt build (modelos + pruebas). Las pruebas quedan en ops.quality_results (post_transform)."""
+    engine = _engine()
+    try:
+        with RunRecorder(
+            engine,
+            "transform",
+            trigger=trigger,
+            params={"full_refresh": full_refresh},
+            orchestrator_run_id=_orchestrator_id(),
+        ) as recorder:
+            result: dict[str, Any] = dbt_build_task(recorder, full_refresh)
+            return result
+    finally:
+        engine.dispose()
 
 
 def seed_landing(samples: Path, landing: Path) -> list[Path]:

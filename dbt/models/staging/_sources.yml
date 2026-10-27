@@ -1,0 +1,25 @@
+version: 2
+
+sources:
+  - name: raw
+    description: >
+      Capa de entrada append-only, gestionada por Alembic y cargada por el pipeline de Python
+      (validada antes de cargar). Puede contener varias versiones de un mismo registro.
+    schema: raw
+    loaded_at_field: _ingested_at
+    tables:
+      - name: customers
+        description: "Una fila por versión recibida de un cliente (CSV diario)."
+        columns:
+          - name: _record_hash
+            tests: [unique, not_null]
+      - name: orders
+        description: "Una fila por versión recibida de un pedido (JSON por lotes); líneas en `items` (jsonb)."
+        columns:
+          - name: _record_hash
+            tests: [unique, not_null]
+      - name: products
+        description: "Una fila por versión recibida de un producto (API paginada)."
+        columns:
+          - name: _record_hash
+            tests: [unique, not_null]

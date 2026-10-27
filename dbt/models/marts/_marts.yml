@@ -1,0 +1,81 @@
+version: 2
+
+models:
+  - name: dim_customer
+    description: >
+      Clientes SCD tipo 2. Granularidad: 1 fila por versión. `valid_from`/`valid_to` forman
+      intervalos [desde, hasta) sin solapes; `is_current` marca la vigente.
+    columns:
+      - name: customer_sk
+        description: "Clave sustituta estable: md5(customer_id | updated_at)."
+        tests: [unique, not_null]
+      - name: customer_id
+        tests: [not_null]
+      - name: email_sha256
+        description: "Correo minimizado (hash). El correo en claro no se expone."
+    tests:
+      - unique_combination:
+          arguments:
+            columns: [customer_id, version_number]
+
+  - name: dim_product
+    description: "Productos (estado actual, SCD 1). Granularidad: 1 fila por producto."
+    columns:
+      - name: product_id
+        tests: [unique, not_null]
+      - name: current_price
+        tests: [not_null]
+
+  - name: dim_date
+    description: "Calendario. Granularidad: 1 fila por día."
+    columns:
+      - name: date_day
+        tests: [unique, not_null]
+
+  - name: fct_order_items
+    description: >
+      Hechos de ventas. Granularidad: 1 fila por línea de pedido (versión vigente).
+      Trazabilidad: `_batch_id` → ops.ingestion_registry (archivo y sha256 de origen).
+    tests:
+      - unique_combination:
+          arguments:
+            columns: [order_id, line_no]
+    columns:
+      - name: quantity
+        tests: [not_null]
+      - name: line_amount
+        tests: [not_null]
+      - name: order_date
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: customer_id
+        description: "Puede no existir en dim_customer (pedido de cliente desconocido): aviso, no error."
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_customer')
+                field: customer_id
+              config:
+                severity: warn
+      - name: product_id
+        description: "Puede no existir en dim_product: aviso, no error."
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_product')
+                field: product_id
+              config:
+                severity: warn
+
+  - name: fct_daily_sales
+    description: "Ventas diarias por categoría. Granularidad: 1 fila por (`order_date`, `category`)."
+    tests:
+      - unique_combination:
+          arguments:
+            columns: [order_date, category]
+    columns:
+      - name: revenue
+        tests: [not_null]

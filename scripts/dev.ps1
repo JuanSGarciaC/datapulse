@@ -10,7 +10,7 @@
 param(
     [Parameter(Position = 0)]
     [ValidateSet('help', 'setup', 'fmt', 'lint', 'typecheck', 'test', 'test-unit', 'test-live',
-                 'security', 'check', 'migrate', 'generate', 'mock', 'ingest-samples', 'up', 'down', 'logs', 'createtestdb')]
+                 'security', 'check', 'migrate', 'generate', 'mock', 'ingest-samples', 'dbt-build', 'dbt-docs', 'up', 'down', 'logs', 'createtestdb')]
     [string]$Command = 'help'
 )
 
@@ -40,7 +40,7 @@ function Invoke-Step([string]$Exe, [string[]]$Arguments) {
 switch ($Command) {
     'help' {
         Get-Help $PSCommandPath -Detailed | Out-Host
-        'Comandos: setup, fmt, lint, typecheck, test, test-unit, test-live, security, check, migrate, generate, mock, ingest-samples, up, down, logs, createtestdb'
+        'Comandos: setup, fmt, lint, typecheck, test, test-unit, test-live, security, check, migrate, generate, mock, ingest-samples, dbt-build, dbt-docs, up, down, logs, createtestdb'
     }
     'setup'     { Invoke-Step uv @('sync', '--frozen') }
     'fmt'       { Invoke-Step uv @('run', 'ruff', 'format', '.'); Invoke-Step uv @('run', 'ruff', 'check', '.', '--fix') }
@@ -51,6 +51,12 @@ switch ($Command) {
     'test-live' { Invoke-Step uv @('run', 'pytest', 'tests/contract', '-m', 'live', '-v') }
     'generate'  { Invoke-Step uv @('run', 'python', '-m', 'datapulse.synthetic') }
     'mock'      { Invoke-Step uv @('run', 'python', '-m', 'datapulse.mock_source') }
+    'dbt-build' { Import-DotEnv; Invoke-Step uv @('run', 'dbt', 'build', '--project-dir', 'dbt', '--profiles-dir', 'dbt') }
+    'dbt-docs'  {
+        Import-DotEnv
+        Invoke-Step uv @('run', 'dbt', 'docs', 'generate', '--project-dir', 'dbt', '--profiles-dir', 'dbt')
+        Invoke-Step uv @('run', 'dbt', 'docs', 'serve', '--project-dir', 'dbt', '--profiles-dir', 'dbt', '--port', '8088')
+    }
     'ingest-samples' {
         Import-DotEnv
         $customers = (Get-ChildItem data\samples\customers\*.csv | Sort-Object Name).FullName

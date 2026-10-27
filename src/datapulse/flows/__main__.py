@@ -27,6 +27,7 @@ from datapulse.flows.pipeline import (
     ingest_files_flow,
     ingest_products_flow,
     seed_landing,
+    transform_flow,
 )
 from datapulse.observability.logging import configure_logging
 
@@ -65,7 +66,8 @@ def main(argv: list[str] | None = None) -> int:
     seed.add_argument("--samples", type=Path, default=Path("data/samples"))
     seed.add_argument("--landing", type=Path, default=Path("data/landing"))
     run = sub.add_parser("run")
-    run.add_argument("flow", choices=["daily", "customers", "orders", "products"])
+    run.add_argument("flow", choices=["daily", "customers", "orders", "products", "transform"])
+    run.add_argument("--full-refresh", action="store_true")
     run.add_argument("--landing-dir", default=None)
     run.add_argument("--base-url", default=None)
     run.add_argument("--no-transform", action="store_true")
@@ -91,6 +93,8 @@ def main(argv: list[str] | None = None) -> int:
             transform=not args.no_transform,
             return_state=True,
         )
+    elif args.flow == "transform":
+        state = transform_flow(full_refresh=args.full_refresh, return_state=True)
     elif args.flow == "products":
         state = ingest_products_flow(base_url=args.base_url, return_state=True)
     else:

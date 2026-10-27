@@ -1,0 +1,17 @@
+# Sin secretos: todo llega por variables de entorno (mismas que el resto del proyecto).
+# dbt se conecta como datapulse_dbt y actúa como dp_transform (dueño de staging y marts),
+# así los objetos que crea heredan los permisos de lectura para la API (ADR-0005).
+datapulse:
+  target: default
+  outputs:
+    default:
+      type: postgres
+      host: "{{ env_var('DATAPULSE_DB_HOST', 'localhost') }}"
+      port: "{{ env_var('DATAPULSE_DB_PORT', '5432') | as_number }}"
+      dbname: "{{ env_var('DATAPULSE_DB_NAME', 'datapulse') }}"
+      user: "{{ env_var('DATAPULSE_DBT_DB_USER', 'datapulse_dbt') }}"
+      password: "{{ env_var('DATAPULSE_DBT_DB_PASSWORD') }}"
+      role: "{{ env_var('DATAPULSE_DBT_ROLE', 'dp_transform') }}"
+      schema: marts
+      threads: 4
+      connect_timeout: 10

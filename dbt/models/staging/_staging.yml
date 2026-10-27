@@ -1,0 +1,41 @@
+version: 2
+
+models:
+  - name: stg_customers
+    description: "Clientes, versión más reciente. Granularidad: 1 fila por `customer_id`."
+    columns:
+      - name: customer_id
+        tests: [unique, not_null]
+      - name: email_sha256
+        description: "SHA-256 del correo en minúsculas (el correo en claro no sale de raw)."
+        tests: [not_null]
+  - name: stg_customer_versions
+    description: "Historia de atributos. Granularidad: 1 fila por (`customer_id`, `updated_at`)."
+    tests:
+      - unique_combination:
+          arguments:
+            columns: [customer_id, updated_at]
+  - name: stg_orders
+    description: "Pedidos, versión vigente. Granularidad: 1 fila por `order_id`."
+    columns:
+      - name: order_id
+        tests: [unique, not_null]
+      - name: status
+        tests:
+          - accepted_values:
+              arguments:
+                values: [placed, paid, shipped, delivered, cancelled, returned]
+  - name: stg_order_items
+    description: "Líneas aplanadas desde `items`. Granularidad: 1 fila por (`order_id`, `line_no`)."
+    tests:
+      - unique_combination:
+          arguments:
+            columns: [order_id, line_no]
+    columns:
+      - name: quantity
+        tests: [not_null]
+  - name: stg_products
+    description: "Productos, versión más reciente. Granularidad: 1 fila por `product_id`."
+    columns:
+      - name: product_id
+        tests: [unique, not_null]

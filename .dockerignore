@@ -13,3 +13,6 @@ data
 docs
 tests
 scripts
+dbt/target
+dbt/logs
+dbt/.user.yml
