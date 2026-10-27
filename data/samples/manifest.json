@@ -1,0 +1,363 @@
+{
+  "generator_version": "1",
+  "config": {
+    "seed": 42,
+    "n_customers": 200,
+    "new_customers_per_day": 15,
+    "changed_customers_per_day": 20,
+    "n_products": 194,
+    "n_new_products": 6,
+    "changed_products_per_day": 15,
+    "n_days": 3,
+    "orders_per_day": 150,
+    "start": "2026-01-01"
+  },
+  "files": [
+    {
+      "path": "customers/customers_2026-01-01.csv",
+      "sha256": "2ca922fdb1444d0b206aa623562835be566fae2d3fcd87031cfd06734e840d22",
+      "rows": 203
+    },
+    {
+      "path": "customers/customers_2026-01-02.csv",
+      "sha256": "2ff346bc90f75dc10eb9ecd245bda8e167a6c0bd5bdc667ba9c2edd4621a32b2",
+      "rows": 35
+    },
+    {
+      "path": "customers/customers_2026-01-02_resend.csv",
+      "sha256": "2ff346bc90f75dc10eb9ecd245bda8e167a6c0bd5bdc667ba9c2edd4621a32b2",
+      "rows": 35
+    },
+    {
+      "path": "customers/customers_2026-01-03.csv",
+      "sha256": "8054d91cf71d14a1ab86dea4639a14c95fcf65ecd256d0b47560f9b99716f565",
+      "rows": 35
+    },
+    {
+      "path": "orders/orders_batch_001.json",
+      "sha256": "eeca346e6204d8363cf5a3a6617f96a290ec2344e71bae74fa211aed71046417",
+      "rows": 150
+    },
+    {
+      "path": "orders/orders_batch_002.json",
+      "sha256": "20bddfbb34ec2bcb28e565dea4fb2415a7614e4a80153789a942f1ea6b0af2a7",
+      "rows": 155
+    },
+    {
+      "path": "orders/orders_batch_003.json",
+      "sha256": "97dbbfca3ef594b69adf97d827b628d8a05498f5418b62cc59a0411587fe4178",
+      "rows": 155
+    },
+    {
+      "path": "products/products_catalog.json",
+      "sha256": "09f4f23e1e16d9a2a6d21f912221fbe69d0d09f7dc779c2f638df99c54b8212f",
+      "rows": 230
+    }
+  ],
+  "expectations": {
+    "customer_attribute_changes": 40,
+    "customers_distinct": 230,
+    "order_records_total": 460,
+    "orders_distinct": 450,
+    "product_versions": 230,
+    "products_distinct": 200
+  },
+  "defects": [
+    {
+      "source": "customers_csv",
+      "file": "customers/customers_2026-01-01.csv",
+      "kind": "duplicate_in_file",
+      "key": "C00085",
+      "field": null,
+      "detail": "fila repetida"
+    },
+    {
+      "source": "customers_csv",
+      "file": "customers/customers_2026-01-01.csv",
+      "kind": "duplicate_in_file",
+      "key": "C00110",
+      "field": null,
+      "detail": "fila repetida"
+    },
+    {
+      "source": "customers_csv",
+      "file": "customers/customers_2026-01-01.csv",
+      "kind": "duplicate_in_file",
+      "key": "C00154",
+      "field": null,
+      "detail": "fila repetida"
+    },
+    {
+      "source": "customers_csv",
+      "file": "customers/customers_2026-01-01.csv",
+      "kind": "invalid_format",
+      "key": "C00009",
+      "field": "email",
+      "detail": "email sin @"
+    },
+    {
+      "source": "customers_csv",
+      "file": "customers/customers_2026-01-01.csv",
+      "kind": "invalid_format",
+      "key": "C00119",
+      "field": "email",
+      "detail": "email sin @"
+    },
+    {
+      "source": "customers_csv",
+      "file": "customers/customers_2026-01-01.csv",
+      "kind": "invalid_type",
+      "key": "C00062",
+      "field": "signup_date",
+      "detail": "fecha imposible"
+    },
+    {
+      "source": "customers_csv",
+      "file": "customers/customers_2026-01-01.csv",
+      "kind": "invalid_type",
+      "key": "C00109",
+      "field": "signup_date",
+      "detail": "fecha imposible"
+    },
+    {
+      "source": "customers_csv",
+      "file": "customers/customers_2026-01-01.csv",
+      "kind": "missing_required",
+      "key": "C00014",
+      "field": "email",
+      "detail": "email vacío"
+    },
+    {
+      "source": "customers_csv",
+      "file": "customers/customers_2026-01-01.csv",
+      "kind": "missing_required",
+      "key": "C00054",
+      "field": "email",
+      "detail": "email vacío"
+    },
+    {
+      "source": "customers_csv",
+      "file": "customers/customers_2026-01-01.csv",
+      "kind": "missing_required",
+      "key": "C00133",
+      "field": "email",
+      "detail": "email vacío"
+    },
+    {
+      "source": "customers_csv",
+      "file": "customers/customers_2026-01-02_resend.csv",
+      "kind": "identical_file_resend",
+      "key": "customers/customers_2026-01-02.csv",
+      "field": null,
+      "detail": "mismo contenido"
+    },
+    {
+      "source": "customers_csv",
+      "file": "customers/customers_2026-01-03.csv",
+      "kind": "schema_change",
+      "key": "*",
+      "field": "loyalty_tier",
+      "detail": "columna nueva"
+    },
+    {
+      "source": "orders_json",
+      "file": "orders/orders_batch_001.json",
+      "kind": "empty_collection",
+      "key": "O000054",
+      "field": "items",
+      "detail": "sin líneas"
+    },
+    {
+      "source": "orders_json",
+      "file": "orders/orders_batch_001.json",
+      "kind": "invalid_type",
+      "key": "O000064",
+      "field": "items.quantity",
+      "detail": "'two'"
+    },
+    {
+      "source": "orders_json",
+      "file": "orders/orders_batch_001.json",
+      "kind": "invalid_type",
+      "key": "O000077",
+      "field": "items.quantity",
+      "detail": "'two'"
+    },
+    {
+      "source": "orders_json",
+      "file": "orders/orders_batch_002.json",
+      "kind": "duplicate_across_batches",
+      "key": "O000015",
+      "field": null,
+      "detail": "pedido repetido"
+    },
+    {
+      "source": "orders_json",
+      "file": "orders/orders_batch_002.json",
+      "kind": "duplicate_across_batches",
+      "key": "O000040",
+      "field": null,
+      "detail": "pedido repetido"
+    },
+    {
+      "source": "orders_json",
+      "file": "orders/orders_batch_002.json",
+      "kind": "duplicate_across_batches",
+      "key": "O000048",
+      "field": null,
+      "detail": "pedido repetido"
+    },
+    {
+      "source": "orders_json",
+      "file": "orders/orders_batch_002.json",
+      "kind": "duplicate_across_batches",
+      "key": "O000100",
+      "field": null,
+      "detail": "pedido repetido"
+    },
+    {
+      "source": "orders_json",
+      "file": "orders/orders_batch_002.json",
+      "kind": "duplicate_across_batches",
+      "key": "O000117",
+      "field": null,
+      "detail": "pedido repetido"
+    },
+    {
+      "source": "orders_json",
+      "file": "orders/orders_batch_002.json",
+      "kind": "missing_required",
+      "key": "O000170",
+      "field": "customer_id",
+      "detail": "null"
+    },
+    {
+      "source": "orders_json",
+      "file": "orders/orders_batch_002.json",
+      "kind": "missing_required",
+      "key": "O000211",
+      "field": "customer_id",
+      "detail": "null"
+    },
+    {
+      "source": "orders_json",
+      "file": "orders/orders_batch_002.json",
+      "kind": "out_of_range",
+      "key": "O000231",
+      "field": "items.quantity",
+      "detail": "0"
+    },
+    {
+      "source": "orders_json",
+      "file": "orders/orders_batch_002.json",
+      "kind": "out_of_range",
+      "key": "O000266",
+      "field": "items.quantity",
+      "detail": "-1"
+    },
+    {
+      "source": "orders_json",
+      "file": "orders/orders_batch_003.json",
+      "kind": "late_update",
+      "key": "O000065",
+      "field": "status",
+      "detail": "cancelled"
+    },
+    {
+      "source": "orders_json",
+      "file": "orders/orders_batch_003.json",
+      "kind": "late_update",
+      "key": "O000069",
+      "field": "status",
+      "detail": "cancelled"
+    },
+    {
+      "source": "orders_json",
+      "file": "orders/orders_batch_003.json",
+      "kind": "late_update",
+      "key": "O000120",
+      "field": "status",
+      "detail": "returned"
+    },
+    {
+      "source": "orders_json",
+      "file": "orders/orders_batch_003.json",
+      "kind": "late_update",
+      "key": "O000122",
+      "field": "status",
+      "detail": "returned"
+    },
+    {
+      "source": "orders_json",
+      "file": "orders/orders_batch_003.json",
+      "kind": "late_update",
+      "key": "O000148",
+      "field": "status",
+      "detail": "returned"
+    },
+    {
+      "source": "orders_json",
+      "file": "orders/orders_batch_003.json",
+      "kind": "orphan_reference",
+      "key": "O000330",
+      "field": "items.product_id",
+      "detail": "9999"
+    },
+    {
+      "source": "orders_json",
+      "file": "orders/orders_batch_003.json",
+      "kind": "orphan_reference",
+      "key": "O000339",
+      "field": "customer_id",
+      "detail": "C99999"
+    },
+    {
+      "source": "orders_json",
+      "file": "orders/orders_batch_003.json",
+      "kind": "orphan_reference",
+      "key": "O000404",
+      "field": "items.product_id",
+      "detail": "9999"
+    },
+    {
+      "source": "orders_json",
+      "file": "orders/orders_batch_003.json",
+      "kind": "orphan_reference",
+      "key": "O000434",
+      "field": "customer_id",
+      "detail": "C99999"
+    },
+    {
+      "source": "products_api",
+      "file": "products/products_catalog.json",
+      "kind": "missing_required",
+      "key": "110",
+      "field": "title",
+      "detail": "title vacío"
+    },
+    {
+      "source": "products_api",
+      "file": "products/products_catalog.json",
+      "kind": "missing_required",
+      "key": "52",
+      "field": "price",
+      "detail": "price=null"
+    },
+    {
+      "source": "products_api",
+      "file": "products/products_catalog.json",
+      "kind": "missing_required",
+      "key": "97",
+      "field": "price",
+      "detail": "price=null"
+    },
+    {
+      "source": "products_api",
+      "file": "products/products_catalog.json",
+      "kind": "out_of_range",
+      "key": "102",
+      "field": "price",
+      "detail": "precio negativo"
+    }
+  ]
+}

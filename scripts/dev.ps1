@@ -9,8 +9,8 @@
 [CmdletBinding()]
 param(
     [Parameter(Position = 0)]
-    [ValidateSet('help', 'setup', 'fmt', 'lint', 'typecheck', 'test', 'test-unit',
-                 'security', 'check', 'migrate', 'up', 'down', 'logs', 'createtestdb')]
+    [ValidateSet('help', 'setup', 'fmt', 'lint', 'typecheck', 'test', 'test-unit', 'test-live',
+                 'security', 'check', 'migrate', 'generate', 'mock', 'up', 'down', 'logs', 'createtestdb')]
     [string]$Command = 'help'
 )
 
@@ -40,7 +40,7 @@ function Invoke-Step([string]$Exe, [string[]]$Arguments) {
 switch ($Command) {
     'help' {
         Get-Help $PSCommandPath -Detailed | Out-Host
-        'Comandos: setup, fmt, lint, typecheck, test, test-unit, security, check, migrate, up, down, logs, createtestdb'
+        'Comandos: setup, fmt, lint, typecheck, test, test-unit, test-live, security, check, migrate, generate, mock, up, down, logs, createtestdb'
     }
     'setup'     { Invoke-Step uv @('sync', '--frozen') }
     'fmt'       { Invoke-Step uv @('run', 'ruff', 'format', '.'); Invoke-Step uv @('run', 'ruff', 'check', '.', '--fix') }
@@ -48,13 +48,19 @@ switch ($Command) {
     'typecheck' { Invoke-Step uv @('run', 'mypy') }
     'test-unit' { Invoke-Step uv @('run', 'pytest', 'tests/unit') }
     'test'      { Import-DotEnv; Invoke-Step uv @('run', 'pytest', '--cov') }
+    'test-live' { Invoke-Step uv @('run', 'pytest', 'tests/contract', '-m', 'live', '-v') }
+    'generate'  { Invoke-Step uv @('run', 'python', '-m', 'datapulse.synthetic') }
+    'mock'      { Invoke-Step uv @('run', 'python', '-m', 'datapulse.mock_source') }
     'security'  {
         Invoke-Step uv @('run', 'bandit', '-q', '-c', 'pyproject.toml', '-r', 'src')
         $req = Join-Path $env:TEMP 'datapulse-audit-req.txt'
         uv export --frozen --no-dev --no-hashes --no-emit-project --format requirements-txt | Out-File -Encoding utf8 $req
         Invoke-Step uv @('run', 'pip-audit', '-r', $req, '--progress-spinner', 'off')
     }
-    'check'     { & $PSCommandPath lint; & $PSCommandPath typecheck; & $PSCommandPath test; & $PSCommandPath security }
+    'check'     {
+        & $PSCommandPath lint; & $PSCommandPath typecheck; & $PSCommandPath test; & $PSCommandPath security
+        Invoke-Step uv @('run', 'python', '-m', 'datapulse.synthetic', '--check')
+    }
     'migrate'   { Import-DotEnv; Invoke-Step uv @('run', 'alembic', 'upgrade', 'head'); Invoke-Step uv @('run', 'python', '-m', 'datapulse.db.bootstrap') }
     'up'        { Invoke-Step docker @('compose', 'up', '--build', '-d') }
     'down'      { Invoke-Step docker @('compose', 'down') }

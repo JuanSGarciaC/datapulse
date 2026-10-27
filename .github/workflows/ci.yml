@@ -5,6 +5,8 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+  schedule:
+    - cron: "17 6 * * 1"  # semanal: detecta cambios en la API pública aunque no haya commits
 
 # Acciones fijadas por SHA (inmutables): una etiqueta puede moverse, un commit no.
 permissions:
@@ -99,6 +101,24 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  contract:
+    name: Contrato contra DummyJSON real
+    # Detecta si la API pública cambia y la simulación deja de ser fiel. No bloquea el
+    # job de Docker: un corte de un tercero no debe impedir validar nuestro código.
+    runs-on: ubuntu-24.04
+    env:
+      CI: "true"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e  # v10.3.2
+        with:
+          version: ${{ env.UV_VERSION }}
+          python-version: ${{ env.PYTHON_VERSION }}
+          enable-cache: true
+      - run: uv sync --frozen
+      - name: Misma suite de contrato contra la API real
+        run: uv run pytest tests/contract -m live -v
+
   docker:
     name: Docker (build + compose real)
     runs-on: ubuntu-24.04
@@ -108,7 +128,7 @@ jobs:
       - name: Generar .env efímero con contraseñas aleatorias
         run: |
           cp .env.example .env
-          for var in DATAPULSE_DB_PASSWORD DATAPULSE_PIPELINE_DB_PASSWORD DATAPULSE_DBT_DB_PASSWORD DATAPULSE_API_DB_PASSWORD; do
+          for var in DATAPULSE_DB_PASSWORD DATAPULSE_PIPELINE_DB_PASSWORD DATAPULSE_DBT_DB_PASSWORD DATAPULSE_API_DB_PASSWORD DATAPULSE_MOCK_ADMIN_TOKEN; do
             sed -i "s|^${var}=.*|${var}=$(openssl rand -hex 16)|" .env
           done
       - name: Validar docker-compose.yml
@@ -126,6 +146,18 @@ jobs:
             psql -U datapulse_api -d datapulse -c "delete from ops.pipeline_runs"; then
             echo "ERROR: el usuario de la API pudo borrar datos"; exit 1
           fi
+      - name: API simulada en contenedor (contrato + fallos inyectados)
+        run: |
+          set -a; . ./.env; set +a
+          docker compose up -d --wait mock-source
+          base="http://127.0.0.1:${MOCK_HOST_PORT}"
+          curl -fsS "$base/health" | grep -q '"products":200'
+          curl -fsS "$base/products?limit=5&skip=195" | python3 -c 'import sys,json; d=json.load(sys.stdin); assert d["limit"]==5 and d["total"]==200, d'
+          curl -fsS -X PUT -H "X-Mock-Admin-Token: $DATAPULSE_MOCK_ADMIN_TOKEN" -H 'content-type: application/json' \
+            "$base/_mock/faults" -d '{"fail_offsets":{"30":1}}' > /dev/null
+          test "$(curl -s -o /dev/null -w '%{http_code}' "$base/products?skip=30")" = "503"
+          test "$(curl -s -o /dev/null -w '%{http_code}' "$base/products?skip=30")" = "200"
+          test "$(curl -s -o /dev/null -w '%{http_code}' "$base/_mock/state")" = "401"
       - name: Imagen ejecuta como usuario no root
         run: test "$(docker run --rm --entrypoint id datapulse-app:local -u)" = "10001"
       - name: Logs ante fallo

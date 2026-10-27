@@ -1,0 +1,36 @@
+customer_id,first_name,last_name,email,city,country,segment,signup_date,updated_at,loyalty_tier
+C00001,Natalia,Muñoz,natalia.munoz.1@example.com,Quito,EC,retail,2024-08-04,2026-01-03T08:24:00Z,bronze
+C00006,Pedro,Sánchez,pedro.sanchez.6@example.com,Buenos Aires,AR,retail,2024-08-27,2026-01-03T04:15:00Z,bronze
+C00025,Íñigo,Vargas,inigo.vargas.25@example.com,Barranquilla,CO,enterprise,2024-02-13,2026-01-03T08:11:00Z,silver
+C00026,Pedro,Rojas,pedro.rojas.26@example.com,Lima,PE,enterprise,2024-10-25,2026-01-03T09:34:00Z,bronze
+C00039,Lucía,Herrera,lucia.herrera.39@example.com,Lima,PE,enterprise,2024-04-06,2026-01-03T01:01:00Z,silver
+C00069,Tomás,Díaz,tomas.diaz.69@example.com,Buenos Aires,AR,enterprise,2023-12-05,2026-01-03T04:40:00Z,gold
+C00086,María,Rojas,maria.rojas.86@example.com,Quito,EC,smb,2024-11-01,2026-01-03T05:27:00Z,silver
+C00097,Tomás,Cruz,tomas.cruz.97@example.com,Cali,CO,retail,2023-09-21,2026-01-03T01:18:00Z,silver
+C00132,Luis,Rodríguez,luis.rodriguez.132@example.com,Barranquilla,CO,retail,2023-12-01,2026-01-03T06:59:00Z,bronze
+C00139,José,Ramos,jose.ramos.139@example.com,Madrid,ES,smb,2024-06-20,2026-01-03T02:05:00Z,silver
+C00148,Nicolás,Gutiérrez,nicolas.gutierrez.148@example.com,Madrid,ES,retail,2024-07-17,2026-01-03T07:10:00Z,gold
+C00153,Lucía,Cruz,lucia.cruz.153@example.com,Santiago,CL,retail,2025-04-09,2026-01-03T07:57:00Z,bronze
+C00158,Valentina,Pérez,valentina.perez.158@example.com,Santiago,CL,retail,2023-09-18,2026-01-03T07:31:00Z,gold
+C00171,Ana,Muñoz,ana.munoz.171@example.com,Ciudad de México,MX,smb,2023-09-10,2026-01-03T00:16:00Z,gold
+C00192,David,Romero,david.romero.192@example.com,Medellín,CO,smb,2024-02-02,2026-01-03T07:31:00Z,bronze
+C00204,María,Pérez,maria.perez.204@example.com,Madrid,ES,retail,2026-01-02,2026-01-03T06:15:00Z,bronze
+C00207,Martín,Moreno,martin.moreno.207@example.com,Quito,EC,enterprise,2026-01-02,2026-01-03T03:06:00Z,silver
+C00211,Valentina,Flores,valentina.flores.211@example.com,Cali,CO,enterprise,2026-01-02,2026-01-03T08:00:00Z,bronze
+C00212,Elena,Martínez,elena.martinez.212@example.com,Buenos Aires,AR,retail,2026-01-02,2026-01-03T08:17:00Z,silver
+C00215,María,Rojas,maria.rojas.215@example.com,Bogotá,CO,retail,2026-01-02,2026-01-03T01:15:00Z,bronze
+C00216,María,González,maria.gonzalez.216@example.com,Ciudad de México,MX,retail,2026-01-03,2026-01-03T07:02:00Z,bronze
+C00217,Mateo,Castillo,mateo.castillo.217@example.com,Buenos Aires,AR,smb,2026-01-03,2026-01-03T05:45:00Z,silver
+C00218,Gabriela,Rivera,gabriela.rivera.218@example.com,Cali,CO,retail,2026-01-03,2026-01-03T02:17:00Z,bronze
+C00219,Camila,Medina,camila.medina.219@example.com,Santiago,CL,smb,2026-01-03,2026-01-03T04:57:00Z,bronze
+C00220,Elena,Chávez,elena.chavez.220@example.com,Buenos Aires,AR,smb,2026-01-03,2026-01-03T05:19:00Z,silver
+C00221,Natalia,Medina,natalia.medina.221@example.com,Ciudad de México,MX,retail,2026-01-03,2026-01-03T06:32:00Z,gold
+C00222,Ximena,Jiménez,ximena.jimenez.222@example.com,Ciudad de México,MX,smb,2026-01-03,2026-01-03T01:48:00Z,bronze
+C00223,Natalia,Jiménez,natalia.jimenez.223@example.com,Medellín,CO,enterprise,2026-01-03,2026-01-03T04:15:00Z,gold
+C00224,David,Chávez,david.chavez.224@example.com,Medellín,CO,enterprise,2026-01-03,2026-01-03T08:49:00Z,gold
+C00225,Javier,Torres,javier.torres.225@example.com,Ciudad de México,MX,enterprise,2026-01-03,2026-01-03T07:33:00Z,bronze
+C00226,Laura,Pérez,laura.perez.226@example.com,Madrid,ES,enterprise,2026-01-03,2026-01-03T07:41:00Z,bronze
+C00227,Isabel,Martínez,isabel.martinez.227@example.com,Santiago,CL,enterprise,2026-01-03,2026-01-03T01:18:00Z,gold
+C00228,Sofía,González,sofia.gonzalez.228@example.com,Madrid,ES,smb,2026-01-03,2026-01-03T03:51:00Z,bronze
+C00229,Laura,Ortiz,laura.ortiz.229@example.com,Ciudad de México,MX,smb,2026-01-03,2026-01-03T02:44:00Z,gold
+C00230,Valentina,Sánchez,valentina.sanchez.230@example.com,Guadalajara,MX,enterprise,2026-01-03,2026-01-03T06:46:00Z,gold
