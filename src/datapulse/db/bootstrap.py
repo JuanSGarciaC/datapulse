@@ -22,7 +22,7 @@ import sys
 from dataclasses import dataclass
 from typing import Final
 
-from pydantic import SecretStr
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy import Connection, text
 
@@ -48,13 +48,17 @@ class ServicePasswords(BaseSettings):
     pipeline_db_password: SecretStr
     dbt_db_password: SecretStr
     api_db_password: SecretStr
+    # Los roles son globales del clúster: un prefijo distinto permite crear usuarios de
+    # prueba sin tocar los de la aplicación que corren en el mismo servidor.
+    service_user_prefix: str = Field(default="datapulse_", pattern=r"^[a-z][a-z0-9_]{0,30}$")
 
 
 def service_users(passwords: ServicePasswords) -> list[ServiceUser]:
+    prefix = passwords.service_user_prefix
     return [
-        ServiceUser("datapulse_pipeline", "dp_pipeline", passwords.pipeline_db_password),
-        ServiceUser("datapulse_dbt", "dp_transform", passwords.dbt_db_password),
-        ServiceUser("datapulse_api", "dp_reader", passwords.api_db_password),
+        ServiceUser(f"{prefix}pipeline", "dp_pipeline", passwords.pipeline_db_password),
+        ServiceUser(f"{prefix}dbt", "dp_transform", passwords.dbt_db_password),
+        ServiceUser(f"{prefix}api", "dp_reader", passwords.api_db_password),
     ]
 
 

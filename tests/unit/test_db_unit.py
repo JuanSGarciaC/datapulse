@@ -31,3 +31,17 @@ def test_short_password_rejected_only_in_prod() -> None:
     validate_password(user, Environment.DEV)
     with pytest.raises(ValueError, match="prod"):
         validate_password(user, Environment.PROD)
+
+
+def test_service_user_prefix_is_validated(monkeypatch: pytest.MonkeyPatch) -> None:
+    from pydantic import ValidationError  # noqa: PLC0415
+
+    from datapulse.db.bootstrap import ServicePasswords, service_users  # noqa: PLC0415
+
+    for name in ("PIPELINE", "DBT", "API"):
+        monkeypatch.setenv(f"DATAPULSE_{name}_DB_PASSWORD", "x")
+    users = service_users(ServicePasswords(_env_file=None))
+    assert [u.username for u in users] == ["datapulse_pipeline", "datapulse_dbt", "datapulse_api"]
+    monkeypatch.setenv("DATAPULSE_SERVICE_USER_PREFIX", 'x"; DROP ROLE')
+    with pytest.raises(ValidationError):
+        ServicePasswords(_env_file=None)
