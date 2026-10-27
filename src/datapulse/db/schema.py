@@ -10,19 +10,21 @@ PostgreSQL: añadir un estado nuevo es un ALTER sencillo y reversible (ADR-0003)
 
 from __future__ import annotations
 
-from typing import Final
+from typing import Any, Final
 
 from sqlalchemy import (
     BigInteger,
     Boolean,
     CheckConstraint,
     Column,
+    Date,
     DateTime,
     ForeignKey,
     Identity,
     Index,
     Integer,
     MetaData,
+    Numeric,
     String,
     Table,
     Text,
@@ -175,4 +177,105 @@ quality_results = Table(
 Index("ix_quality_results_run_id", quality_results.c.run_id)
 Index(
     "ix_quality_results_table_checked", quality_results.c.table_name, quality_results.c.checked_at
+)
+
+
+# ============================================================================ raw
+# Capa de entrada append-only: lo que llegó, ya tipado y validado, más columnas
+# técnicas de trazabilidad. Nunca se actualiza ni se borra (ADR-0003).
+
+
+def _technical_columns() -> list[Column[Any]]:
+    return [
+        Column("_raw_id", BigInteger, Identity(always=False), primary_key=True),
+        Column(
+            "_batch_id",
+            UUID(as_uuid=True),
+            ForeignKey(f"{OPS}.ingestion_registry.batch_id", ondelete="RESTRICT"),
+            nullable=False,
+        ),
+        Column("_source_ref", Text, nullable=False),
+        Column("_row_number", Integer),
+        # sha256 del contenido de negocio: la clave de idempotencia de registro.
+        Column("_record_hash", String(64), nullable=False, unique=True),
+        Column("_extra", JSONB, nullable=False, server_default=text("'{}'::jsonb")),
+        Column("_ingested_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    ]
+
+
+raw_customers = Table(
+    "customers",
+    metadata,
+    Column("customer_id", String(20), nullable=False),
+    Column("first_name", Text),
+    Column("last_name", Text),
+    Column("email", Text, nullable=False),
+    Column("city", Text),
+    Column("country", String(2)),
+    Column("segment", String(20)),
+    Column("signup_date", Date),
+    Column("updated_at", DateTime(timezone=True), nullable=False),
+    *_technical_columns(),
+    schema=RAW,
+)
+Index("ix_raw_customers_key_updated", raw_customers.c.customer_id, raw_customers.c.updated_at)
+
+raw_orders = Table(
+    "orders",
+    metadata,
+    Column("order_id", String(20), nullable=False),
+    Column("customer_id", String(20), nullable=False),
+    Column("order_ts", DateTime(timezone=True), nullable=False),
+    Column("status", String(20), nullable=False),
+    Column("currency", String(3), nullable=False),
+    Column("updated_at", DateTime(timezone=True), nullable=False),
+    # Líneas validadas; dbt las aplana (granularidad línea de pedido) en staging.
+    Column("items", JSONB, nullable=False),
+    *_technical_columns(),
+    schema=RAW,
+)
+Index("ix_raw_orders_key_updated", raw_orders.c.order_id, raw_orders.c.updated_at)
+
+raw_products = Table(
+    "products",
+    metadata,
+    Column("product_id", Integer, nullable=False),
+    Column("title", Text, nullable=False),
+    Column("description", Text),
+    Column("category", Text, nullable=False),
+    Column("brand", Text),
+    Column("sku", Text),
+    Column("price", Numeric(12, 2), nullable=False),
+    Column("discount_percentage", Numeric(5, 2)),
+    Column("rating", Numeric(3, 2)),
+    Column("stock", Integer),
+    Column("availability_status", Text),
+    Column("created_at", DateTime(timezone=True)),
+    Column("updated_at", DateTime(timezone=True), nullable=False),
+    *_technical_columns(),
+    schema=RAW,
+)
+Index("ix_raw_products_key_updated", raw_products.c.product_id, raw_products.c.updated_at)
+
+quarantine = Table(
+    "quarantine",
+    metadata,
+    Column("_raw_id", BigInteger, Identity(always=False), primary_key=True),
+    Column(
+        "_batch_id",
+        UUID(as_uuid=True),
+        ForeignKey(f"{OPS}.ingestion_registry.batch_id", ondelete="RESTRICT"),
+        nullable=False,
+    ),
+    Column("source_name", String(100), nullable=False),
+    Column("_source_ref", Text, nullable=False),
+    Column("_row_number", Integer),
+    Column("record_key", Text),
+    Column("_record_hash", String(64), nullable=False),
+    Column("payload", JSONB, nullable=False),
+    Column("errors", JSONB, nullable=False),
+    Column("_quarantined_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    # Reprocesar la misma fila inválida no la duplica en cuarentena.
+    UniqueConstraint("source_name", "_record_hash"),
+    schema=RAW,
 )

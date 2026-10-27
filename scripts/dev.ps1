@@ -10,7 +10,7 @@
 param(
     [Parameter(Position = 0)]
     [ValidateSet('help', 'setup', 'fmt', 'lint', 'typecheck', 'test', 'test-unit', 'test-live',
-                 'security', 'check', 'migrate', 'generate', 'mock', 'up', 'down', 'logs', 'createtestdb')]
+                 'security', 'check', 'migrate', 'generate', 'mock', 'ingest-samples', 'up', 'down', 'logs', 'createtestdb')]
     [string]$Command = 'help'
 )
 
@@ -40,7 +40,7 @@ function Invoke-Step([string]$Exe, [string[]]$Arguments) {
 switch ($Command) {
     'help' {
         Get-Help $PSCommandPath -Detailed | Out-Host
-        'Comandos: setup, fmt, lint, typecheck, test, test-unit, test-live, security, check, migrate, generate, mock, up, down, logs, createtestdb'
+        'Comandos: setup, fmt, lint, typecheck, test, test-unit, test-live, security, check, migrate, generate, mock, ingest-samples, up, down, logs, createtestdb'
     }
     'setup'     { Invoke-Step uv @('sync', '--frozen') }
     'fmt'       { Invoke-Step uv @('run', 'ruff', 'format', '.'); Invoke-Step uv @('run', 'ruff', 'check', '.', '--fix') }
@@ -51,6 +51,14 @@ switch ($Command) {
     'test-live' { Invoke-Step uv @('run', 'pytest', 'tests/contract', '-m', 'live', '-v') }
     'generate'  { Invoke-Step uv @('run', 'python', '-m', 'datapulse.synthetic') }
     'mock'      { Invoke-Step uv @('run', 'python', '-m', 'datapulse.mock_source') }
+    'ingest-samples' {
+        Import-DotEnv
+        $customers = (Get-ChildItem data\samples\customers\*.csv | Sort-Object Name).FullName
+        $orders = (Get-ChildItem data\samples\orders\*.json | Sort-Object Name).FullName
+        Invoke-Step uv (@('run', 'python', '-m', 'datapulse.ingestion', 'customers') + $customers)
+        Invoke-Step uv (@('run', 'python', '-m', 'datapulse.ingestion', 'orders') + $orders)
+        Invoke-Step uv @('run', 'python', '-m', 'datapulse.ingestion', 'products')
+    }
     'security'  {
         Invoke-Step uv @('run', 'bandit', '-q', '-c', 'pyproject.toml', '-r', 'src')
         $req = Join-Path $env:TEMP 'datapulse-audit-req.txt'
