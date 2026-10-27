@@ -9,6 +9,10 @@ se consideran un fallo: así nunca se reporta verde sin haberlas ejecutado.
 from __future__ import annotations
 
 import os
+
+# Reintentos de tareas de Prefect sin espera en pruebas (se lee al importar los flujos).
+os.environ.setdefault("DATAPULSE_FLOW_TASK_RETRY_DELAY_S", "0")
+os.environ.setdefault("PREFECT_LOGGING_LEVEL", "WARNING")
 from collections.abc import Iterator
 from pathlib import Path
 

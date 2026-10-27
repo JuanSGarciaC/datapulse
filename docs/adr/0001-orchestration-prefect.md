@@ -1,6 +1,6 @@
 # ADR-0001: Prefect 3 como orquestador
 
-- **Estado:** aceptada (implementación en fase 4)
+- **Estado:** aceptada; implementada en fase 4
 - **Fecha:** 2026-10-27
 
 ## Contexto
@@ -26,3 +26,11 @@ Prefect 3. Es la alternativa **más sencilla que sigue siendo orquestación real
   `prefect==3.9.*` con `fastapi>=0.139,<0.151` (resuelto a 0.150.0) y se verificó ejecutando
   un flujo con reintentos. Lección: un lockfile resuelto no garantiza compatibilidad; hay que
   ejecutar.
+
+## Implementación (fase 4)
+- **Servidor y metadata:** el servidor de Prefect corre con nuestra propia imagen y guarda su
+  metadata en SQLite, en su propio volumen. Así no hace falta otra imagen ni otra base de datos,
+  y los datos de negocio quedan separados del estado del orquestador.
+- **Tareas sin caché (`NO_CACHE`):** los efectos están en PostgreSQL y la idempotencia la
+  garantiza la carga; el caché del orquestador podría saltarse una ejecución necesaria.
+- **`retry_condition_fn`:** se reintentan solo los fallos transitorios.

@@ -7,7 +7,7 @@
 Plataforma de ingeniería de datos que convierte archivos (CSV, JSON) y APIs REST paginadas en
 información **confiable, trazable e idempotente** para análisis de negocio.
 
-> **Estado del proyecto: Fase 3 de 8 — Ingesta, validación e idempotencia.** Lo que existe hoy está implementado y
+> **Estado del proyecto: Fase 4 de 8 — Orquestación con Prefect.** Lo que existe hoy está implementado y
 > probado; lo que está en el roadmap está **diseñado pero no implementado**. Ver [Roadmap](#roadmap).
 
 ## Qué demuestra este proyecto
@@ -32,7 +32,7 @@ información **confiable, trazable e idempotente** para análisis de negocio.
 | Lenguaje | Python 3.13 | Tipado moderno y soporte en todo el stack (verificado) |
 | Base de datos | PostgreSQL 16 | Una instancia con esquemas por capa basta para este volumen |
 | Migraciones | Alembic + SQLAlchemy 2.1 (Core) | Migraciones explícitas y revisables |
-| Orquestación *(fase 4)* | Prefect 3.9 | La opción más simple que es orquestación real ([ADR-0001](docs/adr/0001-orchestration-prefect.md)) |
+| Orquestación | Prefect 3.9 | La opción más simple que es orquestación real ([ADR-0001](docs/adr/0001-orchestration-prefect.md)) |
 | DataFrames *(fase 3)* | Polars 2.1 | Tipado estricto, ideal para validar ([ADR-0002](docs/adr/0002-dataframes-polars.md)) |
 | Transformación *(fase 5)* | dbt-core 1.12 + dbt-postgres 1.11 | SQL versionado, pruebas y linaje |
 | API simulada / API *(fase 6)* | FastAPI 0.150 | Limitado por Prefect 3.9 (ver ADR-0001) |
@@ -59,6 +59,7 @@ servicio. Quedan disponibles **solo en tu máquina**:
 | Servicio | Dirección |
 |----------|-----------|
 | PostgreSQL | `localhost:5433` |
+| Prefect (UI) | <http://localhost:4200> |
 | API simulada (Swagger) | <http://localhost:8081/docs> |
 
 Para provocar fallos en la API simulada (necesita el token de `.env`):
@@ -104,6 +105,7 @@ En Linux/macOS los mismos comandos existen en el `Makefile` (`make setup`, `make
 | Unitarias (`tests/unit`) — fase 2 | Generador (reproducibilidad, independencia de flujos, cada defecto presente en los archivos), API simulada (fallos, rate limit, reloj, admin) | Nada |
 | Integración (`tests/integration`) | Migraciones contra PostgreSQL real: estructura, ida y vuelta, constraints, deriva, matriz de permisos, bootstrap de punta a punta | PostgreSQL |
 | Integración — fase 3 | Respuesta conocida contra `manifest.json`, idempotencia al re-ingerir, incremental por marca de agua, atomicidad ante fallos, bloqueo concurrente, permisos de `dp_pipeline` | PostgreSQL |
+| Integración — fase 4 | Prefect real (servidor efímero): flujo diario, reintento de tarea tras caída de la fuente, aislamiento de fallos y recuperación | PostgreSQL |
 | Contrato (`tests/contract`) | La misma suite contra la API simulada y contra DummyJSON real (`-m live`) | Internet para `live` |
 
 ```powershell
@@ -128,6 +130,7 @@ src/datapulse/
   sources/contracts.py   contrato de la API de productos (Pydantic)
   validation/            contratos por fuente, motor tabular (Polars), validador de pedidos
   ingestion/             cliente REST con reintentos, carga idempotente, casos de uso y CLI
+  flows/                 flujos y despliegues de Prefect (reintentos de tarea, programación)
 data/samples/            datos de ejemplo versionados + manifest.json
 migrations/              migraciones Alembic (raw, ops, roles y permisos)
 tests/{unit,integration}
@@ -152,7 +155,7 @@ scripts/dev.ps1          comandos para Windows
 | 1 | Fundaciones: configuración, migraciones, roles, CI, Docker | ✅ Implementada |
 | 2 | Datos sintéticos reproducibles + API simulada con fallos inyectables | ✅ Implementada |
 | 3 | Ingesta CSV/JSON/REST, contratos de validación, cuarentena, idempotencia | ✅ Implementada |
-| 4 | Orquestación con Prefect: reintentos, registro de ejecuciones, recuperación | Pendiente |
+| 4 | Orquestación con Prefect: reintentos, registro de ejecuciones, recuperación | ✅ Implementada |
 | 5 | dbt: staging, snapshot SCD2, modelo estrella, pruebas y conciliación | Pendiente |
 | 6 | API de indicadores y resultados de pipelines | Pendiente |
 | 7 | Dashboard de calidad, volúmenes, tiempos y errores | Pendiente |

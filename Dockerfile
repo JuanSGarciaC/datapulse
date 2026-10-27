@@ -30,6 +30,7 @@ LABEL org.opencontainers.image.title="datapulse" \
       org.opencontainers.image.licenses="MIT"
 
 ENV PATH="/app/.venv/bin:${PATH}" \
+    PREFECT_HOME=/var/lib/prefect \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
@@ -38,6 +39,9 @@ RUN groupadd --system --gid 10001 app \
  && useradd --system --uid 10001 --gid app --home-dir /app --no-create-home app
 
 WORKDIR /app
+# Directorios escribibles por el usuario sin privilegios (los volúmenes heredan el dueño).
+RUN mkdir -p /var/lib/prefect /app/data/landing \
+ && chown -R app:app /var/lib/prefect /app/data
 COPY --from=builder --chown=app:app /app/.venv /app/.venv
 COPY --chown=app:app alembic.ini ./
 COPY --chown=app:app migrations ./migrations
