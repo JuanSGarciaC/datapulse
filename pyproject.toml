@@ -10,8 +10,13 @@ authors = [{ name = "Juan S. Garcia C.", email = "276046067+JuanSGarciaC@users.n
 dependencies = [
     "pydantic-settings>=2.16,<3",
     "sqlalchemy>=2.1,<2.2",
-    "psycopg[binary]>=3.3,<3.4",
+    "psycopg[binary]>=3.3.6,<3.4",
     "alembic>=1.20,<2",
+    # Tope <0.151 impuesto por Prefect 3.9 (verificado en ejecución, ver ADR-0001).
+    "fastapi>=0.139,<0.151",
+    "uvicorn>=0.38",
+    # httpx2: sucesor de httpx (mismo autor); Starlette 1.10 ya depreca httpx en TestClient.
+    "httpx2>=2.16,<3",
 ]
 
 [dependency-groups]
@@ -25,7 +30,7 @@ dev = [
 ]
 
 [build-system]
-requires = ["hatchling>=1.27"]
+requires = ["hatchling>=1.32.4"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
@@ -59,10 +64,11 @@ ignore_missing_imports = true
 # ---------------------------------------------------------------- pruebas
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-ra --strict-markers --strict-config"
+addopts = "-ra --strict-markers --strict-config -m 'not live'"
 filterwarnings = ["error"]
 markers = [
     "integration: requiere PostgreSQL real (DATAPULSE_TEST_DB_* o valores por defecto)",
+    "live: llama a servicios externos reales (DummyJSON); se ejecuta con -m live",
 ]
 
 [tool.coverage.run]

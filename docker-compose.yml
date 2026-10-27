@@ -1,6 +1,6 @@
 # DataPulse - entorno local reproducible.
-# Fase 1: base de datos + migraciones. Las fases siguientes añaden prefect-server,
-# worker, api, dashboard y mock-source (ver docs/architecture.md).
+# Fase 1: base de datos + migraciones. Fase 2: API simulada (mock-source).
+# Las fases siguientes añaden prefect-server, worker, api y dashboard.
 #
 # Uso:  cp .env.example .env   (y cambia las contraseñas)
 #       docker compose up --build
@@ -47,6 +47,29 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+
+  # API externa simulada (contrato de DummyJSON + fallos inyectables). Es una pieza de
+  # prueba, no un microservicio de negocio. El catálogo se monta en solo lectura.
+  mock-source:
+    build: .
+    image: datapulse-app:local
+    restart: unless-stopped
+    command: ["python", "-m", "datapulse.mock_source"]
+    environment:
+      DATAPULSE_MOCK_HOST: 0.0.0.0
+      DATAPULSE_MOCK_PORT: "8081"
+      DATAPULSE_MOCK_CATALOG_PATH: /data/samples/products/products_catalog.json
+      DATAPULSE_MOCK_ADMIN_TOKEN: ${DATAPULSE_MOCK_ADMIN_TOKEN:?Define DATAPULSE_MOCK_ADMIN_TOKEN}
+      DATAPULSE_MOCK_FAULTS: ${DATAPULSE_MOCK_FAULTS:-{}}
+    volumes:
+      - ./data/samples:/data/samples:ro
+    ports:
+      - "127.0.0.1:${MOCK_HOST_PORT:-8081}:8081"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8081/health', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
 volumes:
   pgdata:

@@ -1,6 +1,6 @@
 # Arquitectura de DataPulse
 
-> Estado: **Fase 1 implementada** (fundaciones: base de datos, migraciones, roles, CI).
+> Estado: **Fases 1 y 2 implementadas** (fundaciones; datos sintéticos y API simulada).
 > Los componentes marcados con *(fase N)* están diseñados pero aún no existen en el código.
 
 ## Vista general
@@ -10,7 +10,7 @@ flowchart LR
     subgraph Fuentes
         CSV[CSV clientes]
         JSON[JSON pedidos]
-        API[API REST paginada<br/>mock-source · fase 2]
+        API[API REST paginada<br/>DummyJSON real o mock-source]
     end
 
     subgraph Orquestación["Prefect · fase 4"]
@@ -91,10 +91,22 @@ Los estados se validan con `CHECK` constraints (no `ENUM`), ver ADR-0003.
 
 | Servicio        | Fase | Motivo                                               |
 |-----------------|------|------------------------------------------------------|
-| `postgres`      | 1    | Almacenamiento de todas las capas                     |
-| `migrate`       | 1    | Migraciones + usuarios de servicio (one-shot, idempotente) |
-| `mock-source`   | 2    | API externa simulada con fallos inyectables (prueba)  |
+| `postgres`      | 1 ✅ | Almacenamiento de todas las capas                     |
+| `migrate`       | 1 ✅ | Migraciones + usuarios de servicio (one-shot, idempotente) |
+| `mock-source`   | 2 ✅ | API externa simulada con fallos inyectables (prueba)  |
 | `prefect-server`| 4    | Estado de flujos, programación, UI                   |
 | `worker`        | 4    | Ejecuta los flujos                                   |
 | `api`           | 6    | Indicadores y resultados de pipelines                 |
 | `dashboard`     | 7    | Calidad, volúmenes, tiempos y errores                 |
+
+## Fuentes y simulación (fase 2)
+
+Detalle completo en [sources.md](sources.md) y [ADR-0006](adr/0006-public-api-and-mock-contract.md).
+
+```mermaid
+flowchart LR
+    GEN[datapulse.synthetic<br/>seed=42] -->|CSV/JSON + manifest.json| SAMPLES[(data/samples)]
+    SAMPLES -->|catálogo versionado| MOCK[mock-source<br/>contrato DummyJSON<br/>+ /_mock fallos y reloj]
+    REAL[DummyJSON real] -.->|misma suite de contrato| SUITE{{tests/contract}}
+    MOCK -.-> SUITE
+```

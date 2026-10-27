@@ -1,0 +1,4146 @@
+{
+  "generator_version": "1",
+  "seed": 42,
+  "versions": [
+    {
+      "id": 1,
+      "title": "Smart Smartphones 001",
+      "description": "Smart Smartphones 001: producto sintético para demostraciones de DataPulse.",
+      "category": "smartphones",
+      "price": 470.65,
+      "discountPercentage": 16.86,
+      "rating": 2.76,
+      "stock": 188,
+      "brand": "Marca 09",
+      "sku": "SMA-00001",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-12-11T05:00:00Z",
+        "updatedAt": "2025-12-11T05:00:00Z",
+        "barcode": "3412298739388"
+      }
+    },
+    {
+      "id": 2,
+      "title": "Ultra Laptops 002",
+      "description": "Ultra Laptops 002: producto sintético para demostraciones de DataPulse.",
+      "category": "laptops",
+      "price": 1894.49,
+      "discountPercentage": 5.2,
+      "rating": 2.65,
+      "stock": 4,
+      "brand": "Marca 01",
+      "sku": "LAP-00002",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-12-01T02:00:00Z",
+        "updatedAt": "2025-12-01T02:00:00Z",
+        "barcode": "7452507660129"
+      }
+    },
+    {
+      "id": 2,
+      "title": "Ultra Laptops 002",
+      "description": "Ultra Laptops 002: producto sintético para demostraciones de DataPulse.",
+      "category": "laptops",
+      "price": 2146.16,
+      "discountPercentage": 5.2,
+      "rating": 2.65,
+      "stock": 18,
+      "brand": "Marca 01",
+      "sku": "LAP-00002",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-12-01T02:00:00Z",
+        "updatedAt": "2026-01-02T13:50:00Z",
+        "barcode": "7452507660129"
+      }
+    },
+    {
+      "id": 3,
+      "title": "Ultra Sports Accessories 003",
+      "description": "Ultra Sports Accessories 003: producto sintético para demostraciones de DataPulse.",
+      "category": "sports-accessories",
+      "price": 211.34,
+      "discountPercentage": 17.4,
+      "rating": 3.68,
+      "stock": 163,
+      "brand": "Marca 22",
+      "sku": "SPO-00003",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-26T18:00:00Z",
+        "updatedAt": "2025-07-26T18:00:00Z",
+        "barcode": "2068745864227"
+      }
+    },
+    {
+      "id": 4,
+      "title": "Smart Tablets 004",
+      "description": "Smart Tablets 004: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 1095.67,
+      "discountPercentage": 11.28,
+      "rating": 4.46,
+      "stock": 207,
+      "brand": "Marca 13",
+      "sku": "TAB-00004",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-12T09:00:00Z",
+        "updatedAt": "2025-07-12T09:00:00Z",
+        "barcode": "9625539084689"
+      }
+    },
+    {
+      "id": 5,
+      "title": "Vintage Sports Accessories 005",
+      "description": "Vintage Sports Accessories 005: producto sintético para demostraciones de DataPulse.",
+      "category": "sports-accessories",
+      "price": 403.68,
+      "discountPercentage": 17.94,
+      "rating": 4.48,
+      "stock": 165,
+      "brand": "Marca 05",
+      "sku": "SPO-00005",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-08-17T22:00:00Z",
+        "updatedAt": "2025-08-17T22:00:00Z",
+        "barcode": "4942181347233"
+      }
+    },
+    {
+      "id": 6,
+      "title": "Compact Tablets 006",
+      "description": "Compact Tablets 006: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 565.74,
+      "discountPercentage": 4.63,
+      "rating": 3.02,
+      "stock": 210,
+      "brand": "Marca 09",
+      "sku": "TAB-00006",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-14T19:00:00Z",
+        "updatedAt": "2025-10-14T19:00:00Z",
+        "barcode": "1808567474208"
+      }
+    },
+    {
+      "id": 6,
+      "title": "Compact Tablets 006",
+      "description": "Compact Tablets 006: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 453.52,
+      "discountPercentage": 4.63,
+      "rating": 3.02,
+      "stock": 89,
+      "brand": "Marca 09",
+      "sku": "TAB-00006",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-14T19:00:00Z",
+        "updatedAt": "2026-01-02T13:09:00Z",
+        "barcode": "1808567474208"
+      }
+    },
+    {
+      "id": 7,
+      "title": "Ultra Mens Shirts 007",
+      "description": "Ultra Mens Shirts 007: producto sintético para demostraciones de DataPulse.",
+      "category": "mens-shirts",
+      "price": 751.94,
+      "discountPercentage": 19.1,
+      "rating": 4.12,
+      "stock": 222,
+      "brand": "Marca 07",
+      "sku": "MEN-00007",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-31T11:00:00Z",
+        "updatedAt": "2025-07-31T11:00:00Z",
+        "barcode": "1728923641286"
+      }
+    },
+    {
+      "id": 8,
+      "title": "Ultra Home Decoration 008",
+      "description": "Ultra Home Decoration 008: producto sintético para demostraciones de DataPulse.",
+      "category": "home-decoration",
+      "price": 1300.1,
+      "discountPercentage": 15.05,
+      "rating": 4.14,
+      "stock": 6,
+      "brand": "Marca 04",
+      "sku": "HOM-00008",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-11-10T22:00:00Z",
+        "updatedAt": "2025-11-10T22:00:00Z",
+        "barcode": "7097316809117"
+      }
+    },
+    {
+      "id": 9,
+      "title": "Pro Sports Accessories 009",
+      "description": "Pro Sports Accessories 009: producto sintético para demostraciones de DataPulse.",
+      "category": "sports-accessories",
+      "price": 37.43,
+      "discountPercentage": 15.49,
+      "rating": 4.32,
+      "stock": 142,
+      "brand": "Marca 19",
+      "sku": "SPO-00009",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-04T12:00:00Z",
+        "updatedAt": "2025-07-04T12:00:00Z",
+        "barcode": "5748827148702"
+      }
+    },
+    {
+      "id": 10,
+      "title": "Premium Beauty 010",
+      "description": "Premium Beauty 010: producto sintético para demostraciones de DataPulse.",
+      "category": "beauty",
+      "price": 1442.55,
+      "discountPercentage": 14.6,
+      "rating": 3.15,
+      "stock": 116,
+      "brand": "Marca 20",
+      "sku": "BEA-00010",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-23T02:00:00Z",
+        "updatedAt": "2025-07-23T02:00:00Z",
+        "barcode": "2232714609145"
+      }
+    },
+    {
+      "id": 11,
+      "title": "Premium Tablets 011",
+      "description": "Premium Tablets 011: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 1383.0,
+      "discountPercentage": 16.2,
+      "rating": 3.42,
+      "stock": 238,
+      "brand": "Marca 25",
+      "sku": "TAB-00011",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-11-04T22:00:00Z",
+        "updatedAt": "2025-11-04T22:00:00Z",
+        "barcode": "2833044927979"
+      }
+    },
+    {
+      "id": 11,
+      "title": "Premium Tablets 011",
+      "description": "Premium Tablets 011: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 1243.98,
+      "discountPercentage": 16.2,
+      "rating": 3.42,
+      "stock": 142,
+      "brand": "Marca 25",
+      "sku": "TAB-00011",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-11-04T22:00:00Z",
+        "updatedAt": "2026-01-02T13:46:00Z",
+        "barcode": "2833044927979"
+      }
+    },
+    {
+      "id": 12,
+      "title": "Eco Beauty 012",
+      "description": "Eco Beauty 012: producto sintético para demostraciones de DataPulse.",
+      "category": "beauty",
+      "price": 1676.02,
+      "discountPercentage": 10.05,
+      "rating": 3.74,
+      "stock": 35,
+      "brand": "Marca 08",
+      "sku": "BEA-00012",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-06-26T17:00:00Z",
+        "updatedAt": "2025-06-26T17:00:00Z",
+        "barcode": "1828958529419"
+      }
+    },
+    {
+      "id": 13,
+      "title": "Smart Furniture 013",
+      "description": "Smart Furniture 013: producto sintético para demostraciones de DataPulse.",
+      "category": "furniture",
+      "price": 91.0,
+      "discountPercentage": 17.04,
+      "rating": 4.1,
+      "stock": 27,
+      "brand": "Marca 14",
+      "sku": "FUR-00013",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-18T22:00:00Z",
+        "updatedAt": "2025-10-18T22:00:00Z",
+        "barcode": "3722843681551"
+      }
+    },
+    {
+      "id": 14,
+      "title": "Premium Tablets 014",
+      "description": "Premium Tablets 014: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 1234.1,
+      "discountPercentage": 3.71,
+      "rating": 3.11,
+      "stock": 52,
+      "brand": "Marca 02",
+      "sku": "TAB-00014",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-09-18T08:00:00Z",
+        "updatedAt": "2025-09-18T08:00:00Z",
+        "barcode": "4950439264288"
+      }
+    },
+    {
+      "id": 14,
+      "title": "Premium Tablets 014",
+      "description": "Premium Tablets 014: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 1214.51,
+      "discountPercentage": 3.71,
+      "rating": 3.11,
+      "stock": 245,
+      "brand": "Marca 02",
+      "sku": "TAB-00014",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-09-18T08:00:00Z",
+        "updatedAt": "2026-01-02T02:16:00Z",
+        "barcode": "4950439264288"
+      }
+    },
+    {
+      "id": 15,
+      "title": "Smart Mens Shirts 015",
+      "description": "Smart Mens Shirts 015: producto sintético para demostraciones de DataPulse.",
+      "category": "mens-shirts",
+      "price": 645.91,
+      "discountPercentage": 8.66,
+      "rating": 4.51,
+      "stock": 31,
+      "brand": "Marca 01",
+      "sku": "MEN-00015",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-12-10T07:00:00Z",
+        "updatedAt": "2025-12-10T07:00:00Z",
+        "barcode": "4101921499751"
+      }
+    },
+    {
+      "id": 16,
+      "title": "Smart Tablets 016",
+      "description": "Smart Tablets 016: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 1762.15,
+      "discountPercentage": 13.41,
+      "rating": 4.71,
+      "stock": 143,
+      "brand": "Marca 11",
+      "sku": "TAB-00016",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-13T22:00:00Z",
+        "updatedAt": "2025-10-13T22:00:00Z",
+        "barcode": "4317792218888"
+      }
+    },
+    {
+      "id": 17,
+      "title": "Premium Fragrances 017",
+      "description": "Premium Fragrances 017: producto sintético para demostraciones de DataPulse.",
+      "category": "fragrances",
+      "price": 44.93,
+      "discountPercentage": 1.42,
+      "rating": 4.3,
+      "stock": 34,
+      "brand": "Marca 02",
+      "sku": "FRA-00017",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-11-10T14:00:00Z",
+        "updatedAt": "2025-11-10T14:00:00Z",
+        "barcode": "5067075849735"
+      }
+    },
+    {
+      "id": 18,
+      "title": "Classic Womens Watches 018",
+      "description": "Classic Womens Watches 018: producto sintético para demostraciones de DataPulse.",
+      "category": "womens-watches",
+      "price": 1976.12,
+      "discountPercentage": 15.12,
+      "rating": 4.06,
+      "stock": 76,
+      "brand": "Marca 10",
+      "sku": "WOM-00018",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-11-12T15:00:00Z",
+        "updatedAt": "2025-11-12T15:00:00Z",
+        "barcode": "2634405099467"
+      }
+    },
+    {
+      "id": 18,
+      "title": "Classic Womens Watches 018",
+      "description": "Classic Womens Watches 018: producto sintético para demostraciones de DataPulse.",
+      "category": "womens-watches",
+      "price": 1643.86,
+      "discountPercentage": 15.12,
+      "rating": 4.06,
+      "stock": 1,
+      "brand": "Marca 10",
+      "sku": "WOM-00018",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-11-12T15:00:00Z",
+        "updatedAt": "2026-01-02T06:54:00Z",
+        "barcode": "2634405099467"
+      }
+    },
+    {
+      "id": 19,
+      "title": "Premium Kitchen Accessories 019",
+      "description": "Premium Kitchen Accessories 019: producto sintético para demostraciones de DataPulse.",
+      "category": "kitchen-accessories",
+      "price": 1943.51,
+      "discountPercentage": 6.71,
+      "rating": 4.78,
+      "stock": 210,
+      "brand": "Marca 09",
+      "sku": "KIT-00019",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-08T19:00:00Z",
+        "updatedAt": "2025-07-08T19:00:00Z",
+        "barcode": "4944039732081"
+      }
+    },
+    {
+      "id": 20,
+      "title": "Smart Womens Watches 020",
+      "description": "Smart Womens Watches 020: producto sintético para demostraciones de DataPulse.",
+      "category": "womens-watches",
+      "price": 750.49,
+      "discountPercentage": 19.24,
+      "rating": 2.57,
+      "stock": 57,
+      "brand": "Marca 05",
+      "sku": "WOM-00020",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-08-12T09:00:00Z",
+        "updatedAt": "2025-08-12T09:00:00Z",
+        "barcode": "4595184609512"
+      }
+    },
+    {
+      "id": 21,
+      "title": "Premium Mens Shirts 021",
+      "description": "Premium Mens Shirts 021: producto sintético para demostraciones de DataPulse.",
+      "category": "mens-shirts",
+      "price": 888.19,
+      "discountPercentage": 17.06,
+      "rating": 2.52,
+      "stock": 1,
+      "brand": "Marca 01",
+      "sku": "MEN-00021",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-09-19T00:00:00Z",
+        "updatedAt": "2025-09-19T00:00:00Z",
+        "barcode": "7926411873320"
+      }
+    },
+    {
+      "id": 22,
+      "title": "Ultra Mens Shirts 022",
+      "description": "Ultra Mens Shirts 022: producto sintético para demostraciones de DataPulse.",
+      "category": "mens-shirts",
+      "price": 772.92,
+      "discountPercentage": 8.47,
+      "rating": 4.46,
+      "stock": 17,
+      "brand": "Marca 10",
+      "sku": "MEN-00022",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-06-21T00:00:00Z",
+        "updatedAt": "2025-06-21T00:00:00Z",
+        "barcode": "2727774800330"
+      }
+    },
+    {
+      "id": 23,
+      "title": "Premium Groceries 023",
+      "description": "Premium Groceries 023: producto sintético para demostraciones de DataPulse.",
+      "category": "groceries",
+      "price": 862.23,
+      "discountPercentage": 15.83,
+      "rating": 2.82,
+      "stock": 156,
+      "brand": "Marca 03",
+      "sku": "GRO-00023",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-12-05T20:00:00Z",
+        "updatedAt": "2025-12-05T20:00:00Z",
+        "barcode": "2235133911204"
+      }
+    },
+    {
+      "id": 24,
+      "title": "Pro Home Decoration 024",
+      "description": "Pro Home Decoration 024: producto sintético para demostraciones de DataPulse.",
+      "category": "home-decoration",
+      "price": 1202.14,
+      "discountPercentage": 12.51,
+      "rating": 4.98,
+      "stock": 6,
+      "brand": "Marca 10",
+      "sku": "HOM-00024",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-09-21T16:00:00Z",
+        "updatedAt": "2025-09-21T16:00:00Z",
+        "barcode": "8821318499145"
+      }
+    },
+    {
+      "id": 25,
+      "title": "Eco Beauty 025",
+      "description": "Eco Beauty 025: producto sintético para demostraciones de DataPulse.",
+      "category": "beauty",
+      "price": 56.58,
+      "discountPercentage": 19.67,
+      "rating": 3.04,
+      "stock": 45,
+      "brand": "Marca 24",
+      "sku": "BEA-00025",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-12-10T10:00:00Z",
+        "updatedAt": "2025-12-10T10:00:00Z",
+        "barcode": "7404718897926"
+      }
+    },
+    {
+      "id": 26,
+      "title": "Vintage Furniture 026",
+      "description": "Vintage Furniture 026: producto sintético para demostraciones de DataPulse.",
+      "category": "furniture",
+      "price": 1807.57,
+      "discountPercentage": 15.94,
+      "rating": 2.88,
+      "stock": 220,
+      "brand": "Marca 06",
+      "sku": "FUR-00026",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-31T16:00:00Z",
+        "updatedAt": "2025-10-31T16:00:00Z",
+        "barcode": "7074555178545"
+      }
+    },
+    {
+      "id": 27,
+      "title": "Ultra Groceries 027",
+      "description": "Ultra Groceries 027: producto sintético para demostraciones de DataPulse.",
+      "category": "groceries",
+      "price": 1301.84,
+      "discountPercentage": 16.23,
+      "rating": 4.75,
+      "stock": 17,
+      "brand": "Marca 20",
+      "sku": "GRO-00027",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-09T05:00:00Z",
+        "updatedAt": "2025-10-09T05:00:00Z",
+        "barcode": "3048486032700"
+      }
+    },
+    {
+      "id": 27,
+      "title": "Ultra Groceries 027",
+      "description": "Ultra Groceries 027: producto sintético para demostraciones de DataPulse.",
+      "category": "groceries",
+      "price": 1535.26,
+      "discountPercentage": 16.23,
+      "rating": 4.75,
+      "stock": 126,
+      "brand": "Marca 20",
+      "sku": "GRO-00027",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-09T05:00:00Z",
+        "updatedAt": "2026-01-02T13:04:00Z",
+        "barcode": "3048486032700"
+      }
+    },
+    {
+      "id": 28,
+      "title": "Eco Mens Shirts 028",
+      "description": "Eco Mens Shirts 028: producto sintético para demostraciones de DataPulse.",
+      "category": "mens-shirts",
+      "price": 655.04,
+      "discountPercentage": 15.5,
+      "rating": 3.03,
+      "stock": 109,
+      "brand": "Marca 13",
+      "sku": "MEN-00028",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-02T10:00:00Z",
+        "updatedAt": "2025-10-02T10:00:00Z",
+        "barcode": "5210399250661"
+      }
+    },
+    {
+      "id": 29,
+      "title": "Smart Mens Shirts 029",
+      "description": "Smart Mens Shirts 029: producto sintético para demostraciones de DataPulse.",
+      "category": "mens-shirts",
+      "price": 1039.27,
+      "discountPercentage": 6.21,
+      "rating": 3.59,
+      "stock": 222,
+      "brand": "Marca 03",
+      "sku": "MEN-00029",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-09-14T17:00:00Z",
+        "updatedAt": "2025-09-14T17:00:00Z",
+        "barcode": "5718440812595"
+      }
+    },
+    {
+      "id": 30,
+      "title": "Smart Beauty 030",
+      "description": "Smart Beauty 030: producto sintético para demostraciones de DataPulse.",
+      "category": "beauty",
+      "price": 327.98,
+      "discountPercentage": 6.43,
+      "rating": 4.97,
+      "stock": 10,
+      "brand": "Marca 17",
+      "sku": "BEA-00030",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-12-08T19:00:00Z",
+        "updatedAt": "2025-12-08T19:00:00Z",
+        "barcode": "9232304017505"
+      }
+    },
+    {
+      "id": 31,
+      "title": "Compact Fragrances 031",
+      "description": "Compact Fragrances 031: producto sintético para demostraciones de DataPulse.",
+      "category": "fragrances",
+      "price": 548.9,
+      "discountPercentage": 8.79,
+      "rating": 3.9,
+      "stock": 1,
+      "brand": "Marca 16",
+      "sku": "FRA-00031",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-08-10T05:00:00Z",
+        "updatedAt": "2025-08-10T05:00:00Z",
+        "barcode": "4262019107197"
+      }
+    },
+    {
+      "id": 32,
+      "title": "Vintage Groceries 032",
+      "description": "Vintage Groceries 032: producto sintético para demostraciones de DataPulse.",
+      "category": "groceries",
+      "price": 722.06,
+      "discountPercentage": 19.57,
+      "rating": 4.6,
+      "stock": 179,
+      "brand": "Marca 01",
+      "sku": "GRO-00032",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-09T17:00:00Z",
+        "updatedAt": "2025-07-09T17:00:00Z",
+        "barcode": "6788465287095"
+      }
+    },
+    {
+      "id": 32,
+      "title": "Vintage Groceries 032",
+      "description": "Vintage Groceries 032: producto sintético para demostraciones de DataPulse.",
+      "category": "groceries",
+      "price": 768.86,
+      "discountPercentage": 19.57,
+      "rating": 4.6,
+      "stock": 168,
+      "brand": "Marca 01",
+      "sku": "GRO-00032",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-09T17:00:00Z",
+        "updatedAt": "2026-01-03T22:40:00Z",
+        "barcode": "6788465287095"
+      }
+    },
+    {
+      "id": 33,
+      "title": "Premium Kitchen Accessories 033",
+      "description": "Premium Kitchen Accessories 033: producto sintético para demostraciones de DataPulse.",
+      "category": "kitchen-accessories",
+      "price": 368.53,
+      "discountPercentage": 8.92,
+      "rating": 3.5,
+      "stock": 3,
+      "brand": "Marca 23",
+      "sku": "KIT-00033",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-12-03T13:00:00Z",
+        "updatedAt": "2025-12-03T13:00:00Z",
+        "barcode": "7552907115269"
+      }
+    },
+    {
+      "id": 34,
+      "title": "Classic Groceries 034",
+      "description": "Classic Groceries 034: producto sintético para demostraciones de DataPulse.",
+      "category": "groceries",
+      "price": 573.16,
+      "discountPercentage": 12.08,
+      "rating": 3.84,
+      "stock": 137,
+      "brand": "Marca 13",
+      "sku": "GRO-00034",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-08-07T10:00:00Z",
+        "updatedAt": "2025-08-07T10:00:00Z",
+        "barcode": "9320044645062"
+      }
+    },
+    {
+      "id": 35,
+      "title": "Smart Laptops 035",
+      "description": "Smart Laptops 035: producto sintético para demostraciones de DataPulse.",
+      "category": "laptops",
+      "price": 730.18,
+      "discountPercentage": 3.33,
+      "rating": 3.44,
+      "stock": 9,
+      "brand": "Marca 20",
+      "sku": "LAP-00035",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-05T23:00:00Z",
+        "updatedAt": "2025-10-05T23:00:00Z",
+        "barcode": "8290018678753"
+      }
+    },
+    {
+      "id": 36,
+      "title": "Pro Smartphones 036",
+      "description": "Pro Smartphones 036: producto sintético para demostraciones de DataPulse.",
+      "category": "smartphones",
+      "price": 581.18,
+      "discountPercentage": 6.5,
+      "rating": 4.55,
+      "stock": 24,
+      "brand": "Marca 16",
+      "sku": "SMA-00036",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-09-06T04:00:00Z",
+        "updatedAt": "2025-09-06T04:00:00Z",
+        "barcode": "5267930646433"
+      }
+    },
+    {
+      "id": 37,
+      "title": "Eco Laptops 037",
+      "description": "Eco Laptops 037: producto sintético para demostraciones de DataPulse.",
+      "category": "laptops",
+      "price": 20.73,
+      "discountPercentage": 12.96,
+      "rating": 3.2,
+      "stock": 66,
+      "brand": "Marca 19",
+      "sku": "LAP-00037",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-31T11:00:00Z",
+        "updatedAt": "2025-10-31T11:00:00Z",
+        "barcode": "7599612843587"
+      }
+    },
+    {
+      "id": 38,
+      "title": "Pro Furniture 038",
+      "description": "Pro Furniture 038: producto sintético para demostraciones de DataPulse.",
+      "category": "furniture",
+      "price": 1064.35,
+      "discountPercentage": 5.35,
+      "rating": 4.27,
+      "stock": 45,
+      "brand": "Marca 25",
+      "sku": "FUR-00038",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-11-30T06:00:00Z",
+        "updatedAt": "2025-11-30T06:00:00Z",
+        "barcode": "7749981809835"
+      }
+    },
+    {
+      "id": 39,
+      "title": "Classic Tablets 039",
+      "description": "Classic Tablets 039: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 828.63,
+      "discountPercentage": 17.89,
+      "rating": 2.74,
+      "stock": 104,
+      "brand": "Marca 08",
+      "sku": "TAB-00039",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-08-24T22:00:00Z",
+        "updatedAt": "2025-08-24T22:00:00Z",
+        "barcode": "8364539758702"
+      }
+    },
+    {
+      "id": 40,
+      "title": "Classic Kitchen Accessories 040",
+      "description": "Classic Kitchen Accessories 040: producto sintético para demostraciones de DataPulse.",
+      "category": "kitchen-accessories",
+      "price": 781.88,
+      "discountPercentage": 12.6,
+      "rating": 3.76,
+      "stock": 191,
+      "brand": "Marca 18",
+      "sku": "KIT-00040",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-20T10:00:00Z",
+        "updatedAt": "2025-10-20T10:00:00Z",
+        "barcode": "8487086575349"
+      }
+    },
+    {
+      "id": 41,
+      "title": "Compact Smartphones 041",
+      "description": "Compact Smartphones 041: producto sintético para demostraciones de DataPulse.",
+      "category": "smartphones",
+      "price": 646.82,
+      "discountPercentage": 14.8,
+      "rating": 4.92,
+      "stock": 73,
+      "brand": "Marca 20",
+      "sku": "SMA-00041",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-09-30T07:00:00Z",
+        "updatedAt": "2025-09-30T07:00:00Z",
+        "barcode": "8120049642213"
+      }
+    },
+    {
+      "id": 42,
+      "title": "Ultra Tablets 042",
+      "description": "Ultra Tablets 042: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 1733.25,
+      "discountPercentage": 5.25,
+      "rating": 4.38,
+      "stock": 240,
+      "brand": "Marca 01",
+      "sku": "TAB-00042",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-20T06:00:00Z",
+        "updatedAt": "2025-07-20T06:00:00Z",
+        "barcode": "9537847069437"
+      }
+    },
+    {
+      "id": 43,
+      "title": "Premium Groceries 043",
+      "description": "Premium Groceries 043: producto sintético para demostraciones de DataPulse.",
+      "category": "groceries",
+      "price": 852.36,
+      "discountPercentage": 10.77,
+      "rating": 4.69,
+      "stock": 139,
+      "brand": "Marca 04",
+      "sku": "GRO-00043",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-08-11T06:00:00Z",
+        "updatedAt": "2025-08-11T06:00:00Z",
+        "barcode": "8673834150364"
+      }
+    },
+    {
+      "id": 44,
+      "title": "Ultra Womens Watches 044",
+      "description": "Ultra Womens Watches 044: producto sintético para demostraciones de DataPulse.",
+      "category": "womens-watches",
+      "price": 509.34,
+      "discountPercentage": 13.92,
+      "rating": 3.33,
+      "stock": 0,
+      "brand": "Marca 23",
+      "sku": "WOM-00044",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-01T13:00:00Z",
+        "updatedAt": "2025-10-01T13:00:00Z",
+        "barcode": "7782151383328"
+      }
+    },
+    {
+      "id": 45,
+      "title": "Smart Groceries 045",
+      "description": "Smart Groceries 045: producto sintético para demostraciones de DataPulse.",
+      "category": "groceries",
+      "price": 1915.3,
+      "discountPercentage": 15.58,
+      "rating": 3.64,
+      "stock": 86,
+      "brand": "Marca 21",
+      "sku": "GRO-00045",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-06-20T05:00:00Z",
+        "updatedAt": "2025-06-20T05:00:00Z",
+        "barcode": "9203074452408"
+      }
+    },
+    {
+      "id": 46,
+      "title": "Premium Sports Accessories 046",
+      "description": "Premium Sports Accessories 046: producto sintético para demostraciones de DataPulse.",
+      "category": "sports-accessories",
+      "price": 947.62,
+      "discountPercentage": 2.07,
+      "rating": 4.71,
+      "stock": 231,
+      "brand": "Marca 12",
+      "sku": "SPO-00046",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-08-21T00:00:00Z",
+        "updatedAt": "2025-08-21T00:00:00Z",
+        "barcode": "2470506134464"
+      }
+    },
+    {
+      "id": 47,
+      "title": "Ultra Home Decoration 047",
+      "description": "Ultra Home Decoration 047: producto sintético para demostraciones de DataPulse.",
+      "category": "home-decoration",
+      "price": 1229.54,
+      "discountPercentage": 17.49,
+      "rating": 4.1,
+      "stock": 179,
+      "brand": "Marca 25",
+      "sku": "HOM-00047",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-24T01:00:00Z",
+        "updatedAt": "2025-10-24T01:00:00Z",
+        "barcode": "6150162222106"
+      }
+    },
+    {
+      "id": 47,
+      "title": "Ultra Home Decoration 047",
+      "description": "Ultra Home Decoration 047: producto sintético para demostraciones de DataPulse.",
+      "category": "home-decoration",
+      "price": 1321.3,
+      "discountPercentage": 17.49,
+      "rating": 4.1,
+      "stock": 136,
+      "brand": "Marca 25",
+      "sku": "HOM-00047",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-24T01:00:00Z",
+        "updatedAt": "2026-01-03T12:42:00Z",
+        "barcode": "6150162222106"
+      }
+    },
+    {
+      "id": 48,
+      "title": "Smart Fragrances 048",
+      "description": "Smart Fragrances 048: producto sintético para demostraciones de DataPulse.",
+      "category": "fragrances",
+      "price": 1423.61,
+      "discountPercentage": 0.32,
+      "rating": 2.52,
+      "stock": 6,
+      "brand": "Marca 23",
+      "sku": "FRA-00048",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-08T10:00:00Z",
+        "updatedAt": "2025-10-08T10:00:00Z",
+        "barcode": "7974292913230"
+      }
+    },
+    {
+      "id": 49,
+      "title": "Ultra Groceries 049",
+      "description": "Ultra Groceries 049: producto sintético para demostraciones de DataPulse.",
+      "category": "groceries",
+      "price": 165.27,
+      "discountPercentage": 7.42,
+      "rating": 3.57,
+      "stock": 74,
+      "brand": "Marca 05",
+      "sku": "GRO-00049",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-06-30T12:00:00Z",
+        "updatedAt": "2025-06-30T12:00:00Z",
+        "barcode": "6967814485632"
+      }
+    },
+    {
+      "id": 50,
+      "title": "Premium Tablets 050",
+      "description": "Premium Tablets 050: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 1329.5,
+      "discountPercentage": 14.54,
+      "rating": 4.24,
+      "stock": 148,
+      "brand": "Marca 01",
+      "sku": "TAB-00050",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-08-04T06:00:00Z",
+        "updatedAt": "2025-08-04T06:00:00Z",
+        "barcode": "8576239283833"
+      }
+    },
+    {
+      "id": 51,
+      "title": "Classic Tablets 051",
+      "description": "Classic Tablets 051: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 405.0,
+      "discountPercentage": 3.15,
+      "rating": 4.08,
+      "stock": 14,
+      "brand": "Marca 08",
+      "sku": "TAB-00051",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-15T22:00:00Z",
+        "updatedAt": "2025-10-15T22:00:00Z",
+        "barcode": "8446147192541"
+      }
+    },
+    {
+      "id": 51,
+      "title": "Classic Tablets 051",
+      "description": "Classic Tablets 051: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 461.73,
+      "discountPercentage": 3.15,
+      "rating": 4.08,
+      "stock": 225,
+      "brand": "Marca 08",
+      "sku": "TAB-00051",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-15T22:00:00Z",
+        "updatedAt": "2026-01-03T22:53:00Z",
+        "barcode": "8446147192541"
+      }
+    },
+    {
+      "id": 52,
+      "title": "Pro Groceries 052",
+      "description": "Pro Groceries 052: producto sintético para demostraciones de DataPulse.",
+      "category": "groceries",
+      "price": null,
+      "discountPercentage": 0.86,
+      "rating": 3.03,
+      "stock": 191,
+      "brand": "Marca 04",
+      "sku": "GRO-00052",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-14T02:00:00Z",
+        "updatedAt": "2025-10-14T02:00:00Z",
+        "barcode": "2902956700486"
+      }
+    },
+    {
+      "id": 53,
+      "title": "Vintage Fragrances 053",
+      "description": "Vintage Fragrances 053: producto sintético para demostraciones de DataPulse.",
+      "category": "fragrances",
+      "price": 1474.8,
+      "discountPercentage": 19.26,
+      "rating": 2.87,
+      "stock": 62,
+      "brand": "Marca 07",
+      "sku": "FRA-00053",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-12-04T02:00:00Z",
+        "updatedAt": "2025-12-04T02:00:00Z",
+        "barcode": "1383600454920"
+      }
+    },
+    {
+      "id": 54,
+      "title": "Classic Tablets 054",
+      "description": "Classic Tablets 054: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 323.37,
+      "discountPercentage": 7.16,
+      "rating": 4.92,
+      "stock": 209,
+      "brand": "Marca 25",
+      "sku": "TAB-00054",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-13T07:00:00Z",
+        "updatedAt": "2025-10-13T07:00:00Z",
+        "barcode": "7483624177936"
+      }
+    },
+    {
+      "id": 55,
+      "title": "Vintage Laptops 055",
+      "description": "Vintage Laptops 055: producto sintético para demostraciones de DataPulse.",
+      "category": "laptops",
+      "price": 492.83,
+      "discountPercentage": 1.62,
+      "rating": 3.12,
+      "stock": 204,
+      "brand": "Marca 11",
+      "sku": "LAP-00055",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-09-10T00:00:00Z",
+        "updatedAt": "2025-09-10T00:00:00Z",
+        "barcode": "7012380811365"
+      }
+    },
+    {
+      "id": 56,
+      "title": "Smart Beauty 056",
+      "description": "Smart Beauty 056: producto sintético para demostraciones de DataPulse.",
+      "category": "beauty",
+      "price": 921.25,
+      "discountPercentage": 7.88,
+      "rating": 2.54,
+      "stock": 83,
+      "brand": "Marca 03",
+      "sku": "BEA-00056",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-09-24T08:00:00Z",
+        "updatedAt": "2025-09-24T08:00:00Z",
+        "barcode": "9082700166560"
+      }
+    },
+    {
+      "id": 56,
+      "title": "Smart Beauty 056",
+      "description": "Smart Beauty 056: producto sintético para demostraciones de DataPulse.",
+      "category": "beauty",
+      "price": 887.44,
+      "discountPercentage": 7.88,
+      "rating": 2.54,
+      "stock": 114,
+      "brand": "Marca 03",
+      "sku": "BEA-00056",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-09-24T08:00:00Z",
+        "updatedAt": "2026-01-02T05:21:00Z",
+        "barcode": "9082700166560"
+      }
+    },
+    {
+      "id": 57,
+      "title": "Classic Home Decoration 057",
+      "description": "Classic Home Decoration 057: producto sintético para demostraciones de DataPulse.",
+      "category": "home-decoration",
+      "price": 467.9,
+      "discountPercentage": 1.38,
+      "rating": 4.98,
+      "stock": 105,
+      "brand": "Marca 10",
+      "sku": "HOM-00057",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-12-02T10:00:00Z",
+        "updatedAt": "2025-12-02T10:00:00Z",
+        "barcode": "6402481357104"
+      }
+    },
+    {
+      "id": 58,
+      "title": "Premium Womens Watches 058",
+      "description": "Premium Womens Watches 058: producto sintético para demostraciones de DataPulse.",
+      "category": "womens-watches",
+      "price": 1374.11,
+      "discountPercentage": 5.39,
+      "rating": 2.57,
+      "stock": 28,
+      "brand": "Marca 14",
+      "sku": "WOM-00058",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-08-20T18:00:00Z",
+        "updatedAt": "2025-08-20T18:00:00Z",
+        "barcode": "8059606309330"
+      }
+    },
+    {
+      "id": 58,
+      "title": "Premium Womens Watches 058",
+      "description": "Premium Womens Watches 058: producto sintético para demostraciones de DataPulse.",
+      "category": "womens-watches",
+      "price": 1643.26,
+      "discountPercentage": 5.39,
+      "rating": 2.57,
+      "stock": 94,
+      "brand": "Marca 14",
+      "sku": "WOM-00058",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-08-20T18:00:00Z",
+        "updatedAt": "2026-01-02T18:34:00Z",
+        "barcode": "8059606309330"
+      }
+    },
+    {
+      "id": 59,
+      "title": "Vintage Fragrances 059",
+      "description": "Vintage Fragrances 059: producto sintético para demostraciones de DataPulse.",
+      "category": "fragrances",
+      "price": 131.77,
+      "discountPercentage": 7.16,
+      "rating": 3.81,
+      "stock": 88,
+      "brand": "Marca 18",
+      "sku": "FRA-00059",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-05T15:00:00Z",
+        "updatedAt": "2025-10-05T15:00:00Z",
+        "barcode": "8183575167612"
+      }
+    },
+    {
+      "id": 60,
+      "title": "Premium Sports Accessories 060",
+      "description": "Premium Sports Accessories 060: producto sintético para demostraciones de DataPulse.",
+      "category": "sports-accessories",
+      "price": 682.08,
+      "discountPercentage": 4.63,
+      "rating": 2.79,
+      "stock": 235,
+      "brand": "Marca 19",
+      "sku": "SPO-00060",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-11-14T20:00:00Z",
+        "updatedAt": "2025-11-14T20:00:00Z",
+        "barcode": "3142336477295"
+      }
+    },
+    {
+      "id": 61,
+      "title": "Smart Womens Watches 061",
+      "description": "Smart Womens Watches 061: producto sintético para demostraciones de DataPulse.",
+      "category": "womens-watches",
+      "price": 823.87,
+      "discountPercentage": 17.41,
+      "rating": 3.84,
+      "stock": 180,
+      "brand": "Marca 05",
+      "sku": "WOM-00061",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-20T16:00:00Z",
+        "updatedAt": "2025-10-20T16:00:00Z",
+        "barcode": "7756021395853"
+      }
+    },
+    {
+      "id": 62,
+      "title": "Premium Home Decoration 062",
+      "description": "Premium Home Decoration 062: producto sintético para demostraciones de DataPulse.",
+      "category": "home-decoration",
+      "price": 824.42,
+      "discountPercentage": 10.42,
+      "rating": 4.17,
+      "stock": 79,
+      "brand": "Marca 12",
+      "sku": "HOM-00062",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-09-01T23:00:00Z",
+        "updatedAt": "2025-09-01T23:00:00Z",
+        "barcode": "2701648113817"
+      }
+    },
+    {
+      "id": 63,
+      "title": "Eco Smartphones 063",
+      "description": "Eco Smartphones 063: producto sintético para demostraciones de DataPulse.",
+      "category": "smartphones",
+      "price": 349.55,
+      "discountPercentage": 7.35,
+      "rating": 3.56,
+      "stock": 74,
+      "brand": "Marca 11",
+      "sku": "SMA-00063",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-06-18T02:00:00Z",
+        "updatedAt": "2025-06-18T02:00:00Z",
+        "barcode": "4236530139161"
+      }
+    },
+    {
+      "id": 64,
+      "title": "Pro Home Decoration 064",
+      "description": "Pro Home Decoration 064: producto sintético para demostraciones de DataPulse.",
+      "category": "home-decoration",
+      "price": 1543.46,
+      "discountPercentage": 16.85,
+      "rating": 4.1,
+      "stock": 51,
+      "brand": "Marca 08",
+      "sku": "HOM-00064",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-12T01:00:00Z",
+        "updatedAt": "2025-10-12T01:00:00Z",
+        "barcode": "3190995384898"
+      }
+    },
+    {
+      "id": 65,
+      "title": "Classic Furniture 065",
+      "description": "Classic Furniture 065: producto sintético para demostraciones de DataPulse.",
+      "category": "furniture",
+      "price": 1349.31,
+      "discountPercentage": 8.58,
+      "rating": 3.56,
+      "stock": 90,
+      "brand": "Marca 06",
+      "sku": "FUR-00065",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-11-29T08:00:00Z",
+        "updatedAt": "2025-11-29T08:00:00Z",
+        "barcode": "5125547779647"
+      }
+    },
+    {
+      "id": 66,
+      "title": "Pro Fragrances 066",
+      "description": "Pro Fragrances 066: producto sintético para demostraciones de DataPulse.",
+      "category": "fragrances",
+      "price": 204.8,
+      "discountPercentage": 7.75,
+      "rating": 3.11,
+      "stock": 205,
+      "brand": "Marca 10",
+      "sku": "FRA-00066",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-06-19T05:00:00Z",
+        "updatedAt": "2025-06-19T05:00:00Z",
+        "barcode": "4079419106823"
+      }
+    },
+    {
+      "id": 67,
+      "title": "Smart Fragrances 067",
+      "description": "Smart Fragrances 067: producto sintético para demostraciones de DataPulse.",
+      "category": "fragrances",
+      "price": 228.18,
+      "discountPercentage": 4.66,
+      "rating": 3.49,
+      "stock": 222,
+      "brand": "Marca 03",
+      "sku": "FRA-00067",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-11T08:00:00Z",
+        "updatedAt": "2025-10-11T08:00:00Z",
+        "barcode": "5344008552743"
+      }
+    },
+    {
+      "id": 68,
+      "title": "Ultra Home Decoration 068",
+      "description": "Ultra Home Decoration 068: producto sintético para demostraciones de DataPulse.",
+      "category": "home-decoration",
+      "price": 823.74,
+      "discountPercentage": 8.03,
+      "rating": 3.89,
+      "stock": 229,
+      "brand": "Marca 20",
+      "sku": "HOM-00068",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-11-10T07:00:00Z",
+        "updatedAt": "2025-11-10T07:00:00Z",
+        "barcode": "8385776634604"
+      }
+    },
+    {
+      "id": 69,
+      "title": "Pro Fragrances 069",
+      "description": "Pro Fragrances 069: producto sintético para demostraciones de DataPulse.",
+      "category": "fragrances",
+      "price": 256.72,
+      "discountPercentage": 3.67,
+      "rating": 2.9,
+      "stock": 138,
+      "brand": "Marca 07",
+      "sku": "FRA-00069",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-09-11T04:00:00Z",
+        "updatedAt": "2025-09-11T04:00:00Z",
+        "barcode": "7797800636076"
+      }
+    },
+    {
+      "id": 70,
+      "title": "Compact Tablets 070",
+      "description": "Compact Tablets 070: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 482.43,
+      "discountPercentage": 1.31,
+      "rating": 3.82,
+      "stock": 46,
+      "brand": "Marca 22",
+      "sku": "TAB-00070",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-11-18T19:00:00Z",
+        "updatedAt": "2025-11-18T19:00:00Z",
+        "barcode": "9970596398708"
+      }
+    },
+    {
+      "id": 71,
+      "title": "Classic Tablets 071",
+      "description": "Classic Tablets 071: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 1237.19,
+      "discountPercentage": 9.94,
+      "rating": 3.31,
+      "stock": 110,
+      "brand": "Marca 13",
+      "sku": "TAB-00071",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-22T23:00:00Z",
+        "updatedAt": "2025-10-22T23:00:00Z",
+        "barcode": "2373679075217"
+      }
+    },
+    {
+      "id": 72,
+      "title": "Pro Mens Shirts 072",
+      "description": "Pro Mens Shirts 072: producto sintético para demostraciones de DataPulse.",
+      "category": "mens-shirts",
+      "price": 1077.52,
+      "discountPercentage": 15.99,
+      "rating": 3.2,
+      "stock": 212,
+      "brand": "Marca 05",
+      "sku": "MEN-00072",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-09-19T13:00:00Z",
+        "updatedAt": "2025-09-19T13:00:00Z",
+        "barcode": "8355402490741"
+      }
+    },
+    {
+      "id": 73,
+      "title": "Smart Beauty 073",
+      "description": "Smart Beauty 073: producto sintético para demostraciones de DataPulse.",
+      "category": "beauty",
+      "price": 1052.6,
+      "discountPercentage": 6.51,
+      "rating": 2.63,
+      "stock": 69,
+      "brand": "Marca 10",
+      "sku": "BEA-00073",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-31T03:00:00Z",
+        "updatedAt": "2025-10-31T03:00:00Z",
+        "barcode": "8283077619247"
+      }
+    },
+    {
+      "id": 74,
+      "title": "Vintage Fragrances 074",
+      "description": "Vintage Fragrances 074: producto sintético para demostraciones de DataPulse.",
+      "category": "fragrances",
+      "price": 1313.34,
+      "discountPercentage": 11.76,
+      "rating": 3.59,
+      "stock": 3,
+      "brand": "Marca 06",
+      "sku": "FRA-00074",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-07T13:00:00Z",
+        "updatedAt": "2025-07-07T13:00:00Z",
+        "barcode": "7246466341087"
+      }
+    },
+    {
+      "id": 75,
+      "title": "Premium Sports Accessories 075",
+      "description": "Premium Sports Accessories 075: producto sintético para demostraciones de DataPulse.",
+      "category": "sports-accessories",
+      "price": 698.5,
+      "discountPercentage": 5.78,
+      "rating": 3.97,
+      "stock": 224,
+      "brand": "Marca 22",
+      "sku": "SPO-00075",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-31T20:00:00Z",
+        "updatedAt": "2025-10-31T20:00:00Z",
+        "barcode": "3301726922129"
+      }
+    },
+    {
+      "id": 75,
+      "title": "Premium Sports Accessories 075",
+      "description": "Premium Sports Accessories 075: producto sintético para demostraciones de DataPulse.",
+      "category": "sports-accessories",
+      "price": 575.92,
+      "discountPercentage": 5.78,
+      "rating": 3.97,
+      "stock": 86,
+      "brand": "Marca 22",
+      "sku": "SPO-00075",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-31T20:00:00Z",
+        "updatedAt": "2026-01-03T04:14:00Z",
+        "barcode": "3301726922129"
+      }
+    },
+    {
+      "id": 76,
+      "title": "Eco Fragrances 076",
+      "description": "Eco Fragrances 076: producto sintético para demostraciones de DataPulse.",
+      "category": "fragrances",
+      "price": 1374.15,
+      "discountPercentage": 16.64,
+      "rating": 2.81,
+      "stock": 115,
+      "brand": "Marca 02",
+      "sku": "FRA-00076",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-27T23:00:00Z",
+        "updatedAt": "2025-10-27T23:00:00Z",
+        "barcode": "8080053777596"
+      }
+    },
+    {
+      "id": 77,
+      "title": "Eco Beauty 077",
+      "description": "Eco Beauty 077: producto sintético para demostraciones de DataPulse.",
+      "category": "beauty",
+      "price": 1101.93,
+      "discountPercentage": 1.06,
+      "rating": 4.9,
+      "stock": 59,
+      "brand": "Marca 17",
+      "sku": "BEA-00077",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-11T10:00:00Z",
+        "updatedAt": "2025-07-11T10:00:00Z",
+        "barcode": "4867495059281"
+      }
+    },
+    {
+      "id": 78,
+      "title": "Compact Kitchen Accessories 078",
+      "description": "Compact Kitchen Accessories 078: producto sintético para demostraciones de DataPulse.",
+      "category": "kitchen-accessories",
+      "price": 1802.15,
+      "discountPercentage": 15.94,
+      "rating": 3.58,
+      "stock": 236,
+      "brand": "Marca 14",
+      "sku": "KIT-00078",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-05T23:00:00Z",
+        "updatedAt": "2025-07-05T23:00:00Z",
+        "barcode": "7753878832710"
+      }
+    },
+    {
+      "id": 79,
+      "title": "Eco Groceries 079",
+      "description": "Eco Groceries 079: producto sintético para demostraciones de DataPulse.",
+      "category": "groceries",
+      "price": 1228.55,
+      "discountPercentage": 15.45,
+      "rating": 3.84,
+      "stock": 25,
+      "brand": "Marca 18",
+      "sku": "GRO-00079",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-09-14T17:00:00Z",
+        "updatedAt": "2025-09-14T17:00:00Z",
+        "barcode": "1196291714507"
+      }
+    },
+    {
+      "id": 80,
+      "title": "Classic Beauty 080",
+      "description": "Classic Beauty 080: producto sintético para demostraciones de DataPulse.",
+      "category": "beauty",
+      "price": 716.51,
+      "discountPercentage": 4.58,
+      "rating": 3.58,
+      "stock": 64,
+      "brand": "Marca 06",
+      "sku": "BEA-00080",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-01T07:00:00Z",
+        "updatedAt": "2025-10-01T07:00:00Z",
+        "barcode": "2972550544129"
+      }
+    },
+    {
+      "id": 81,
+      "title": "Premium Smartphones 081",
+      "description": "Premium Smartphones 081: producto sintético para demostraciones de DataPulse.",
+      "category": "smartphones",
+      "price": 1687.37,
+      "discountPercentage": 18.91,
+      "rating": 2.72,
+      "stock": 169,
+      "brand": "Marca 18",
+      "sku": "SMA-00081",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-10T21:00:00Z",
+        "updatedAt": "2025-10-10T21:00:00Z",
+        "barcode": "9670072588340"
+      }
+    },
+    {
+      "id": 82,
+      "title": "Premium Fragrances 082",
+      "description": "Premium Fragrances 082: producto sintético para demostraciones de DataPulse.",
+      "category": "fragrances",
+      "price": 1507.29,
+      "discountPercentage": 7.68,
+      "rating": 4.5,
+      "stock": 250,
+      "brand": "Marca 25",
+      "sku": "FRA-00082",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-28T17:00:00Z",
+        "updatedAt": "2025-07-28T17:00:00Z",
+        "barcode": "2007385506669"
+      }
+    },
+    {
+      "id": 83,
+      "title": "Premium Womens Watches 083",
+      "description": "Premium Womens Watches 083: producto sintético para demostraciones de DataPulse.",
+      "category": "womens-watches",
+      "price": 1077.12,
+      "discountPercentage": 15.1,
+      "rating": 3.49,
+      "stock": 196,
+      "brand": "Marca 21",
+      "sku": "WOM-00083",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-06-20T03:00:00Z",
+        "updatedAt": "2025-06-20T03:00:00Z",
+        "barcode": "2457303081382"
+      }
+    },
+    {
+      "id": 84,
+      "title": "Ultra Beauty 084",
+      "description": "Ultra Beauty 084: producto sintético para demostraciones de DataPulse.",
+      "category": "beauty",
+      "price": 1668.39,
+      "discountPercentage": 1.07,
+      "rating": 3.53,
+      "stock": 40,
+      "brand": "Marca 01",
+      "sku": "BEA-00084",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-12-03T11:00:00Z",
+        "updatedAt": "2025-12-03T11:00:00Z",
+        "barcode": "8890721239129"
+      }
+    },
+    {
+      "id": 85,
+      "title": "Eco Kitchen Accessories 085",
+      "description": "Eco Kitchen Accessories 085: producto sintético para demostraciones de DataPulse.",
+      "category": "kitchen-accessories",
+      "price": 1897.55,
+      "discountPercentage": 4.19,
+      "rating": 3.99,
+      "stock": 137,
+      "brand": "Marca 17",
+      "sku": "KIT-00085",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-23T21:00:00Z",
+        "updatedAt": "2025-07-23T21:00:00Z",
+        "barcode": "3328985945316"
+      }
+    },
+    {
+      "id": 86,
+      "title": "Vintage Sports Accessories 086",
+      "description": "Vintage Sports Accessories 086: producto sintético para demostraciones de DataPulse.",
+      "category": "sports-accessories",
+      "price": 570.9,
+      "discountPercentage": 12.12,
+      "rating": 4.73,
+      "stock": 148,
+      "brand": "Marca 01",
+      "sku": "SPO-00086",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-11-02T11:00:00Z",
+        "updatedAt": "2025-11-02T11:00:00Z",
+        "barcode": "4113082362187"
+      }
+    },
+    {
+      "id": 86,
+      "title": "Vintage Sports Accessories 086",
+      "description": "Vintage Sports Accessories 086: producto sintético para demostraciones de DataPulse.",
+      "category": "sports-accessories",
+      "price": 473.5,
+      "discountPercentage": 12.12,
+      "rating": 4.73,
+      "stock": 150,
+      "brand": "Marca 01",
+      "sku": "SPO-00086",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-11-02T11:00:00Z",
+        "updatedAt": "2026-01-02T10:44:00Z",
+        "barcode": "4113082362187"
+      }
+    },
+    {
+      "id": 87,
+      "title": "Compact Smartphones 087",
+      "description": "Compact Smartphones 087: producto sintético para demostraciones de DataPulse.",
+      "category": "smartphones",
+      "price": 552.9,
+      "discountPercentage": 13.25,
+      "rating": 3.41,
+      "stock": 55,
+      "brand": "Marca 05",
+      "sku": "SMA-00087",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-08-20T02:00:00Z",
+        "updatedAt": "2025-08-20T02:00:00Z",
+        "barcode": "9874884295419"
+      }
+    },
+    {
+      "id": 88,
+      "title": "Classic Smartphones 088",
+      "description": "Classic Smartphones 088: producto sintético para demostraciones de DataPulse.",
+      "category": "smartphones",
+      "price": 1270.33,
+      "discountPercentage": 14.45,
+      "rating": 2.59,
+      "stock": 91,
+      "brand": "Marca 08",
+      "sku": "SMA-00088",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-03T23:00:00Z",
+        "updatedAt": "2025-10-03T23:00:00Z",
+        "barcode": "7414918943031"
+      }
+    },
+    {
+      "id": 89,
+      "title": "Eco Sports Accessories 089",
+      "description": "Eco Sports Accessories 089: producto sintético para demostraciones de DataPulse.",
+      "category": "sports-accessories",
+      "price": 144.78,
+      "discountPercentage": 5.54,
+      "rating": 4.66,
+      "stock": 106,
+      "brand": "Marca 20",
+      "sku": "SPO-00089",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-08-04T18:00:00Z",
+        "updatedAt": "2025-08-04T18:00:00Z",
+        "barcode": "2031162680348"
+      }
+    },
+    {
+      "id": 90,
+      "title": "Eco Womens Watches 090",
+      "description": "Eco Womens Watches 090: producto sintético para demostraciones de DataPulse.",
+      "category": "womens-watches",
+      "price": 1053.32,
+      "discountPercentage": 9.89,
+      "rating": 4.63,
+      "stock": 47,
+      "brand": "Marca 16",
+      "sku": "WOM-00090",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-21T09:00:00Z",
+        "updatedAt": "2025-07-21T09:00:00Z",
+        "barcode": "8546146156388"
+      }
+    },
+    {
+      "id": 90,
+      "title": "Eco Womens Watches 090",
+      "description": "Eco Womens Watches 090: producto sintético para demostraciones de DataPulse.",
+      "category": "womens-watches",
+      "price": 963.4,
+      "discountPercentage": 9.89,
+      "rating": 4.63,
+      "stock": 98,
+      "brand": "Marca 16",
+      "sku": "WOM-00090",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-21T09:00:00Z",
+        "updatedAt": "2026-01-03T12:35:00Z",
+        "barcode": "8546146156388"
+      }
+    },
+    {
+      "id": 91,
+      "title": "Vintage Beauty 091",
+      "description": "Vintage Beauty 091: producto sintético para demostraciones de DataPulse.",
+      "category": "beauty",
+      "price": 364.73,
+      "discountPercentage": 16.98,
+      "rating": 4.2,
+      "stock": 21,
+      "brand": "Marca 07",
+      "sku": "BEA-00091",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-11-10T17:00:00Z",
+        "updatedAt": "2025-11-10T17:00:00Z",
+        "barcode": "2823294149961"
+      }
+    },
+    {
+      "id": 92,
+      "title": "Smart Mens Shirts 092",
+      "description": "Smart Mens Shirts 092: producto sintético para demostraciones de DataPulse.",
+      "category": "mens-shirts",
+      "price": 47.01,
+      "discountPercentage": 12.05,
+      "rating": 4.61,
+      "stock": 15,
+      "brand": "Marca 01",
+      "sku": "MEN-00092",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-20T18:00:00Z",
+        "updatedAt": "2025-07-20T18:00:00Z",
+        "barcode": "9252842542918"
+      }
+    },
+    {
+      "id": 93,
+      "title": "Premium Groceries 093",
+      "description": "Premium Groceries 093: producto sintético para demostraciones de DataPulse.",
+      "category": "groceries",
+      "price": 1024.85,
+      "discountPercentage": 2.56,
+      "rating": 3.9,
+      "stock": 85,
+      "brand": "Marca 24",
+      "sku": "GRO-00093",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-08-09T09:00:00Z",
+        "updatedAt": "2025-08-09T09:00:00Z",
+        "barcode": "4060192771649"
+      }
+    },
+    {
+      "id": 94,
+      "title": "Vintage Groceries 094",
+      "description": "Vintage Groceries 094: producto sintético para demostraciones de DataPulse.",
+      "category": "groceries",
+      "price": 443.33,
+      "discountPercentage": 16.67,
+      "rating": 4.24,
+      "stock": 233,
+      "brand": "Marca 12",
+      "sku": "GRO-00094",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-05T15:00:00Z",
+        "updatedAt": "2025-07-05T15:00:00Z",
+        "barcode": "2407541982688"
+      }
+    },
+    {
+      "id": 95,
+      "title": "Premium Tablets 095",
+      "description": "Premium Tablets 095: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 1526.31,
+      "discountPercentage": 0.04,
+      "rating": 4.57,
+      "stock": 68,
+      "brand": "Marca 04",
+      "sku": "TAB-00095",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-11-22T12:00:00Z",
+        "updatedAt": "2025-11-22T12:00:00Z",
+        "barcode": "8166593610526"
+      }
+    },
+    {
+      "id": 95,
+      "title": "Premium Tablets 095",
+      "description": "Premium Tablets 095: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 1800.52,
+      "discountPercentage": 0.04,
+      "rating": 4.57,
+      "stock": 124,
+      "brand": "Marca 04",
+      "sku": "TAB-00095",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-11-22T12:00:00Z",
+        "updatedAt": "2026-01-02T15:20:00Z",
+        "barcode": "8166593610526"
+      }
+    },
+    {
+      "id": 96,
+      "title": "Vintage Tablets 096",
+      "description": "Vintage Tablets 096: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 33.99,
+      "discountPercentage": 18.38,
+      "rating": 2.89,
+      "stock": 119,
+      "brand": "Marca 04",
+      "sku": "TAB-00096",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-08-02T16:00:00Z",
+        "updatedAt": "2025-08-02T16:00:00Z",
+        "barcode": "6352058522646"
+      }
+    },
+    {
+      "id": 97,
+      "title": "Premium Home Decoration 097",
+      "description": "Premium Home Decoration 097: producto sintético para demostraciones de DataPulse.",
+      "category": "home-decoration",
+      "price": null,
+      "discountPercentage": 17.32,
+      "rating": 3.83,
+      "stock": 83,
+      "brand": "Marca 18",
+      "sku": "HOM-00097",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-19T23:00:00Z",
+        "updatedAt": "2025-07-19T23:00:00Z",
+        "barcode": "9943883964335"
+      }
+    },
+    {
+      "id": 98,
+      "title": "Compact Tablets 098",
+      "description": "Compact Tablets 098: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 42.26,
+      "discountPercentage": 7.28,
+      "rating": 3.62,
+      "stock": 111,
+      "brand": "Marca 21",
+      "sku": "TAB-00098",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-09-24T01:00:00Z",
+        "updatedAt": "2025-09-24T01:00:00Z",
+        "barcode": "7225978010332"
+      }
+    },
+    {
+      "id": 99,
+      "title": "Premium Laptops 099",
+      "description": "Premium Laptops 099: producto sintético para demostraciones de DataPulse.",
+      "category": "laptops",
+      "price": 248.32,
+      "discountPercentage": 9.32,
+      "rating": 3.49,
+      "stock": 84,
+      "brand": "Marca 25",
+      "sku": "LAP-00099",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-09-23T00:00:00Z",
+        "updatedAt": "2025-09-23T00:00:00Z",
+        "barcode": "6233974230258"
+      }
+    },
+    {
+      "id": 99,
+      "title": "Premium Laptops 099",
+      "description": "Premium Laptops 099: producto sintético para demostraciones de DataPulse.",
+      "category": "laptops",
+      "price": 260.94,
+      "discountPercentage": 9.32,
+      "rating": 3.49,
+      "stock": 120,
+      "brand": "Marca 25",
+      "sku": "LAP-00099",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-09-23T00:00:00Z",
+        "updatedAt": "2026-01-02T01:06:00Z",
+        "barcode": "6233974230258"
+      }
+    },
+    {
+      "id": 100,
+      "title": "Premium Tablets 100",
+      "description": "Premium Tablets 100: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 427.79,
+      "discountPercentage": 0.55,
+      "rating": 2.53,
+      "stock": 115,
+      "brand": "Marca 03",
+      "sku": "TAB-00100",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-11-05T21:00:00Z",
+        "updatedAt": "2025-11-05T21:00:00Z",
+        "barcode": "3650752605274"
+      }
+    },
+    {
+      "id": 101,
+      "title": "Ultra Fragrances 101",
+      "description": "Ultra Fragrances 101: producto sintético para demostraciones de DataPulse.",
+      "category": "fragrances",
+      "price": 1676.13,
+      "discountPercentage": 11.23,
+      "rating": 3.34,
+      "stock": 65,
+      "brand": "Marca 14",
+      "sku": "FRA-00101",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-03T03:00:00Z",
+        "updatedAt": "2025-10-03T03:00:00Z",
+        "barcode": "2981852142723"
+      }
+    },
+    {
+      "id": 102,
+      "title": "Ultra Beauty 102",
+      "description": "Ultra Beauty 102: producto sintético para demostraciones de DataPulse.",
+      "category": "beauty",
+      "price": -213.25,
+      "discountPercentage": 15.52,
+      "rating": 3.55,
+      "stock": 172,
+      "brand": "Marca 06",
+      "sku": "BEA-00102",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-14T15:00:00Z",
+        "updatedAt": "2025-10-14T15:00:00Z",
+        "barcode": "8442886515622"
+      }
+    },
+    {
+      "id": 102,
+      "title": "Ultra Beauty 102",
+      "description": "Ultra Beauty 102: producto sintético para demostraciones de DataPulse.",
+      "category": "beauty",
+      "price": 191.5,
+      "discountPercentage": 15.52,
+      "rating": 3.55,
+      "stock": 80,
+      "brand": "Marca 06",
+      "sku": "BEA-00102",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-14T15:00:00Z",
+        "updatedAt": "2026-01-03T19:22:00Z",
+        "barcode": "8442886515622"
+      }
+    },
+    {
+      "id": 103,
+      "title": "Pro Home Decoration 103",
+      "description": "Pro Home Decoration 103: producto sintético para demostraciones de DataPulse.",
+      "category": "home-decoration",
+      "price": 1544.58,
+      "discountPercentage": 18.57,
+      "rating": 2.6,
+      "stock": 136,
+      "brand": "Marca 10",
+      "sku": "HOM-00103",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-08-20T10:00:00Z",
+        "updatedAt": "2025-08-20T10:00:00Z",
+        "barcode": "3480292119023"
+      }
+    },
+    {
+      "id": 104,
+      "title": "Premium Tablets 104",
+      "description": "Premium Tablets 104: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 1138.01,
+      "discountPercentage": 4.59,
+      "rating": 4.69,
+      "stock": 168,
+      "brand": "Marca 16",
+      "sku": "TAB-00104",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-11-04T07:00:00Z",
+        "updatedAt": "2025-11-04T07:00:00Z",
+        "barcode": "8944049949593"
+      }
+    },
+    {
+      "id": 105,
+      "title": "Pro Beauty 105",
+      "description": "Pro Beauty 105: producto sintético para demostraciones de DataPulse.",
+      "category": "beauty",
+      "price": 1160.39,
+      "discountPercentage": 8.54,
+      "rating": 3.12,
+      "stock": 183,
+      "brand": "Marca 15",
+      "sku": "BEA-00105",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-08-19T16:00:00Z",
+        "updatedAt": "2025-08-19T16:00:00Z",
+        "barcode": "1488043913967"
+      }
+    },
+    {
+      "id": 106,
+      "title": "Vintage Fragrances 106",
+      "description": "Vintage Fragrances 106: producto sintético para demostraciones de DataPulse.",
+      "category": "fragrances",
+      "price": 1470.87,
+      "discountPercentage": 5.09,
+      "rating": 3.77,
+      "stock": 35,
+      "brand": "Marca 25",
+      "sku": "FRA-00106",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-22T14:00:00Z",
+        "updatedAt": "2025-07-22T14:00:00Z",
+        "barcode": "6535041962221"
+      }
+    },
+    {
+      "id": 107,
+      "title": "Vintage Groceries 107",
+      "description": "Vintage Groceries 107: producto sintético para demostraciones de DataPulse.",
+      "category": "groceries",
+      "price": 846.55,
+      "discountPercentage": 13.0,
+      "rating": 4.15,
+      "stock": 186,
+      "brand": "Marca 09",
+      "sku": "GRO-00107",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-12-06T22:00:00Z",
+        "updatedAt": "2025-12-06T22:00:00Z",
+        "barcode": "3624646610576"
+      }
+    },
+    {
+      "id": 108,
+      "title": "Vintage Fragrances 108",
+      "description": "Vintage Fragrances 108: producto sintético para demostraciones de DataPulse.",
+      "category": "fragrances",
+      "price": 662.39,
+      "discountPercentage": 18.23,
+      "rating": 3.4,
+      "stock": 92,
+      "brand": "Marca 10",
+      "sku": "FRA-00108",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-28T07:00:00Z",
+        "updatedAt": "2025-07-28T07:00:00Z",
+        "barcode": "9022180903146"
+      }
+    },
+    {
+      "id": 109,
+      "title": "Vintage Beauty 109",
+      "description": "Vintage Beauty 109: producto sintético para demostraciones de DataPulse.",
+      "category": "beauty",
+      "price": 80.45,
+      "discountPercentage": 14.21,
+      "rating": 3.73,
+      "stock": 29,
+      "brand": "Marca 20",
+      "sku": "BEA-00109",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-05T06:00:00Z",
+        "updatedAt": "2025-10-05T06:00:00Z",
+        "barcode": "6148601438429"
+      }
+    },
+    {
+      "id": 110,
+      "title": "",
+      "description": "Premium Tablets 110: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 166.13,
+      "discountPercentage": 14.44,
+      "rating": 2.63,
+      "stock": 90,
+      "brand": "Marca 19",
+      "sku": "TAB-00110",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-06-24T23:00:00Z",
+        "updatedAt": "2025-06-24T23:00:00Z",
+        "barcode": "5016568206557"
+      }
+    },
+    {
+      "id": 111,
+      "title": "Vintage Kitchen Accessories 111",
+      "description": "Vintage Kitchen Accessories 111: producto sintético para demostraciones de DataPulse.",
+      "category": "kitchen-accessories",
+      "price": 1520.18,
+      "discountPercentage": 13.71,
+      "rating": 4.11,
+      "stock": 70,
+      "brand": "Marca 10",
+      "sku": "KIT-00111",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-23T09:00:00Z",
+        "updatedAt": "2025-07-23T09:00:00Z",
+        "barcode": "7435542552973"
+      }
+    },
+    {
+      "id": 112,
+      "title": "Compact Mens Shirts 112",
+      "description": "Compact Mens Shirts 112: producto sintético para demostraciones de DataPulse.",
+      "category": "mens-shirts",
+      "price": 1252.19,
+      "discountPercentage": 14.8,
+      "rating": 3.54,
+      "stock": 106,
+      "brand": "Marca 13",
+      "sku": "MEN-00112",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-24T17:00:00Z",
+        "updatedAt": "2025-10-24T17:00:00Z",
+        "barcode": "9697467466293"
+      }
+    },
+    {
+      "id": 113,
+      "title": "Ultra Womens Watches 113",
+      "description": "Ultra Womens Watches 113: producto sintético para demostraciones de DataPulse.",
+      "category": "womens-watches",
+      "price": 1278.73,
+      "discountPercentage": 16.16,
+      "rating": 4.24,
+      "stock": 208,
+      "brand": "Marca 08",
+      "sku": "WOM-00113",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-06-19T09:00:00Z",
+        "updatedAt": "2025-06-19T09:00:00Z",
+        "barcode": "9694091865933"
+      }
+    },
+    {
+      "id": 114,
+      "title": "Smart Mens Shirts 114",
+      "description": "Smart Mens Shirts 114: producto sintético para demostraciones de DataPulse.",
+      "category": "mens-shirts",
+      "price": 237.81,
+      "discountPercentage": 19.09,
+      "rating": 2.57,
+      "stock": 69,
+      "brand": "Marca 16",
+      "sku": "MEN-00114",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-12-11T11:00:00Z",
+        "updatedAt": "2025-12-11T11:00:00Z",
+        "barcode": "8436139336341"
+      }
+    },
+    {
+      "id": 115,
+      "title": "Smart Furniture 115",
+      "description": "Smart Furniture 115: producto sintético para demostraciones de DataPulse.",
+      "category": "furniture",
+      "price": 656.23,
+      "discountPercentage": 2.79,
+      "rating": 3.86,
+      "stock": 139,
+      "brand": "Marca 01",
+      "sku": "FUR-00115",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-15T22:00:00Z",
+        "updatedAt": "2025-07-15T22:00:00Z",
+        "barcode": "7647370690955"
+      }
+    },
+    {
+      "id": 116,
+      "title": "Compact Tablets 116",
+      "description": "Compact Tablets 116: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 501.29,
+      "discountPercentage": 15.34,
+      "rating": 4.87,
+      "stock": 249,
+      "brand": "Marca 12",
+      "sku": "TAB-00116",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-13T13:00:00Z",
+        "updatedAt": "2025-07-13T13:00:00Z",
+        "barcode": "7097473179086"
+      }
+    },
+    {
+      "id": 117,
+      "title": "Vintage Womens Watches 117",
+      "description": "Vintage Womens Watches 117: producto sintético para demostraciones de DataPulse.",
+      "category": "womens-watches",
+      "price": 1990.44,
+      "discountPercentage": 3.73,
+      "rating": 4.41,
+      "stock": 9,
+      "brand": "Marca 23",
+      "sku": "WOM-00117",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-08-21T07:00:00Z",
+        "updatedAt": "2025-08-21T07:00:00Z",
+        "barcode": "7248337659588"
+      }
+    },
+    {
+      "id": 117,
+      "title": "Vintage Womens Watches 117",
+      "description": "Vintage Womens Watches 117: producto sintético para demostraciones de DataPulse.",
+      "category": "womens-watches",
+      "price": 2325.04,
+      "discountPercentage": 3.73,
+      "rating": 4.41,
+      "stock": 115,
+      "brand": "Marca 23",
+      "sku": "WOM-00117",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-08-21T07:00:00Z",
+        "updatedAt": "2026-01-03T22:49:00Z",
+        "barcode": "7248337659588"
+      }
+    },
+    {
+      "id": 118,
+      "title": "Eco Groceries 118",
+      "description": "Eco Groceries 118: producto sintético para demostraciones de DataPulse.",
+      "category": "groceries",
+      "price": 1100.17,
+      "discountPercentage": 12.08,
+      "rating": 4.11,
+      "stock": 225,
+      "brand": "Marca 07",
+      "sku": "GRO-00118",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-11-09T05:00:00Z",
+        "updatedAt": "2025-11-09T05:00:00Z",
+        "barcode": "4628915776260"
+      }
+    },
+    {
+      "id": 119,
+      "title": "Smart Kitchen Accessories 119",
+      "description": "Smart Kitchen Accessories 119: producto sintético para demostraciones de DataPulse.",
+      "category": "kitchen-accessories",
+      "price": 1889.4,
+      "discountPercentage": 14.2,
+      "rating": 4.09,
+      "stock": 112,
+      "brand": "Marca 21",
+      "sku": "KIT-00119",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-08-20T17:00:00Z",
+        "updatedAt": "2025-08-20T17:00:00Z",
+        "barcode": "6583572516147"
+      }
+    },
+    {
+      "id": 120,
+      "title": "Eco Furniture 120",
+      "description": "Eco Furniture 120: producto sintético para demostraciones de DataPulse.",
+      "category": "furniture",
+      "price": 1294.37,
+      "discountPercentage": 16.0,
+      "rating": 3.1,
+      "stock": 173,
+      "brand": "Marca 24",
+      "sku": "FUR-00120",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-06-27T10:00:00Z",
+        "updatedAt": "2025-06-27T10:00:00Z",
+        "barcode": "8618857198153"
+      }
+    },
+    {
+      "id": 121,
+      "title": "Premium Tablets 121",
+      "description": "Premium Tablets 121: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 631.7,
+      "discountPercentage": 12.91,
+      "rating": 4.46,
+      "stock": 208,
+      "brand": "Marca 18",
+      "sku": "TAB-00121",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-21T22:00:00Z",
+        "updatedAt": "2025-10-21T22:00:00Z",
+        "barcode": "1623401791004"
+      }
+    },
+    {
+      "id": 122,
+      "title": "Classic Mens Shirts 122",
+      "description": "Classic Mens Shirts 122: producto sintético para demostraciones de DataPulse.",
+      "category": "mens-shirts",
+      "price": 222.36,
+      "discountPercentage": 19.74,
+      "rating": 2.74,
+      "stock": 164,
+      "brand": "Marca 16",
+      "sku": "MEN-00122",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-15T16:00:00Z",
+        "updatedAt": "2025-07-15T16:00:00Z",
+        "barcode": "3452382957801"
+      }
+    },
+    {
+      "id": 123,
+      "title": "Pro Mens Shirts 123",
+      "description": "Pro Mens Shirts 123: producto sintético para demostraciones de DataPulse.",
+      "category": "mens-shirts",
+      "price": 280.15,
+      "discountPercentage": 16.85,
+      "rating": 3.54,
+      "stock": 197,
+      "brand": "Marca 19",
+      "sku": "MEN-00123",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-20T18:00:00Z",
+        "updatedAt": "2025-07-20T18:00:00Z",
+        "barcode": "9203620724790"
+      }
+    },
+    {
+      "id": 124,
+      "title": "Premium Tablets 124",
+      "description": "Premium Tablets 124: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 410.39,
+      "discountPercentage": 16.85,
+      "rating": 3.95,
+      "stock": 157,
+      "brand": "Marca 05",
+      "sku": "TAB-00124",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-11T13:00:00Z",
+        "updatedAt": "2025-10-11T13:00:00Z",
+        "barcode": "1611204803511"
+      }
+    },
+    {
+      "id": 125,
+      "title": "Vintage Fragrances 125",
+      "description": "Vintage Fragrances 125: producto sintético para demostraciones de DataPulse.",
+      "category": "fragrances",
+      "price": 189.98,
+      "discountPercentage": 17.05,
+      "rating": 3.54,
+      "stock": 14,
+      "brand": "Marca 15",
+      "sku": "FRA-00125",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-12-02T08:00:00Z",
+        "updatedAt": "2025-12-02T08:00:00Z",
+        "barcode": "5374364385487"
+      }
+    },
+    {
+      "id": 125,
+      "title": "Vintage Fragrances 125",
+      "description": "Vintage Fragrances 125: producto sintético para demostraciones de DataPulse.",
+      "category": "fragrances",
+      "price": 198.57,
+      "discountPercentage": 17.05,
+      "rating": 3.54,
+      "stock": 182,
+      "brand": "Marca 15",
+      "sku": "FRA-00125",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-12-02T08:00:00Z",
+        "updatedAt": "2026-01-02T09:54:00Z",
+        "barcode": "5374364385487"
+      }
+    },
+    {
+      "id": 125,
+      "title": "Vintage Fragrances 125",
+      "description": "Vintage Fragrances 125: producto sintético para demostraciones de DataPulse.",
+      "category": "fragrances",
+      "price": 211.44,
+      "discountPercentage": 17.05,
+      "rating": 3.54,
+      "stock": 178,
+      "brand": "Marca 15",
+      "sku": "FRA-00125",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-12-02T08:00:00Z",
+        "updatedAt": "2026-01-03T15:59:00Z",
+        "barcode": "5374364385487"
+      }
+    },
+    {
+      "id": 126,
+      "title": "Ultra Smartphones 126",
+      "description": "Ultra Smartphones 126: producto sintético para demostraciones de DataPulse.",
+      "category": "smartphones",
+      "price": 952.59,
+      "discountPercentage": 7.31,
+      "rating": 4.75,
+      "stock": 226,
+      "brand": "Marca 21",
+      "sku": "SMA-00126",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-09-20T20:00:00Z",
+        "updatedAt": "2025-09-20T20:00:00Z",
+        "barcode": "5906092012822"
+      }
+    },
+    {
+      "id": 127,
+      "title": "Compact Laptops 127",
+      "description": "Compact Laptops 127: producto sintético para demostraciones de DataPulse.",
+      "category": "laptops",
+      "price": 484.68,
+      "discountPercentage": 19.91,
+      "rating": 4.76,
+      "stock": 48,
+      "brand": "Marca 03",
+      "sku": "LAP-00127",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-09-18T00:00:00Z",
+        "updatedAt": "2025-09-18T00:00:00Z",
+        "barcode": "8779992803506"
+      }
+    },
+    {
+      "id": 128,
+      "title": "Classic Fragrances 128",
+      "description": "Classic Fragrances 128: producto sintético para demostraciones de DataPulse.",
+      "category": "fragrances",
+      "price": 1280.88,
+      "discountPercentage": 14.84,
+      "rating": 3.77,
+      "stock": 53,
+      "brand": "Marca 04",
+      "sku": "FRA-00128",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-08-16T03:00:00Z",
+        "updatedAt": "2025-08-16T03:00:00Z",
+        "barcode": "1910111533981"
+      }
+    },
+    {
+      "id": 129,
+      "title": "Eco Womens Watches 129",
+      "description": "Eco Womens Watches 129: producto sintético para demostraciones de DataPulse.",
+      "category": "womens-watches",
+      "price": 1477.31,
+      "discountPercentage": 2.02,
+      "rating": 3.65,
+      "stock": 48,
+      "brand": "Marca 13",
+      "sku": "WOM-00129",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-11-03T21:00:00Z",
+        "updatedAt": "2025-11-03T21:00:00Z",
+        "barcode": "9594719697723"
+      }
+    },
+    {
+      "id": 129,
+      "title": "Eco Womens Watches 129",
+      "description": "Eco Womens Watches 129: producto sintético para demostraciones de DataPulse.",
+      "category": "womens-watches",
+      "price": 1551.77,
+      "discountPercentage": 2.02,
+      "rating": 3.65,
+      "stock": 93,
+      "brand": "Marca 13",
+      "sku": "WOM-00129",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-11-03T21:00:00Z",
+        "updatedAt": "2026-01-02T06:20:00Z",
+        "barcode": "9594719697723"
+      }
+    },
+    {
+      "id": 130,
+      "title": "Compact Tablets 130",
+      "description": "Compact Tablets 130: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 1342.26,
+      "discountPercentage": 12.64,
+      "rating": 3.73,
+      "stock": 196,
+      "brand": "Marca 23",
+      "sku": "TAB-00130",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-08-03T07:00:00Z",
+        "updatedAt": "2025-08-03T07:00:00Z",
+        "barcode": "4619137320921"
+      }
+    },
+    {
+      "id": 131,
+      "title": "Pro Furniture 131",
+      "description": "Pro Furniture 131: producto sintético para demostraciones de DataPulse.",
+      "category": "furniture",
+      "price": 858.16,
+      "discountPercentage": 11.68,
+      "rating": 4.73,
+      "stock": 118,
+      "brand": "Marca 24",
+      "sku": "FUR-00131",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-05T11:00:00Z",
+        "updatedAt": "2025-10-05T11:00:00Z",
+        "barcode": "6169155511069"
+      }
+    },
+    {
+      "id": 132,
+      "title": "Pro Home Decoration 132",
+      "description": "Pro Home Decoration 132: producto sintético para demostraciones de DataPulse.",
+      "category": "home-decoration",
+      "price": 1860.14,
+      "discountPercentage": 9.71,
+      "rating": 4.87,
+      "stock": 214,
+      "brand": "Marca 02",
+      "sku": "HOM-00132",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-11-09T17:00:00Z",
+        "updatedAt": "2025-11-09T17:00:00Z",
+        "barcode": "8337044536122"
+      }
+    },
+    {
+      "id": 133,
+      "title": "Vintage Beauty 133",
+      "description": "Vintage Beauty 133: producto sintético para demostraciones de DataPulse.",
+      "category": "beauty",
+      "price": 763.67,
+      "discountPercentage": 12.8,
+      "rating": 3.16,
+      "stock": 158,
+      "brand": "Marca 07",
+      "sku": "BEA-00133",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-12-08T05:00:00Z",
+        "updatedAt": "2025-12-08T05:00:00Z",
+        "barcode": "2882840814396"
+      }
+    },
+    {
+      "id": 134,
+      "title": "Premium Laptops 134",
+      "description": "Premium Laptops 134: producto sintético para demostraciones de DataPulse.",
+      "category": "laptops",
+      "price": 320.64,
+      "discountPercentage": 18.49,
+      "rating": 4.16,
+      "stock": 200,
+      "brand": "Marca 17",
+      "sku": "LAP-00134",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-12-09T11:00:00Z",
+        "updatedAt": "2025-12-09T11:00:00Z",
+        "barcode": "5500730518048"
+      }
+    },
+    {
+      "id": 135,
+      "title": "Premium Beauty 135",
+      "description": "Premium Beauty 135: producto sintético para demostraciones de DataPulse.",
+      "category": "beauty",
+      "price": 1041.02,
+      "discountPercentage": 1.53,
+      "rating": 4.51,
+      "stock": 12,
+      "brand": "Marca 03",
+      "sku": "BEA-00135",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-03T22:00:00Z",
+        "updatedAt": "2025-10-03T22:00:00Z",
+        "barcode": "7894879683076"
+      }
+    },
+    {
+      "id": 136,
+      "title": "Smart Furniture 136",
+      "description": "Smart Furniture 136: producto sintético para demostraciones de DataPulse.",
+      "category": "furniture",
+      "price": 362.64,
+      "discountPercentage": 7.34,
+      "rating": 2.82,
+      "stock": 27,
+      "brand": "Marca 07",
+      "sku": "FUR-00136",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-09-22T04:00:00Z",
+        "updatedAt": "2025-09-22T04:00:00Z",
+        "barcode": "6358366739616"
+      }
+    },
+    {
+      "id": 137,
+      "title": "Compact Kitchen Accessories 137",
+      "description": "Compact Kitchen Accessories 137: producto sintético para demostraciones de DataPulse.",
+      "category": "kitchen-accessories",
+      "price": 1764.8,
+      "discountPercentage": 5.27,
+      "rating": 3.55,
+      "stock": 149,
+      "brand": "Marca 21",
+      "sku": "KIT-00137",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-09-20T17:00:00Z",
+        "updatedAt": "2025-09-20T17:00:00Z",
+        "barcode": "2695337852908"
+      }
+    },
+    {
+      "id": 137,
+      "title": "Compact Kitchen Accessories 137",
+      "description": "Compact Kitchen Accessories 137: producto sintético para demostraciones de DataPulse.",
+      "category": "kitchen-accessories",
+      "price": 2000.04,
+      "discountPercentage": 5.27,
+      "rating": 3.55,
+      "stock": 214,
+      "brand": "Marca 21",
+      "sku": "KIT-00137",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-09-20T17:00:00Z",
+        "updatedAt": "2026-01-03T07:20:00Z",
+        "barcode": "2695337852908"
+      }
+    },
+    {
+      "id": 138,
+      "title": "Classic Laptops 138",
+      "description": "Classic Laptops 138: producto sintético para demostraciones de DataPulse.",
+      "category": "laptops",
+      "price": 204.5,
+      "discountPercentage": 5.9,
+      "rating": 4.85,
+      "stock": 1,
+      "brand": "Marca 03",
+      "sku": "LAP-00138",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-09T02:00:00Z",
+        "updatedAt": "2025-07-09T02:00:00Z",
+        "barcode": "3435840671237"
+      }
+    },
+    {
+      "id": 139,
+      "title": "Pro Fragrances 139",
+      "description": "Pro Fragrances 139: producto sintético para demostraciones de DataPulse.",
+      "category": "fragrances",
+      "price": 662.63,
+      "discountPercentage": 17.57,
+      "rating": 4.57,
+      "stock": 80,
+      "brand": "Marca 15",
+      "sku": "FRA-00139",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-06-16T06:00:00Z",
+        "updatedAt": "2025-06-16T06:00:00Z",
+        "barcode": "8552430080191"
+      }
+    },
+    {
+      "id": 140,
+      "title": "Smart Furniture 140",
+      "description": "Smart Furniture 140: producto sintético para demostraciones de DataPulse.",
+      "category": "furniture",
+      "price": 1584.21,
+      "discountPercentage": 16.42,
+      "rating": 4.21,
+      "stock": 15,
+      "brand": "Marca 07",
+      "sku": "FUR-00140",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-09-06T23:00:00Z",
+        "updatedAt": "2025-09-06T23:00:00Z",
+        "barcode": "3126933745924"
+      }
+    },
+    {
+      "id": 141,
+      "title": "Eco Beauty 141",
+      "description": "Eco Beauty 141: producto sintético para demostraciones de DataPulse.",
+      "category": "beauty",
+      "price": 582.81,
+      "discountPercentage": 18.92,
+      "rating": 3.67,
+      "stock": 197,
+      "brand": "Marca 11",
+      "sku": "BEA-00141",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-12-11T00:00:00Z",
+        "updatedAt": "2025-12-11T00:00:00Z",
+        "barcode": "8003340885457"
+      }
+    },
+    {
+      "id": 141,
+      "title": "Eco Beauty 141",
+      "description": "Eco Beauty 141: producto sintético para demostraciones de DataPulse.",
+      "category": "beauty",
+      "price": 637.13,
+      "discountPercentage": 18.92,
+      "rating": 3.67,
+      "stock": 245,
+      "brand": "Marca 11",
+      "sku": "BEA-00141",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-12-11T00:00:00Z",
+        "updatedAt": "2026-01-03T01:27:00Z",
+        "barcode": "8003340885457"
+      }
+    },
+    {
+      "id": 142,
+      "title": "Ultra Tablets 142",
+      "description": "Ultra Tablets 142: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 792.08,
+      "discountPercentage": 9.58,
+      "rating": 2.99,
+      "stock": 190,
+      "brand": "Marca 13",
+      "sku": "TAB-00142",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-08-31T13:00:00Z",
+        "updatedAt": "2025-08-31T13:00:00Z",
+        "barcode": "8606041305086"
+      }
+    },
+    {
+      "id": 143,
+      "title": "Smart Womens Watches 143",
+      "description": "Smart Womens Watches 143: producto sintético para demostraciones de DataPulse.",
+      "category": "womens-watches",
+      "price": 514.83,
+      "discountPercentage": 5.68,
+      "rating": 3.34,
+      "stock": 245,
+      "brand": "Marca 25",
+      "sku": "WOM-00143",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-06-26T09:00:00Z",
+        "updatedAt": "2025-06-26T09:00:00Z",
+        "barcode": "2359476899480"
+      }
+    },
+    {
+      "id": 144,
+      "title": "Eco Fragrances 144",
+      "description": "Eco Fragrances 144: producto sintético para demostraciones de DataPulse.",
+      "category": "fragrances",
+      "price": 305.61,
+      "discountPercentage": 4.37,
+      "rating": 2.8,
+      "stock": 1,
+      "brand": "Marca 01",
+      "sku": "FRA-00144",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-03T08:00:00Z",
+        "updatedAt": "2025-10-03T08:00:00Z",
+        "barcode": "3057206776047"
+      }
+    },
+    {
+      "id": 144,
+      "title": "Eco Fragrances 144",
+      "description": "Eco Fragrances 144: producto sintético para demostraciones de DataPulse.",
+      "category": "fragrances",
+      "price": 329.31,
+      "discountPercentage": 4.37,
+      "rating": 2.8,
+      "stock": 34,
+      "brand": "Marca 01",
+      "sku": "FRA-00144",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-03T08:00:00Z",
+        "updatedAt": "2026-01-03T15:59:00Z",
+        "barcode": "3057206776047"
+      }
+    },
+    {
+      "id": 145,
+      "title": "Smart Groceries 145",
+      "description": "Smart Groceries 145: producto sintético para demostraciones de DataPulse.",
+      "category": "groceries",
+      "price": 402.16,
+      "discountPercentage": 2.52,
+      "rating": 2.97,
+      "stock": 118,
+      "brand": "Marca 17",
+      "sku": "GRO-00145",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-09-28T12:00:00Z",
+        "updatedAt": "2025-09-28T12:00:00Z",
+        "barcode": "3482493797060"
+      }
+    },
+    {
+      "id": 146,
+      "title": "Ultra Furniture 146",
+      "description": "Ultra Furniture 146: producto sintético para demostraciones de DataPulse.",
+      "category": "furniture",
+      "price": 650.99,
+      "discountPercentage": 4.07,
+      "rating": 4.85,
+      "stock": 182,
+      "brand": "Marca 03",
+      "sku": "FUR-00146",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-17T21:00:00Z",
+        "updatedAt": "2025-10-17T21:00:00Z",
+        "barcode": "9336096147835"
+      }
+    },
+    {
+      "id": 147,
+      "title": "Compact Beauty 147",
+      "description": "Compact Beauty 147: producto sintético para demostraciones de DataPulse.",
+      "category": "beauty",
+      "price": 1033.82,
+      "discountPercentage": 6.64,
+      "rating": 3.03,
+      "stock": 62,
+      "brand": "Marca 05",
+      "sku": "BEA-00147",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-06-15T11:00:00Z",
+        "updatedAt": "2025-06-15T11:00:00Z",
+        "barcode": "8683089205188"
+      }
+    },
+    {
+      "id": 148,
+      "title": "Compact Tablets 148",
+      "description": "Compact Tablets 148: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 1189.38,
+      "discountPercentage": 13.82,
+      "rating": 2.91,
+      "stock": 198,
+      "brand": "Marca 04",
+      "sku": "TAB-00148",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-24T10:00:00Z",
+        "updatedAt": "2025-07-24T10:00:00Z",
+        "barcode": "5676392189198"
+      }
+    },
+    {
+      "id": 149,
+      "title": "Ultra Fragrances 149",
+      "description": "Ultra Fragrances 149: producto sintético para demostraciones de DataPulse.",
+      "category": "fragrances",
+      "price": 507.81,
+      "discountPercentage": 12.55,
+      "rating": 3.08,
+      "stock": 137,
+      "brand": "Marca 04",
+      "sku": "FRA-00149",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-16T02:00:00Z",
+        "updatedAt": "2025-10-16T02:00:00Z",
+        "barcode": "7515734374929"
+      }
+    },
+    {
+      "id": 150,
+      "title": "Classic Sports Accessories 150",
+      "description": "Classic Sports Accessories 150: producto sintético para demostraciones de DataPulse.",
+      "category": "sports-accessories",
+      "price": 863.19,
+      "discountPercentage": 11.62,
+      "rating": 3.64,
+      "stock": 38,
+      "brand": "Marca 14",
+      "sku": "SPO-00150",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-06T20:00:00Z",
+        "updatedAt": "2025-10-06T20:00:00Z",
+        "barcode": "8545518747664"
+      }
+    },
+    {
+      "id": 151,
+      "title": "Pro Kitchen Accessories 151",
+      "description": "Pro Kitchen Accessories 151: producto sintético para demostraciones de DataPulse.",
+      "category": "kitchen-accessories",
+      "price": 817.88,
+      "discountPercentage": 12.09,
+      "rating": 4.51,
+      "stock": 30,
+      "brand": "Marca 19",
+      "sku": "KIT-00151",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-08-27T06:00:00Z",
+        "updatedAt": "2025-08-27T06:00:00Z",
+        "barcode": "9564130211974"
+      }
+    },
+    {
+      "id": 152,
+      "title": "Compact Beauty 152",
+      "description": "Compact Beauty 152: producto sintético para demostraciones de DataPulse.",
+      "category": "beauty",
+      "price": 757.7,
+      "discountPercentage": 14.55,
+      "rating": 3.41,
+      "stock": 70,
+      "brand": "Marca 11",
+      "sku": "BEA-00152",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-09T01:00:00Z",
+        "updatedAt": "2025-07-09T01:00:00Z",
+        "barcode": "1513265399333"
+      }
+    },
+    {
+      "id": 153,
+      "title": "Pro Home Decoration 153",
+      "description": "Pro Home Decoration 153: producto sintético para demostraciones de DataPulse.",
+      "category": "home-decoration",
+      "price": 905.26,
+      "discountPercentage": 8.47,
+      "rating": 4.27,
+      "stock": 198,
+      "brand": "Marca 05",
+      "sku": "HOM-00153",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-08-14T15:00:00Z",
+        "updatedAt": "2025-08-14T15:00:00Z",
+        "barcode": "3044160850053"
+      }
+    },
+    {
+      "id": 154,
+      "title": "Premium Laptops 154",
+      "description": "Premium Laptops 154: producto sintético para demostraciones de DataPulse.",
+      "category": "laptops",
+      "price": 840.9,
+      "discountPercentage": 15.55,
+      "rating": 3.03,
+      "stock": 125,
+      "brand": "Marca 07",
+      "sku": "LAP-00154",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-08-07T07:00:00Z",
+        "updatedAt": "2025-08-07T07:00:00Z",
+        "barcode": "8725887940064"
+      }
+    },
+    {
+      "id": 155,
+      "title": "Ultra Mens Shirts 155",
+      "description": "Ultra Mens Shirts 155: producto sintético para demostraciones de DataPulse.",
+      "category": "mens-shirts",
+      "price": 1297.53,
+      "discountPercentage": 16.08,
+      "rating": 3.64,
+      "stock": 202,
+      "brand": "Marca 01",
+      "sku": "MEN-00155",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-11-11T10:00:00Z",
+        "updatedAt": "2025-11-11T10:00:00Z",
+        "barcode": "6669244216018"
+      }
+    },
+    {
+      "id": 156,
+      "title": "Classic Kitchen Accessories 156",
+      "description": "Classic Kitchen Accessories 156: producto sintético para demostraciones de DataPulse.",
+      "category": "kitchen-accessories",
+      "price": 1459.76,
+      "discountPercentage": 13.25,
+      "rating": 3.69,
+      "stock": 101,
+      "brand": "Marca 22",
+      "sku": "KIT-00156",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-08-29T07:00:00Z",
+        "updatedAt": "2025-08-29T07:00:00Z",
+        "barcode": "7272125675497"
+      }
+    },
+    {
+      "id": 157,
+      "title": "Premium Home Decoration 157",
+      "description": "Premium Home Decoration 157: producto sintético para demostraciones de DataPulse.",
+      "category": "home-decoration",
+      "price": 1783.55,
+      "discountPercentage": 1.76,
+      "rating": 4.21,
+      "stock": 236,
+      "brand": "Marca 02",
+      "sku": "HOM-00157",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-09-17T01:00:00Z",
+        "updatedAt": "2025-09-17T01:00:00Z",
+        "barcode": "4292597017840"
+      }
+    },
+    {
+      "id": 158,
+      "title": "Pro Home Decoration 158",
+      "description": "Pro Home Decoration 158: producto sintético para demostraciones de DataPulse.",
+      "category": "home-decoration",
+      "price": 63.59,
+      "discountPercentage": 9.28,
+      "rating": 3.63,
+      "stock": 36,
+      "brand": "Marca 24",
+      "sku": "HOM-00158",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-05T05:00:00Z",
+        "updatedAt": "2025-07-05T05:00:00Z",
+        "barcode": "9718984848524"
+      }
+    },
+    {
+      "id": 159,
+      "title": "Premium Womens Watches 159",
+      "description": "Premium Womens Watches 159: producto sintético para demostraciones de DataPulse.",
+      "category": "womens-watches",
+      "price": 97.39,
+      "discountPercentage": 18.89,
+      "rating": 2.74,
+      "stock": 47,
+      "brand": "Marca 12",
+      "sku": "WOM-00159",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-14T10:00:00Z",
+        "updatedAt": "2025-07-14T10:00:00Z",
+        "barcode": "4165255835868"
+      }
+    },
+    {
+      "id": 160,
+      "title": "Classic Sports Accessories 160",
+      "description": "Classic Sports Accessories 160: producto sintético para demostraciones de DataPulse.",
+      "category": "sports-accessories",
+      "price": 1801.56,
+      "discountPercentage": 17.76,
+      "rating": 2.72,
+      "stock": 242,
+      "brand": "Marca 04",
+      "sku": "SPO-00160",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-04T19:00:00Z",
+        "updatedAt": "2025-07-04T19:00:00Z",
+        "barcode": "9826507247250"
+      }
+    },
+    {
+      "id": 160,
+      "title": "Classic Sports Accessories 160",
+      "description": "Classic Sports Accessories 160: producto sintético para demostraciones de DataPulse.",
+      "category": "sports-accessories",
+      "price": 1560.91,
+      "discountPercentage": 17.76,
+      "rating": 2.72,
+      "stock": 168,
+      "brand": "Marca 04",
+      "sku": "SPO-00160",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-04T19:00:00Z",
+        "updatedAt": "2026-01-03T05:35:00Z",
+        "barcode": "9826507247250"
+      }
+    },
+    {
+      "id": 161,
+      "title": "Ultra Laptops 161",
+      "description": "Ultra Laptops 161: producto sintético para demostraciones de DataPulse.",
+      "category": "laptops",
+      "price": 422.21,
+      "discountPercentage": 13.98,
+      "rating": 4.29,
+      "stock": 79,
+      "brand": "Marca 24",
+      "sku": "LAP-00161",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-08-17T06:00:00Z",
+        "updatedAt": "2025-08-17T06:00:00Z",
+        "barcode": "8163171391391"
+      }
+    },
+    {
+      "id": 162,
+      "title": "Smart Groceries 162",
+      "description": "Smart Groceries 162: producto sintético para demostraciones de DataPulse.",
+      "category": "groceries",
+      "price": 951.99,
+      "discountPercentage": 2.74,
+      "rating": 4.92,
+      "stock": 246,
+      "brand": "Marca 20",
+      "sku": "GRO-00162",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-09-25T18:00:00Z",
+        "updatedAt": "2025-09-25T18:00:00Z",
+        "barcode": "9059747865442"
+      }
+    },
+    {
+      "id": 163,
+      "title": "Compact Tablets 163",
+      "description": "Compact Tablets 163: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 1744.01,
+      "discountPercentage": 17.15,
+      "rating": 3.06,
+      "stock": 160,
+      "brand": "Marca 21",
+      "sku": "TAB-00163",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-21T23:00:00Z",
+        "updatedAt": "2025-07-21T23:00:00Z",
+        "barcode": "1165833203394"
+      }
+    },
+    {
+      "id": 164,
+      "title": "Eco Furniture 164",
+      "description": "Eco Furniture 164: producto sintético para demostraciones de DataPulse.",
+      "category": "furniture",
+      "price": 1426.72,
+      "discountPercentage": 19.69,
+      "rating": 3.48,
+      "stock": 117,
+      "brand": "Marca 19",
+      "sku": "FUR-00164",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-21T09:00:00Z",
+        "updatedAt": "2025-10-21T09:00:00Z",
+        "barcode": "9601993710861"
+      }
+    },
+    {
+      "id": 165,
+      "title": "Classic Tablets 165",
+      "description": "Classic Tablets 165: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 730.87,
+      "discountPercentage": 18.23,
+      "rating": 3.42,
+      "stock": 59,
+      "brand": "Marca 16",
+      "sku": "TAB-00165",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-08-10T02:00:00Z",
+        "updatedAt": "2025-08-10T02:00:00Z",
+        "barcode": "1972216004259"
+      }
+    },
+    {
+      "id": 166,
+      "title": "Pro Home Decoration 166",
+      "description": "Pro Home Decoration 166: producto sintético para demostraciones de DataPulse.",
+      "category": "home-decoration",
+      "price": 7.31,
+      "discountPercentage": 1.51,
+      "rating": 3.07,
+      "stock": 213,
+      "brand": "Marca 11",
+      "sku": "HOM-00166",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-11-02T20:00:00Z",
+        "updatedAt": "2025-11-02T20:00:00Z",
+        "barcode": "1449074907029"
+      }
+    },
+    {
+      "id": 167,
+      "title": "Ultra Home Decoration 167",
+      "description": "Ultra Home Decoration 167: producto sintético para demostraciones de DataPulse.",
+      "category": "home-decoration",
+      "price": 553.63,
+      "discountPercentage": 10.11,
+      "rating": 2.9,
+      "stock": 213,
+      "brand": "Marca 16",
+      "sku": "HOM-00167",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-10T12:00:00Z",
+        "updatedAt": "2025-07-10T12:00:00Z",
+        "barcode": "4781913402388"
+      }
+    },
+    {
+      "id": 167,
+      "title": "Ultra Home Decoration 167",
+      "description": "Ultra Home Decoration 167: producto sintético para demostraciones de DataPulse.",
+      "category": "home-decoration",
+      "price": 538.29,
+      "discountPercentage": 10.11,
+      "rating": 2.9,
+      "stock": 23,
+      "brand": "Marca 16",
+      "sku": "HOM-00167",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-10T12:00:00Z",
+        "updatedAt": "2026-01-03T09:38:00Z",
+        "barcode": "4781913402388"
+      }
+    },
+    {
+      "id": 168,
+      "title": "Eco Laptops 168",
+      "description": "Eco Laptops 168: producto sintético para demostraciones de DataPulse.",
+      "category": "laptops",
+      "price": 1234.83,
+      "discountPercentage": 12.15,
+      "rating": 4.15,
+      "stock": 12,
+      "brand": "Marca 06",
+      "sku": "LAP-00168",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-11-28T05:00:00Z",
+        "updatedAt": "2025-11-28T05:00:00Z",
+        "barcode": "4224923461761"
+      }
+    },
+    {
+      "id": 169,
+      "title": "Smart Smartphones 169",
+      "description": "Smart Smartphones 169: producto sintético para demostraciones de DataPulse.",
+      "category": "smartphones",
+      "price": 215.89,
+      "discountPercentage": 18.46,
+      "rating": 3.06,
+      "stock": 8,
+      "brand": "Marca 01",
+      "sku": "SMA-00169",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-09-01T12:00:00Z",
+        "updatedAt": "2025-09-01T12:00:00Z",
+        "barcode": "1934365303890"
+      }
+    },
+    {
+      "id": 170,
+      "title": "Compact Home Decoration 170",
+      "description": "Compact Home Decoration 170: producto sintético para demostraciones de DataPulse.",
+      "category": "home-decoration",
+      "price": 1978.42,
+      "discountPercentage": 1.71,
+      "rating": 2.59,
+      "stock": 102,
+      "brand": "Marca 23",
+      "sku": "HOM-00170",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-04T16:00:00Z",
+        "updatedAt": "2025-07-04T16:00:00Z",
+        "barcode": "5196294805665"
+      }
+    },
+    {
+      "id": 171,
+      "title": "Eco Groceries 171",
+      "description": "Eco Groceries 171: producto sintético para demostraciones de DataPulse.",
+      "category": "groceries",
+      "price": 1182.57,
+      "discountPercentage": 19.14,
+      "rating": 2.94,
+      "stock": 43,
+      "brand": "Marca 23",
+      "sku": "GRO-00171",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-11T23:00:00Z",
+        "updatedAt": "2025-07-11T23:00:00Z",
+        "barcode": "2270891081076"
+      }
+    },
+    {
+      "id": 172,
+      "title": "Smart Womens Watches 172",
+      "description": "Smart Womens Watches 172: producto sintético para demostraciones de DataPulse.",
+      "category": "womens-watches",
+      "price": 1972.51,
+      "discountPercentage": 8.74,
+      "rating": 4.66,
+      "stock": 119,
+      "brand": "Marca 10",
+      "sku": "WOM-00172",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-11T03:00:00Z",
+        "updatedAt": "2025-10-11T03:00:00Z",
+        "barcode": "2352060080237"
+      }
+    },
+    {
+      "id": 173,
+      "title": "Classic Beauty 173",
+      "description": "Classic Beauty 173: producto sintético para demostraciones de DataPulse.",
+      "category": "beauty",
+      "price": 1246.35,
+      "discountPercentage": 8.22,
+      "rating": 3.56,
+      "stock": 112,
+      "brand": "Marca 11",
+      "sku": "BEA-00173",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-08-08T08:00:00Z",
+        "updatedAt": "2025-08-08T08:00:00Z",
+        "barcode": "8840319951906"
+      }
+    },
+    {
+      "id": 173,
+      "title": "Classic Beauty 173",
+      "description": "Classic Beauty 173: producto sintético para demostraciones de DataPulse.",
+      "category": "beauty",
+      "price": 1046.17,
+      "discountPercentage": 8.22,
+      "rating": 3.56,
+      "stock": 34,
+      "brand": "Marca 11",
+      "sku": "BEA-00173",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-08-08T08:00:00Z",
+        "updatedAt": "2026-01-03T22:55:00Z",
+        "barcode": "8840319951906"
+      }
+    },
+    {
+      "id": 174,
+      "title": "Ultra Smartphones 174",
+      "description": "Ultra Smartphones 174: producto sintético para demostraciones de DataPulse.",
+      "category": "smartphones",
+      "price": 862.6,
+      "discountPercentage": 17.34,
+      "rating": 4.57,
+      "stock": 124,
+      "brand": "Marca 02",
+      "sku": "SMA-00174",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-29T02:00:00Z",
+        "updatedAt": "2025-10-29T02:00:00Z",
+        "barcode": "3212899947954"
+      }
+    },
+    {
+      "id": 175,
+      "title": "Classic Fragrances 175",
+      "description": "Classic Fragrances 175: producto sintético para demostraciones de DataPulse.",
+      "category": "fragrances",
+      "price": 881.7,
+      "discountPercentage": 17.42,
+      "rating": 4.51,
+      "stock": 149,
+      "brand": "Marca 18",
+      "sku": "FRA-00175",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-09-19T06:00:00Z",
+        "updatedAt": "2025-09-19T06:00:00Z",
+        "barcode": "5571650905648"
+      }
+    },
+    {
+      "id": 176,
+      "title": "Pro Tablets 176",
+      "description": "Pro Tablets 176: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 1050.21,
+      "discountPercentage": 6.35,
+      "rating": 2.86,
+      "stock": 178,
+      "brand": "Marca 14",
+      "sku": "TAB-00176",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-11-09T21:00:00Z",
+        "updatedAt": "2025-11-09T21:00:00Z",
+        "barcode": "2153812632506"
+      }
+    },
+    {
+      "id": 177,
+      "title": "Eco Kitchen Accessories 177",
+      "description": "Eco Kitchen Accessories 177: producto sintético para demostraciones de DataPulse.",
+      "category": "kitchen-accessories",
+      "price": 1550.34,
+      "discountPercentage": 16.49,
+      "rating": 4.96,
+      "stock": 55,
+      "brand": "Marca 10",
+      "sku": "KIT-00177",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-11-24T14:00:00Z",
+        "updatedAt": "2025-11-24T14:00:00Z",
+        "barcode": "6290402011169"
+      }
+    },
+    {
+      "id": 178,
+      "title": "Vintage Furniture 178",
+      "description": "Vintage Furniture 178: producto sintético para demostraciones de DataPulse.",
+      "category": "furniture",
+      "price": 1999.44,
+      "discountPercentage": 13.79,
+      "rating": 4.63,
+      "stock": 13,
+      "brand": "Marca 07",
+      "sku": "FUR-00178",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-06-27T15:00:00Z",
+        "updatedAt": "2025-06-27T15:00:00Z",
+        "barcode": "4313341108085"
+      }
+    },
+    {
+      "id": 179,
+      "title": "Pro Womens Watches 179",
+      "description": "Pro Womens Watches 179: producto sintético para demostraciones de DataPulse.",
+      "category": "womens-watches",
+      "price": 1655.28,
+      "discountPercentage": 8.91,
+      "rating": 3.88,
+      "stock": 66,
+      "brand": "Marca 04",
+      "sku": "WOM-00179",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-11-19T20:00:00Z",
+        "updatedAt": "2025-11-19T20:00:00Z",
+        "barcode": "1108001750166"
+      }
+    },
+    {
+      "id": 180,
+      "title": "Compact Groceries 180",
+      "description": "Compact Groceries 180: producto sintético para demostraciones de DataPulse.",
+      "category": "groceries",
+      "price": 1494.61,
+      "discountPercentage": 16.55,
+      "rating": 3.39,
+      "stock": 72,
+      "brand": "Marca 03",
+      "sku": "GRO-00180",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-09T08:00:00Z",
+        "updatedAt": "2025-07-09T08:00:00Z",
+        "barcode": "6606284725568"
+      }
+    },
+    {
+      "id": 180,
+      "title": "Compact Groceries 180",
+      "description": "Compact Groceries 180: producto sintético para demostraciones de DataPulse.",
+      "category": "groceries",
+      "price": 1339.14,
+      "discountPercentage": 16.55,
+      "rating": 3.39,
+      "stock": 170,
+      "brand": "Marca 03",
+      "sku": "GRO-00180",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-09T08:00:00Z",
+        "updatedAt": "2026-01-03T04:26:00Z",
+        "barcode": "6606284725568"
+      }
+    },
+    {
+      "id": 181,
+      "title": "Smart Fragrances 181",
+      "description": "Smart Fragrances 181: producto sintético para demostraciones de DataPulse.",
+      "category": "fragrances",
+      "price": 1868.24,
+      "discountPercentage": 1.17,
+      "rating": 3.87,
+      "stock": 79,
+      "brand": "Marca 04",
+      "sku": "FRA-00181",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-09-19T09:00:00Z",
+        "updatedAt": "2025-09-19T09:00:00Z",
+        "barcode": "7667125656782"
+      }
+    },
+    {
+      "id": 182,
+      "title": "Classic Tablets 182",
+      "description": "Classic Tablets 182: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 408.27,
+      "discountPercentage": 5.55,
+      "rating": 3.03,
+      "stock": 178,
+      "brand": "Marca 09",
+      "sku": "TAB-00182",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-08-17T05:00:00Z",
+        "updatedAt": "2025-08-17T05:00:00Z",
+        "barcode": "2596194925931"
+      }
+    },
+    {
+      "id": 183,
+      "title": "Classic Smartphones 183",
+      "description": "Classic Smartphones 183: producto sintético para demostraciones de DataPulse.",
+      "category": "smartphones",
+      "price": 899.09,
+      "discountPercentage": 1.84,
+      "rating": 4.99,
+      "stock": 47,
+      "brand": "Marca 19",
+      "sku": "SMA-00183",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-12-07T09:00:00Z",
+        "updatedAt": "2025-12-07T09:00:00Z",
+        "barcode": "7032036210633"
+      }
+    },
+    {
+      "id": 184,
+      "title": "Pro Tablets 184",
+      "description": "Pro Tablets 184: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 92.68,
+      "discountPercentage": 17.33,
+      "rating": 4.17,
+      "stock": 188,
+      "brand": "Marca 07",
+      "sku": "TAB-00184",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-06-30T11:00:00Z",
+        "updatedAt": "2025-06-30T11:00:00Z",
+        "barcode": "5638009435218"
+      }
+    },
+    {
+      "id": 185,
+      "title": "Eco Tablets 185",
+      "description": "Eco Tablets 185: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 1142.62,
+      "discountPercentage": 4.05,
+      "rating": 2.54,
+      "stock": 233,
+      "brand": "Marca 24",
+      "sku": "TAB-00185",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-11-29T12:00:00Z",
+        "updatedAt": "2025-11-29T12:00:00Z",
+        "barcode": "5467055945373"
+      }
+    },
+    {
+      "id": 186,
+      "title": "Ultra Smartphones 186",
+      "description": "Ultra Smartphones 186: producto sintético para demostraciones de DataPulse.",
+      "category": "smartphones",
+      "price": 359.1,
+      "discountPercentage": 14.66,
+      "rating": 4.75,
+      "stock": 106,
+      "brand": "Marca 12",
+      "sku": "SMA-00186",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-11-14T16:00:00Z",
+        "updatedAt": "2025-11-14T16:00:00Z",
+        "barcode": "1814170198884"
+      }
+    },
+    {
+      "id": 187,
+      "title": "Premium Sports Accessories 187",
+      "description": "Premium Sports Accessories 187: producto sintético para demostraciones de DataPulse.",
+      "category": "sports-accessories",
+      "price": 1504.98,
+      "discountPercentage": 10.98,
+      "rating": 4.74,
+      "stock": 3,
+      "brand": "Marca 03",
+      "sku": "SPO-00187",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-12T11:00:00Z",
+        "updatedAt": "2025-07-12T11:00:00Z",
+        "barcode": "7691992430803"
+      }
+    },
+    {
+      "id": 188,
+      "title": "Ultra Mens Shirts 188",
+      "description": "Ultra Mens Shirts 188: producto sintético para demostraciones de DataPulse.",
+      "category": "mens-shirts",
+      "price": 1565.44,
+      "discountPercentage": 7.57,
+      "rating": 2.95,
+      "stock": 20,
+      "brand": "Marca 06",
+      "sku": "MEN-00188",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-06-27T11:00:00Z",
+        "updatedAt": "2025-06-27T11:00:00Z",
+        "barcode": "2141465450810"
+      }
+    },
+    {
+      "id": 188,
+      "title": "Ultra Mens Shirts 188",
+      "description": "Ultra Mens Shirts 188: producto sintético para demostraciones de DataPulse.",
+      "category": "mens-shirts",
+      "price": 1370.82,
+      "discountPercentage": 7.57,
+      "rating": 2.95,
+      "stock": 203,
+      "brand": "Marca 06",
+      "sku": "MEN-00188",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-06-27T11:00:00Z",
+        "updatedAt": "2026-01-02T07:36:00Z",
+        "barcode": "2141465450810"
+      }
+    },
+    {
+      "id": 189,
+      "title": "Eco Womens Watches 189",
+      "description": "Eco Womens Watches 189: producto sintético para demostraciones de DataPulse.",
+      "category": "womens-watches",
+      "price": 797.55,
+      "discountPercentage": 0.12,
+      "rating": 4.91,
+      "stock": 197,
+      "brand": "Marca 09",
+      "sku": "WOM-00189",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-06-25T05:00:00Z",
+        "updatedAt": "2025-06-25T05:00:00Z",
+        "barcode": "4278509947414"
+      }
+    },
+    {
+      "id": 189,
+      "title": "Eco Womens Watches 189",
+      "description": "Eco Womens Watches 189: producto sintético para demostraciones de DataPulse.",
+      "category": "womens-watches",
+      "price": 854.02,
+      "discountPercentage": 0.12,
+      "rating": 4.91,
+      "stock": 248,
+      "brand": "Marca 09",
+      "sku": "WOM-00189",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-06-25T05:00:00Z",
+        "updatedAt": "2026-01-02T03:14:00Z",
+        "barcode": "4278509947414"
+      }
+    },
+    {
+      "id": 190,
+      "title": "Smart Home Decoration 190",
+      "description": "Smart Home Decoration 190: producto sintético para demostraciones de DataPulse.",
+      "category": "home-decoration",
+      "price": 397.18,
+      "discountPercentage": 14.04,
+      "rating": 4.23,
+      "stock": 233,
+      "brand": "Marca 08",
+      "sku": "HOM-00190",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-07-05T04:00:00Z",
+        "updatedAt": "2025-07-05T04:00:00Z",
+        "barcode": "4886981705097"
+      }
+    },
+    {
+      "id": 191,
+      "title": "Smart Smartphones 191",
+      "description": "Smart Smartphones 191: producto sintético para demostraciones de DataPulse.",
+      "category": "smartphones",
+      "price": 1304.81,
+      "discountPercentage": 7.72,
+      "rating": 4.99,
+      "stock": 236,
+      "brand": "Marca 22",
+      "sku": "SMA-00191",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-14T16:00:00Z",
+        "updatedAt": "2025-10-14T16:00:00Z",
+        "barcode": "9074635642586"
+      }
+    },
+    {
+      "id": 192,
+      "title": "Premium Mens Shirts 192",
+      "description": "Premium Mens Shirts 192: producto sintético para demostraciones de DataPulse.",
+      "category": "mens-shirts",
+      "price": 1294.24,
+      "discountPercentage": 3.26,
+      "rating": 4.54,
+      "stock": 26,
+      "brand": "Marca 19",
+      "sku": "MEN-00192",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-09-07T16:00:00Z",
+        "updatedAt": "2025-09-07T16:00:00Z",
+        "barcode": "8883452741763"
+      }
+    },
+    {
+      "id": 193,
+      "title": "Ultra Sports Accessories 193",
+      "description": "Ultra Sports Accessories 193: producto sintético para demostraciones de DataPulse.",
+      "category": "sports-accessories",
+      "price": 1696.15,
+      "discountPercentage": 9.79,
+      "rating": 3.36,
+      "stock": 157,
+      "brand": "Marca 15",
+      "sku": "SPO-00193",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-10-16T19:00:00Z",
+        "updatedAt": "2025-10-16T19:00:00Z",
+        "barcode": "2725040728555"
+      }
+    },
+    {
+      "id": 194,
+      "title": "Compact Groceries 194",
+      "description": "Compact Groceries 194: producto sintético para demostraciones de DataPulse.",
+      "category": "groceries",
+      "price": 281.78,
+      "discountPercentage": 10.66,
+      "rating": 2.73,
+      "stock": 44,
+      "brand": "Marca 17",
+      "sku": "GRO-00194",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2025-11-26T12:00:00Z",
+        "updatedAt": "2025-11-26T12:00:00Z",
+        "barcode": "3701421299411"
+      }
+    },
+    {
+      "id": 195,
+      "title": "Eco Kitchen Accessories 195",
+      "description": "Eco Kitchen Accessories 195: producto sintético para demostraciones de DataPulse.",
+      "category": "kitchen-accessories",
+      "price": 1785.44,
+      "discountPercentage": 1.44,
+      "rating": 4.58,
+      "stock": 59,
+      "brand": "Marca 20",
+      "sku": "KIT-00195",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2026-01-03T13:22:00Z",
+        "updatedAt": "2026-01-03T13:22:00Z",
+        "barcode": "9345169366227"
+      }
+    },
+    {
+      "id": 196,
+      "title": "Eco Tablets 196",
+      "description": "Eco Tablets 196: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 1583.87,
+      "discountPercentage": 15.86,
+      "rating": 4.38,
+      "stock": 22,
+      "brand": "Marca 14",
+      "sku": "TAB-00196",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2026-01-03T15:08:00Z",
+        "updatedAt": "2026-01-03T15:08:00Z",
+        "barcode": "7885320180415"
+      }
+    },
+    {
+      "id": 197,
+      "title": "Smart Tablets 197",
+      "description": "Smart Tablets 197: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 152.51,
+      "discountPercentage": 14.11,
+      "rating": 3.83,
+      "stock": 117,
+      "brand": "Marca 09",
+      "sku": "TAB-00197",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2026-01-03T04:03:00Z",
+        "updatedAt": "2026-01-03T04:03:00Z",
+        "barcode": "2138695981144"
+      }
+    },
+    {
+      "id": 198,
+      "title": "Premium Home Decoration 198",
+      "description": "Premium Home Decoration 198: producto sintético para demostraciones de DataPulse.",
+      "category": "home-decoration",
+      "price": 1274.55,
+      "discountPercentage": 16.61,
+      "rating": 4.09,
+      "stock": 224,
+      "brand": "Marca 03",
+      "sku": "HOM-00198",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2026-01-03T17:30:00Z",
+        "updatedAt": "2026-01-03T17:30:00Z",
+        "barcode": "9272647708941"
+      }
+    },
+    {
+      "id": 199,
+      "title": "Eco Tablets 199",
+      "description": "Eco Tablets 199: producto sintético para demostraciones de DataPulse.",
+      "category": "tablets",
+      "price": 744.41,
+      "discountPercentage": 5.62,
+      "rating": 2.71,
+      "stock": 122,
+      "brand": "Marca 24",
+      "sku": "TAB-00199",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2026-01-03T04:28:00Z",
+        "updatedAt": "2026-01-03T04:28:00Z",
+        "barcode": "4051201446452"
+      }
+    },
+    {
+      "id": 200,
+      "title": "Classic Fragrances 200",
+      "description": "Classic Fragrances 200: producto sintético para demostraciones de DataPulse.",
+      "category": "fragrances",
+      "price": 1876.71,
+      "discountPercentage": 14.61,
+      "rating": 2.8,
+      "stock": 104,
+      "brand": "Marca 22",
+      "sku": "FRA-00200",
+      "availabilityStatus": "In Stock",
+      "meta": {
+        "createdAt": "2026-01-03T09:57:00Z",
+        "updatedAt": "2026-01-03T09:57:00Z",
+        "barcode": "8884958032612"
+      }
+    }
+  ]
+}
