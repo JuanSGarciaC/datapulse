@@ -1,0 +1,5 @@
+# Finales de línea LF en el repo: evita que scripts sh/Docker se rompan al clonar en Windows.
+* text=auto eol=lf
+*.ps1 text eol=crlf
+*.png binary
+*.parquet binary

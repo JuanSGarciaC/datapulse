@@ -1,0 +1,38 @@
+# Secretos y configuración local
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+build/
+dist/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Datos generados en ejecución (los datos de ejemplo versionados van en data/samples/)
+data/landing/*
+!data/landing/.gitkeep
+
+# dbt (Fase 5)
+dbt/target/
+dbt/logs/
+dbt/dbt_packages/
+
+# Prefect
+.prefect/
+
+# IDE / SO
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

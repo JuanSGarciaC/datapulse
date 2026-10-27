@@ -1,0 +1,135 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  UV_VERSION: "0.11.33"
+  PYTHON_VERSION: "3.13"
+
+jobs:
+  quality:
+    name: Lint y tipos
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
+        with:
+          version: ${{ env.UV_VERSION }}
+          python-version: ${{ env.PYTHON_VERSION }}
+          enable-cache: true
+      - run: uv sync --frozen
+      - name: Formato
+        run: uv run ruff format --check .
+      - name: Lint
+        run: uv run ruff check . --output-format github
+      - name: Tipos (mypy estricto)
+        run: uv run mypy
+
+  tests:
+    name: Pruebas (unitarias + integración con PostgreSQL)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: datapulse_admin
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: datapulse_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U datapulse_admin"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      CI: "true"  # las pruebas de integración fallan (no se omiten) si no hay base de datos
+      DATAPULSE_TEST_DB_HOST: localhost
+      DATAPULSE_TEST_DB_PORT: "5432"
+      DATAPULSE_TEST_DB_NAME: datapulse_test
+      DATAPULSE_TEST_DB_USER: datapulse_admin
+      DATAPULSE_TEST_DB_PASSWORD: ci-only-password
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
+        with:
+          version: ${{ env.UV_VERSION }}
+          python-version: ${{ env.PYTHON_VERSION }}
+          enable-cache: true
+      - run: uv sync --frozen
+      - name: Pruebas con cobertura
+        run: uv run pytest --cov --cov-report=term --cov-report=xml --cov-fail-under=90
+      - name: Sin deriva entre código y migraciones
+        env:
+          DATAPULSE_DB_HOST: localhost
+          DATAPULSE_DB_NAME: datapulse_test
+          DATAPULSE_DB_PASSWORD: ci-only-password
+        run: uv run alembic upgrade head && uv run alembic check
+
+  security:
+    name: Seguridad
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0  # gitleaks revisa todo el historial, no solo el último commit
+      - uses: astral-sh/setup-uv@v10
+        with:
+          version: ${{ env.UV_VERSION }}
+          python-version: ${{ env.PYTHON_VERSION }}
+          enable-cache: true
+      - run: uv sync --frozen
+      - name: Análisis estático (bandit)
+        run: uv run bandit -c pyproject.toml -r src
+      - name: Vulnerabilidades en dependencias (pip-audit)
+        run: |
+          uv export --frozen --no-dev --no-hashes --no-emit-project --format requirements-txt > /tmp/requirements.txt
+          uv run pip-audit -r /tmp/requirements.txt --progress-spinner off
+      - name: Secretos en el historial (gitleaks)
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  docker:
+    name: Docker (build + compose real)
+    runs-on: ubuntu-latest
+    needs: [quality, tests]
+    steps:
+      - uses: actions/checkout@v7
+      - name: Generar .env efímero con contraseñas aleatorias
+        run: |
+          cp .env.example .env
+          for var in DATAPULSE_DB_PASSWORD DATAPULSE_PIPELINE_DB_PASSWORD DATAPULSE_DBT_DB_PASSWORD DATAPULSE_API_DB_PASSWORD; do
+            sed -i "s|^${var}=.*|${var}=$(openssl rand -hex 16)|" .env
+          done
+      - name: Validar docker-compose.yml
+        run: docker compose config -q
+      - name: Construir imagen
+        run: docker compose build
+      - name: Levantar base y aplicar migraciones dentro de contenedores
+        run: docker compose up --exit-code-from migrate migrate
+      - name: Verificar que el usuario de la API es de solo lectura
+        run: |
+          set -a; . ./.env; set +a
+          docker compose exec -T -e PGPASSWORD="$DATAPULSE_API_DB_PASSWORD" postgres \
+            psql -U datapulse_api -d datapulse -tAc "select current_user" | grep -x dp_reader
+          if docker compose exec -T -e PGPASSWORD="$DATAPULSE_API_DB_PASSWORD" postgres \
+            psql -U datapulse_api -d datapulse -c "delete from ops.pipeline_runs"; then
+            echo "ERROR: el usuario de la API pudo borrar datos"; exit 1
+          fi
+      - name: Imagen ejecuta como usuario no root
+        run: test "$(docker run --rm --entrypoint id datapulse-app:local -u)" = "10001"
+      - name: Logs ante fallo
+        if: failure()
+        run: docker compose logs --no-color
+      - name: Limpieza
+        if: always()
+        run: docker compose down -v

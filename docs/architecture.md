@@ -1,0 +1,100 @@
+# Arquitectura de DataPulse
+
+> Estado: **Fase 1 implementada** (fundaciones: base de datos, migraciones, roles, CI).
+> Los componentes marcados con *(fase N)* están diseñados pero aún no existen en el código.
+
+## Vista general
+
+```mermaid
+flowchart LR
+    subgraph Fuentes
+        CSV[CSV clientes]
+        JSON[JSON pedidos]
+        API[API REST paginada<br/>mock-source · fase 2]
+    end
+
+    subgraph Orquestación["Prefect · fase 4"]
+        EX[extract] --> VA[validate<br/>contratos · fase 3] --> LO[load_raw]
+        VA -- filas inválidas --> Q[(raw.quarantine)]
+    end
+
+    subgraph PostgreSQL
+        RAW[(raw<br/>append-only)]
+        STG[(staging<br/>vistas dbt)]
+        MART[(marts<br/>estrella)]
+        OPS[(ops<br/>runs · registro · calidad)]
+    end
+
+    CSV --> EX
+    JSON --> EX
+    API --> EX
+    LO --> RAW
+    RAW -- dbt · fase 5 --> STG -- dbt --> MART
+    Orquestación -. métricas y estado .-> OPS
+    MART --> FAPI[FastAPI solo lectura · fase 6]
+    OPS --> FAPI
+    FAPI --> DASH[Dashboard Streamlit · fase 7]
+```
+
+## Capas y propiedad
+
+| Esquema   | Contenido                                   | Gestionado por | Escribe        | Lee                     |
+|-----------|---------------------------------------------|----------------|----------------|-------------------------|
+| `raw`     | Datos tal como llegaron + columnas técnicas | Alembic        | `dp_pipeline` (solo INSERT) | `dp_transform` |
+| `staging` | Limpieza, tipado, deduplicación (vistas)    | dbt            | `dp_transform` | —                       |
+| `marts`   | Hechos y dimensiones                        | dbt            | `dp_transform` | `dp_reader` (API)       |
+| `ops`     | Ejecuciones, lotes, marcas de agua, calidad | Alembic        | `dp_pipeline`  | `dp_reader` (API)       |
+
+**Por qué así:** cada herramienta es dueña de sus objetos (Alembic nunca toca tablas de dbt
+y viceversa), y la API no puede ver datos sin procesar ni modificar nada. Ver
+[ADR-0003](adr/0003-elt-layers-and-schema-ownership.md) y [ADR-0005](adr/0005-least-privilege-roles.md).
+
+## Roles y usuarios
+
+```mermaid
+flowchart TB
+    subgraph "Roles de grupo (NOLOGIN, creados por migración)"
+        P[dp_pipeline]
+        T[dp_transform]
+        R[dp_reader]
+    end
+    subgraph "Usuarios de login (bootstrap, contraseña desde entorno)"
+        UP[datapulse_pipeline] --> P
+        UT[datapulse_dbt] --> T
+        UR[datapulse_api] --> R
+    end
+    A[datapulse_admin<br/>solo migraciones] -. crea .-> P & T & R
+```
+
+Cada usuario tiene `SET role` por defecto a su grupo. Consecuencia práctica: las tablas que
+crea dbt pertenecen a `dp_transform` (no al usuario concreto), por lo que los privilegios por
+defecto que dan `SELECT` a la API se aplican siempre.
+
+## Modelo operativo (`ops`) — implementado
+
+| Tabla                | Granularidad                         | Clave                          | Uso                                    |
+|----------------------|--------------------------------------|--------------------------------|----------------------------------------|
+| `pipeline_runs`      | 1 fila por ejecución de flujo        | `run_id`                       | Estado, duración, volúmenes, error     |
+| `task_runs`          | 1 fila por intento de tarea          | `task_run_id`                  | Reintentos y tiempos por etapa         |
+| `ingestion_registry` | 1 fila por lote único de una fuente  | `batch_id`; único `(source_name, content_sha256)` | Idempotencia de archivos y trazabilidad |
+| `watermarks`         | 1 fila por fuente incremental        | `source_name`                  | Carga incremental de la API            |
+| `quality_results`    | 1 fila por regla evaluada en un lote | `id`                           | Dashboard de calidad                   |
+
+Los estados se validan con `CHECK` constraints (no `ENUM`), ver ADR-0003.
+
+## Trazabilidad (diseño)
+
+`marts.fct_*._batch_id` → `ops.ingestion_registry` (archivo/página + sha256) →
+`ops.pipeline_runs` (cuándo, quién lo disparó, resultado). dbt docs aporta el linaje entre modelos.
+
+## Componentes de despliegue
+
+| Servicio        | Fase | Motivo                                               |
+|-----------------|------|------------------------------------------------------|
+| `postgres`      | 1    | Almacenamiento de todas las capas                     |
+| `migrate`       | 1    | Migraciones + usuarios de servicio (one-shot, idempotente) |
+| `mock-source`   | 2    | API externa simulada con fallos inyectables (prueba)  |
+| `prefect-server`| 4    | Estado de flujos, programación, UI                   |
+| `worker`        | 4    | Ejecuta los flujos                                   |
+| `api`           | 6    | Indicadores y resultados de pipelines                 |
+| `dashboard`     | 7    | Calidad, volúmenes, tiempos y errores                 |
