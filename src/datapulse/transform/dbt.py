@@ -8,16 +8,21 @@ analizar texto de la consola.
 from __future__ import annotations
 
 import logging
+import os
 import uuid
+from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from dbt.cli.main import dbtRunner
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy import Engine
 
 from datapulse.db.schema import quality_results
+
+if TYPE_CHECKING:
+    from dbt.cli.main import dbtRunner
 
 logger = logging.getLogger(__name__)
 
@@ -71,6 +76,36 @@ class TransformOutcome:
         }
 
 
+@contextmanager
+def environ_guard() -> Iterator[None]:
+    """Restaura ``os.environ`` tal como estaba al salir.
+
+    dbt-core 1.12 ejecuta ``load_dotenv(find_dotenv(usecwd=True))`` **al importarse** y en
+    cada ``invoke`` (``dbt/cli/main.py``): copia todo el ``.env`` del directorio actual (o de
+    un padre) a las variables del proceso, secretos incluidos, y las hereda cualquier
+    subproceso. No hay opción para desactivarlo. dbt necesita esas variables mientras se
+    ejecuta (``profiles.yml`` usa ``env_var()``), así que no se bloquea: se **confina** a la
+    duración de la llamada. En los contenedores no hay ``.env`` (``.dockerignore``).
+    """
+    snapshot = dict(os.environ)
+    try:
+        yield
+    finally:
+        for key in os.environ.keys() - snapshot.keys():
+            del os.environ[key]
+        for key, value in snapshot.items():
+            if os.environ.get(key) != value:
+                os.environ[key] = value
+
+
+def _dbt_runner() -> dbtRunner:
+    """Importación diferida y confinada: importar este módulo no toca ``os.environ``."""
+    with environ_guard():
+        from dbt.cli.main import dbtRunner  # noqa: PLC0415
+
+        return dbtRunner()
+
+
 def _qualified(unique_id: str) -> str:
     """``model.datapulse.stg_orders`` → ``staging.stg_orders``.
 
@@ -115,7 +150,8 @@ def run_build(*, full_refresh: bool = False, select: str | None = None) -> Trans
     if select:
         args += ["--select", select]
 
-    result = dbtRunner().invoke(args)
+    with environ_guard():
+        result = _dbt_runner().invoke(args)
     if result.exception is not None:
         # Error antes de ejecutar nodos (perfil, conexión, compilación).
         raise TransformError(f"dbt no pudo ejecutarse: {result.exception}")
