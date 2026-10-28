@@ -125,6 +125,11 @@ jobs:
     needs: [quality, tests]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e  # v10.3.2
+        with:
+          version: ${{ env.UV_VERSION }}
+          python-version: ${{ env.PYTHON_VERSION }}
+          enable-cache: true
       - name: Generar .env efímero con contraseñas aleatorias
         run: |
           cp .env.example .env
@@ -186,7 +191,10 @@ jobs:
           for i in $(seq 1 30); do
             names=$(curl -fsS -X POST "http://127.0.0.1:${PREFECT_HOST_PORT}/api/deployments/filter" \
               -H 'content-type: application/json' -d '{}' | python3 -c 'import sys,json; print(sorted(d["name"] for d in json.load(sys.stdin)))' || true)
-            echo "$names" | grep -q "daily" && break; sleep 2
+            # Esperar a AMBOS: el worker los registra uno tras otro (romper con el primero
+            # era una condición de carrera que hacía fallar el job de forma intermitente).
+            echo "$names" | grep -q "daily" && echo "$names" | grep -q "products-incremental" && break
+            sleep 2
           done
           echo "despliegues: $names"; echo "$names" | grep -q "products-incremental"
       - name: API de indicadores en contenedor (auth + datos reales)
@@ -208,6 +216,20 @@ jobs:
           docker compose exec -T dashboard python -c "from datapulse.dashboard.client import ApiClient; c = ApiClient.from_settings(); k = c.kpis(); assert k['orders'] > 0, k; assert c.quality_summary(); assert c.pipeline_runs(); print('dashboard -> API OK:', k['orders'], 'pedidos')"
           # Sin credenciales de base de datos en el contenedor del dashboard.
           test -z "$(docker compose exec -T dashboard env | grep -E '^DATAPULSE_DB_' || true)"
+      - name: E2E de caja negra contra el stack (admin → Prefect → worker → fuente con fallos → API)
+        env:
+          CI: "true"
+        run: |
+          set -a; . ./.env; set +a
+          uv sync --frozen
+          export DATAPULSE_E2E_API_URL="http://127.0.0.1:${API_HOST_PORT}"
+          export DATAPULSE_E2E_API_KEY="$CI_API_KEY"
+          export DATAPULSE_E2E_ADMIN_KEY="$DATAPULSE_API_ADMIN_KEY"
+          export DATAPULSE_E2E_MOCK_URL="http://127.0.0.1:${MOCK_HOST_PORT}"
+          export DATAPULSE_E2E_MOCK_ADMIN_TOKEN="$DATAPULSE_MOCK_ADMIN_TOKEN"
+          export DATAPULSE_E2E_DASHBOARD_URL="http://127.0.0.1:${DASHBOARD_HOST_PORT}"
+          export DATAPULSE_E2E_PREFECT_URL="http://127.0.0.1:${PREFECT_HOST_PORT}"
+          uv run pytest tests/e2e -m e2e -v -p no:cacheprovider
       - name: Imagen ejecuta como usuario no root
         run: test "$(docker run --rm --entrypoint id datapulse-app:local -u)" = "10001"
       - name: Logs ante fallo

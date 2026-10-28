@@ -7,8 +7,9 @@
 Plataforma de ingeniería de datos que convierte archivos (CSV, JSON) y APIs REST paginadas en
 información **confiable, trazable e idempotente** para análisis de negocio.
 
-> **Estado del proyecto: Fase 7 de 8 — Dashboard.** Lo que existe hoy está implementado y
-> probado; lo que está en el roadmap está **diseñado pero no implementado**. Ver [Roadmap](#roadmap).
+> **Estado del proyecto: las 8 fases están implementadas y verificadas en CI**, incluida una
+> prueba de extremo a extremo contra el stack en contenedores. Despliegue y operación en
+> [docs/deployment.md](docs/deployment.md); limitaciones conocidas al final de este documento.
 
 ## Qué demuestra este proyecto
 
@@ -123,6 +124,7 @@ En Linux/macOS los mismos comandos existen en el `Makefile` (`make setup`, `make
 | Integración — fase 5 | dbt real: granularidad, SCD2 *point-in-time*, versiones tardías, avisos de huérfanos exactos, incremental = *full refresh*, permisos de lectura | PostgreSQL |
 | API — fase 6 | Unitarias (auth, validación, errores, cabeceras) e integración contra almacén real con rol `dp_reader`: cada KPI se compara con un cálculo SQL independiente | PostgreSQL |
 | Contrato (`tests/contract`) | La misma suite contra la API simulada y contra DummyJSON real (`-m live`) | Internet para `live` |
+| E2E (`tests/e2e`) | Caja negra contra el stack en contenedores: disparo por la API admin → Prefect → worker → fuente con fallos y límite de peticiones → API; defectos conocidos visibles por HTTP | Stack levantado (`-m e2e`, en CI) |
 
 ```powershell
 .\scripts\dev.ps1 test-unit    # sin base de datos
@@ -178,7 +180,25 @@ scripts/dev.ps1          comandos para Windows
 | 5 | dbt: staging, SCD2, modelo estrella, pruebas y conciliación | ✅ Implementada |
 | 6 | API de indicadores y resultados de pipelines | ✅ Implementada |
 | 7 | Dashboard de calidad, volúmenes, tiempos y errores | ✅ Implementada |
-| 8 | Integración final, pruebas E2E y documentación de despliegue | Pendiente |
+| 8 | Integración final, pruebas E2E y documentación de despliegue | ✅ Implementada |
+
+## Limitaciones conocidas
+
+Lo que este proyecto **no** hace o no se pudo verificar, dicho explícitamente:
+
+- **`scripts/dev.ps1` no se ejecutó en un Windows real** (el entorno de desarrollo no tenía
+  PowerShell). Los comandos que llama sí están verificados; Docker Compose es la vía probada.
+- **Carga incremental con escaneo completo:** DummyJSON no filtra por fecha, así que cada
+  ejecución lee todo el catálogo y filtra en el cliente (`updatedAt` > marca de agua −
+  solapamiento). Con 200 productos es trivial; con millones haría falta una fuente que
+  filtre en el servidor o CDC.
+- **Pensado para una máquina:** sin TLS, sin login en el dashboard y con secretos en `.env`.
+  La lista de cambios para un entorno real está en [deployment.md](docs/deployment.md#4-antes-de-un-entorno-real).
+- **`rows_evaluated` de las pruebas de dbt es desconocido:** dbt informa las filas que fallan,
+  no las evaluadas; se registra así y se marca en `details` (ver [data-model.md](docs/data-model.md)).
+- **dbt-core copia el `.env` a las variables del proceso** al importarse; DataPulse lo confina
+  (ver [pipeline.md](docs/pipeline.md#hallazgo-dbt-core-copia-el-env-a-las-variables-del-proceso)),
+  pero es un comportamiento de la dependencia, no del proyecto.
 
 ## Licencia
 

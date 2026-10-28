@@ -75,11 +75,12 @@ disallow_untyped_calls = false
 # ---------------------------------------------------------------- pruebas
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-ra --strict-markers --strict-config -m 'not live'"
+addopts = "-ra --strict-markers --strict-config -m 'not live and not e2e'"
 filterwarnings = ["error"]
 markers = [
     "integration: requiere PostgreSQL real (DATAPULSE_TEST_DB_* o valores por defecto)",
     "live: llama a servicios externos reales (DummyJSON); se ejecuta con -m live",
+    "e2e: caja negra contra el stack desplegado (docker compose); se ejecuta con -m e2e",
 ]
 
 [tool.coverage.run]
