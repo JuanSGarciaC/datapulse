@@ -1,6 +1,6 @@
 # Arquitectura de DataPulse
 
-> Estado: **Fases 1 a 6 implementadas** (fundaciones, datos y API simulada, ingesta, orquestación, modelado dbt). Modelo detallado en [data-model.md](data-model.md).
+> Estado: **Fases 1 a 7 implementadas** (fundaciones, datos y API simulada, ingesta, orquestación, modelado dbt, API y dashboard). Modelo detallado en [data-model.md](data-model.md).
 > Los componentes marcados con *(fase N)* están diseñados pero aún no existen en el código.
 
 ## Vista general
@@ -33,7 +33,7 @@ flowchart LR
     Orquestación -. métricas y estado .-> OPS
     MART --> FAPI[FastAPI solo lectura]
     OPS --> FAPI
-    FAPI --> DASH[Dashboard Streamlit · fase 7]
+    FAPI --> DASH[Dashboard Streamlit<br/>solo vía API]
 ```
 
 ## Capas y propiedad
@@ -97,7 +97,7 @@ Los estados se validan con `CHECK` constraints (no `ENUM`), ver ADR-0003.
 | `prefect-server`| 4 ✅ | Estado de flujos, programación, UI                   |
 | `worker`        | 4 ✅ | Ejecuta los flujos                                   |
 | `api`           | 6 ✅ | Indicadores y resultados de pipelines                 |
-| `dashboard`     | 7    | Calidad, volúmenes, tiempos y errores                 |
+| `dashboard`     | 7 ✅ | Calidad, volúmenes, tiempos y errores                 |
 
 ## Fuentes y simulación (fase 2)
 

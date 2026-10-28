@@ -128,9 +128,14 @@ jobs:
       - name: Generar .env efímero con contraseñas aleatorias
         run: |
           cp .env.example .env
-          for var in DATAPULSE_DB_PASSWORD DATAPULSE_PIPELINE_DB_PASSWORD DATAPULSE_DBT_DB_PASSWORD DATAPULSE_API_DB_PASSWORD DATAPULSE_MOCK_ADMIN_TOKEN DATAPULSE_API_KEYS DATAPULSE_API_ADMIN_KEY; do
+          for var in DATAPULSE_DB_PASSWORD DATAPULSE_PIPELINE_DB_PASSWORD DATAPULSE_DBT_DB_PASSWORD DATAPULSE_API_DB_PASSWORD DATAPULSE_MOCK_ADMIN_TOKEN DATAPULSE_API_ADMIN_KEY; do
             sed -i "s|^${var}=.*|${var}=$(openssl rand -hex 16)|" .env
           done
+          # Una clave por consumidor: la de las pruebas y la del dashboard, ambas válidas en la API.
+          ci_key=$(openssl rand -hex 16); dash_key=$(openssl rand -hex 16)
+          sed -i "s|^DATAPULSE_API_KEYS=.*|DATAPULSE_API_KEYS=${ci_key},${dash_key}|" .env
+          sed -i "s|^DATAPULSE_DASHBOARD_API_KEY=.*|DATAPULSE_DASHBOARD_API_KEY=${dash_key}|" .env
+          echo "CI_API_KEY=${ci_key}" >> .env
       - name: Validar docker-compose.yml
         run: docker compose config -q
       - name: Construir imagen
@@ -190,10 +195,19 @@ jobs:
           docker compose up -d --wait api
           base="http://127.0.0.1:${API_HOST_PORT}"
           test "$(curl -s -o /dev/null -w '%{http_code}' "$base/v1/kpis/summary")" = "401"
-          curl -fsS -H "X-API-Key: $DATAPULSE_API_KEYS" "$base/v1/kpis/summary" | tee /tmp/kpis.json
+          curl -fsS -H "X-API-Key: $CI_API_KEY" "$base/v1/kpis/summary" | tee /tmp/kpis.json
           python3 -c 'import json; d=json.load(open("/tmp/kpis.json")); assert d["orders"] > 0 and float(d["revenue"]) > 0, d'
-          curl -fsS -H "X-API-Key: $DATAPULSE_API_KEYS" "$base/v1/quality/summary?layer=post_transform" > /dev/null
+          curl -fsS -H "X-API-Key: $CI_API_KEY" "$base/v1/quality/summary?layer=post_transform" > /dev/null
           curl -fsS "$base/health/ready" | grep -q '"database":"up"'
+      - name: Dashboard en contenedor (salud + datos reales vía API con su propia clave)
+        run: |
+          set -a; . ./.env; set +a
+          docker compose up -d --wait dashboard
+          curl -fsS "http://127.0.0.1:${DASHBOARD_HOST_PORT}/_stcore/health" | grep -qx ok
+          # El dashboard usa exactamente su configuración de contenedor (URL interna + clave).
+          docker compose exec -T dashboard python -c "from datapulse.dashboard.client import ApiClient; c = ApiClient.from_settings(); k = c.kpis(); assert k['orders'] > 0, k; assert c.quality_summary(); assert c.pipeline_runs(); print('dashboard -> API OK:', k['orders'], 'pedidos')"
+          # Sin credenciales de base de datos en el contenedor del dashboard.
+          test -z "$(docker compose exec -T dashboard env | grep -E '^DATAPULSE_DB_' || true)"
       - name: Imagen ejecuta como usuario no root
         run: test "$(docker run --rm --entrypoint id datapulse-app:local -u)" = "10001"
       - name: Logs ante fallo

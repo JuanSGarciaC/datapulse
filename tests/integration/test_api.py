@@ -201,3 +201,43 @@ def test_the_api_role_cannot_read_raw_even_if_asked(reader: Engine) -> None:
 
     with pytest.raises(ProgrammingError, match="permission denied"), reader.connect() as conn:
         conn.execute(text("SELECT email FROM raw.customers LIMIT 1"))
+
+
+# ------------------------------------------------------------------ dashboard (fase 7)
+def _dashboard_client(api: TestClient) -> Any:
+    from datapulse.dashboard.client import ApiClient  # noqa: PLC0415
+
+    # TestClient es un cliente httpx2: el dashboard habla con la API real, sin red.
+    return ApiClient("http://testserver", SecretStr(KEY), http=api)
+
+
+def test_dashboard_client_reads_the_real_api(api: TestClient) -> None:
+    client = _dashboard_client(api)
+    direct = api.get("/v1/kpis/summary", headers=AUTH).json()
+    assert client.kpis() == direct
+    daily = client.daily_sales()
+    total = api.get("/v1/sales/daily", params={"limit": 1}, headers=AUTH).json()["total"]
+    assert len(daily) == total > 0
+    rules = {(q["table_name"], q["rule_name"]): q["rows_failed"] for q in client.quality_summary()}
+    assert rules["raw.customers", "not_null:email"] == 3
+    runs = client.pipeline_runs()
+    assert {r["flow_name"] for r in runs} >= {"ingest_all", "transform"}
+    assert client.run_detail(runs[0]["run_id"])["tasks"] is not None
+
+
+def test_dashboard_page_renders_with_real_data(api: TestClient) -> None:
+    from streamlit.testing.v1 import AppTest  # noqa: PLC0415
+
+    at = AppTest.from_file(str(ROOT / "src/datapulse/dashboard/app.py"), default_timeout=60)
+    at.session_state["_client"] = _dashboard_client(api)
+    at.run()
+    assert not at.exception
+    kpis = api.get(
+        "/v1/kpis/summary",
+        params={"date_from": "2026-01-01", "date_to": "2026-01-03"},
+        headers=AUTH,
+    ).json()
+    metrics = {m.label: m.value for m in at.metric}
+    assert metrics["Pedidos"] == f"{kpis['orders']:,}"
+    assert int(metrics["❌ Filas con error (cuarentena)"].replace(",", "")) > 0
+    assert not [e.value for e in at.error if "API" in e.value]  # ninguna pestaña falló

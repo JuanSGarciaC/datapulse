@@ -21,6 +21,7 @@ dependencies = [
     "prefect>=3.9,<3.10",
     "dbt-core>=1.12,<1.13",
     "dbt-postgres>=1.11,<1.12",
+    "streamlit>=1.66,<2",
 ]
 
 [dependency-groups]
@@ -64,6 +65,12 @@ files = ["src", "tests"]
 [[tool.mypy.overrides]]
 module = ["alembic.*"]
 ignore_missing_imports = true
+
+# Altair tipa parcialmente su API fluida (métodos que devuelven Any). Se relaja solo aquí.
+[[tool.mypy.overrides]]
+module = ["datapulse.dashboard.charts"]
+warn_return_any = false
+disallow_untyped_calls = false
 
 # ---------------------------------------------------------------- pruebas
 [tool.pytest.ini_options]
