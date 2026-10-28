@@ -207,3 +207,25 @@ def test_openapi_declares_api_key_header(client: TestClient) -> None:
         == {"type": "apiKey", "in": "header", "name": "X-API-Key", "description": "Clave de acceso"}
         for s in schemes.values()
     )
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    [
+        {"keys": [SecretStr("change-me-api-key-0001")]},
+        {"keys": [SecretStr(READ_KEY), SecretStr("change-me-dashboard-key-0001")]},
+        {"keys": [SecretStr(READ_KEY)], "admin_key": SecretStr("change-me-admin-key-0001")},
+    ],
+)
+def test_example_keys_are_rejected_in_prod(
+    monkeypatch: pytest.MonkeyPatch, overrides: dict[str, Any]
+) -> None:
+    from pydantic import ValidationError  # noqa: PLC0415
+
+    from datapulse.config import get_settings  # noqa: PLC0415
+
+    ApiSettings(_env_file=None, **overrides)  # en dev se aceptan
+    monkeypatch.setenv("DATAPULSE_ENV", "prod")
+    get_settings.cache_clear()
+    with pytest.raises(ValidationError, match=r"\.env\.example"):
+        ApiSettings(_env_file=None, **overrides)

@@ -45,3 +45,11 @@ def test_service_user_prefix_is_validated(monkeypatch: pytest.MonkeyPatch) -> No
     monkeypatch.setenv("DATAPULSE_SERVICE_USER_PREFIX", 'x"; DROP ROLE')
     with pytest.raises(ValidationError):
         ServicePasswords(_env_file=None)
+
+
+@pytest.mark.parametrize("placeholder", ["change-me-pipeline-0001", "CHANGE-ME-long-enough-value"])
+def test_example_passwords_are_rejected_in_prod_even_if_long(placeholder: str) -> None:
+    user = ServiceUser("u", "g", SecretStr(placeholder))
+    validate_password(user, Environment.DEV)  # en dev el ejemplo es válido
+    with pytest.raises(ValueError, match=r"\.env\.example"):
+        validate_password(user, Environment.PROD)

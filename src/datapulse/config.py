@@ -85,6 +85,25 @@ class Settings(BaseSettings):
         return upper
 
 
+# Prefijo de todos los valores de ejemplo de .env.example: son públicos (están en el repo).
+PLACEHOLDER_PREFIX = "change-me"
+
+
+def is_placeholder(secret: str) -> bool:
+    return secret.strip().lower().startswith(PLACEHOLDER_PREFIX)
+
+
+def reject_placeholder_in_prod(name: str, secret: str, env: Environment) -> None:
+    """En prod, un valor copiado de ``.env.example`` es un secreto conocido: se rechaza.
+
+    Los valores de ejemplo tienen longitud suficiente para pasar las reglas de longitud,
+    así que sin esta comprobación un despliegue que copiara el ejemplo quedaría con claves
+    publicadas en GitHub.
+    """
+    if env is Environment.PROD and is_placeholder(secret):
+        raise ValueError(f"{name} conserva el valor de ejemplo de .env.example; cámbialo en prod")
+
+
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
     """Instancia única y cacheada. En pruebas se limpia con ``get_settings.cache_clear()``."""

@@ -4,8 +4,10 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from pydantic import Field, SecretStr, field_validator
+from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
+
+from datapulse.config import get_settings, reject_placeholder_in_prod
 
 MIN_KEY_LENGTH = 16
 
@@ -44,3 +46,14 @@ class ApiSettings(BaseSettings):
                 f"la clave de administración debe tener al menos {MIN_KEY_LENGTH} caracteres"
             )
         return value
+
+    @model_validator(mode="after")
+    def _no_placeholders_in_prod(self) -> ApiSettings:
+        env = get_settings().env
+        for i, key in enumerate(self.keys):
+            reject_placeholder_in_prod(f"DATAPULSE_API_KEYS[{i}]", key.get_secret_value(), env)
+        if self.admin_key is not None:
+            reject_placeholder_in_prod(
+                "DATAPULSE_API_ADMIN_KEY", self.admin_key.get_secret_value(), env
+            )
+        return self
