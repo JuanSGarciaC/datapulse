@@ -121,10 +121,14 @@ docker compose exec -T postgres pg_restore -U datapulse_admin -d datapulse --cle
 
 Este proyecto es un portafolio: el stack está pensado para una máquina. Para producción:
 
-1. `DATAPULSE_ENV=prod` (exige contraseñas de 16 o más caracteres) y `DATAPULSE_API_DOCS_ENABLED=false`.
+1. `DATAPULSE_ENV=prod` (exige contraseñas de 16 o más caracteres y **rechaza al arrancar cualquier valor `change-me-*` copiado de `.env.example`**) y `DATAPULSE_API_DOCS_ENABLED=false`.
 2. Secretos desde un gestor (Vault, AWS Secrets Manager, Docker secrets), no desde `.env`.
 3. TLS delante de la API y el dashboard (proxy inverso); hoy solo escuchan en `127.0.0.1`.
 4. PostgreSQL gestionado con copias automáticas y `sslmode=verify-full` (`DATAPULSE_DB_SSLMODE`).
 5. Autenticación de usuarios en el dashboard (hoy es una herramienta interna sin login).
-6. Sustituir la API simulada por la fuente real (`DOCKER_PRODUCTS_API_URL=https://dummyjson.com`
+6. El servidor de Prefect **no tiene autenticación**: hoy solo es accesible en `127.0.0.1`; en
+   un servidor compartido va detrás de un proxy con autenticación o en una red privada.
+7. Límite de peticiones por clave en la API (hoy no lo hay; las claves tienen ≥ 16 caracteres
+   aleatorios, así que la fuerza bruta no es viable, pero un cliente con clave puede saturarla).
+8. Sustituir la API simulada por la fuente real (`DOCKER_PRODUCTS_API_URL=https://dummyjson.com`
    ya funciona: el contrato se verifica cada semana en CI).
