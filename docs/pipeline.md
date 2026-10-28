@@ -80,3 +80,19 @@ uv run python -m datapulse.flows seed-landing      # copia los ejemplos a data/l
 uv run python -m datapulse.flows run daily         # ejecuta ahora (Prefect efímero si no hay servidor)
 docker compose up -d                               # servidor de Prefect en http://localhost:4200 + worker
 ```
+
+## Hallazgo: dbt-core copia el `.env` a las variables del proceso
+
+`dbt/cli/main.py` (dbt-core 1.12) ejecuta `load_dotenv(find_dotenv(usecwd=True))` **al
+importarse** y en cada `dbtRunner().invoke()`. Busca un `.env` desde el directorio actual
+hacia arriba y copia todo su contenido a `os.environ`, secretos incluidos, sin opción para
+desactivarlo. Se detectó porque una prueba pasaba sola y fallaba en la suite completa
+cuando existía un `.env` local: la variable llegaba desde la importación de dbt en otro módulo.
+
+**Mitigación** (`datapulse.transform.dbt.environ_guard`): dbt se importa de forma diferida y
+tanto la importación como cada ejecución van dentro de un guardia que restaura `os.environ`
+exactamente como estaba. dbt sigue viendo las variables mientras corre (las necesita para
+`profiles.yml`), pero no sobreviven a la llamada. `tests/unit/test_dbt_environ.py` lo verifica
+en un intérprete limpio y además comprueba que dbt sin guardia **sí** filtra, para detectar el
+día en que una versión de dbt cambie ese comportamiento. En los contenedores no hay `.env`
+(lo excluye `.dockerignore`), así que el riesgo era de desarrollo local.
