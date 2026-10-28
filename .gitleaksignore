@@ -1,0 +1,7 @@
+# Falsos positivos revisados manualmente (2026-10-28). Formato: commit:archivo:regla:línea
+# El commit 6094ccd ya está publicado: no se reescribe el historial; se documenta aquí.
+# - docs/api.md: placeholder "change-me-..." en un ejemplo de curl (ahora usa una variable de entorno).
+# - tests: claves de prueba literales (ahora se generan con secrets.token_urlsafe en cada ejecución).
+6094ccd7d72625cd678b8de893e7cac18cef84e2:docs/api.md:curl-auth-header:16
+6094ccd7d72625cd678b8de893e7cac18cef84e2:tests/integration/test_api.py:generic-api-key:28
+6094ccd7d72625cd678b8de893e7cac18cef84e2:tests/unit/test_api_unit.py:generic-api-key:50

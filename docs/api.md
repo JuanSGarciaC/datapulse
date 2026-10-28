@@ -9,11 +9,12 @@ Todas las rutas `/v1` exigen la cabecera `X-API-Key`. La clave **no** se acepta 
 acabaría en logs de proxies e historiales.
 
 ```powershell
-$h = @{ 'X-API-Key' = 'change-me-api-key-0001' }
+# Usa una de las claves de DATAPULSE_API_KEYS de tu .env (nunca la pegues en el código)
+$h = @{ 'X-API-Key' = $env:DATAPULSE_API_KEY }
 Invoke-RestMethod -Uri 'http://localhost:8000/v1/kpis/summary?date_from=2026-01-01' -Headers $h
 ```
 ```bash
-curl -H "X-API-Key: change-me-api-key-0001" "http://localhost:8000/v1/kpis/summary"
+curl -H "X-API-Key: $DATAPULSE_API_KEY" "http://localhost:8000/v1/kpis/summary"
 ```
 
 | Variable | Uso |
