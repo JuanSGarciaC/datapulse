@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import random
+import secrets
 from collections.abc import Iterator
 from decimal import Decimal
 from typing import Any
@@ -25,7 +26,7 @@ from tests.conftest import ROOT, alembic_config
 
 pytestmark = pytest.mark.integration
 SAMPLES = ROOT / "data/samples"
-KEY = "integration-key-0123456789"
+KEY = secrets.token_urlsafe(24)  # generada en cada ejecución
 AUTH = {"X-API-Key": KEY}
 
 

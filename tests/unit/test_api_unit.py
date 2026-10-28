@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import secrets
 import uuid
 from collections.abc import Iterator
 from typing import Any
@@ -15,8 +16,13 @@ from datapulse.api.app import create_app
 from datapulse.api.security import KeyChecker
 from datapulse.api.settings import ApiSettings
 
-READ_KEY = "read-key-0123456789"
-ADMIN_KEY = "admin-key-0123456789"
+# Claves generadas en cada ejecución: ningún literal con forma de secreto en el repositorio.
+READ_KEY = secrets.token_urlsafe(24)
+ADMIN_KEY = secrets.token_urlsafe(24)
+WRONG_KEY = secrets.token_urlsafe(24)
+OLD_KEY = secrets.token_urlsafe(24)
+NEW_KEY = secrets.token_urlsafe(24)
+OTHER_KEY = secrets.token_urlsafe(24)
 
 
 def settings(**overrides: Any) -> ApiSettings:
@@ -47,7 +53,7 @@ def client(down_engine: Any) -> Iterator[TestClient]:
 
 
 # ------------------------------------------------------------------ autenticación
-@pytest.mark.parametrize("headers", [{}, {"X-API-Key": "wrong-key-0123456789"}, {"X-API-Key": ""}])
+@pytest.mark.parametrize("headers", [{}, {"X-API-Key": WRONG_KEY}, {"X-API-Key": ""}])
 def test_business_endpoints_require_a_valid_key(
     client: TestClient, headers: dict[str, str]
 ) -> None:
@@ -120,10 +126,10 @@ def test_no_keys_configured_fails_closed(down_engine: Any) -> None:
 
 
 def test_key_checker_supports_rotation() -> None:
-    checker = KeyChecker([SecretStr("old-key-0123456789"), SecretStr("new-key-0123456789")])
-    assert checker.valid("old-key-0123456789")
-    assert checker.valid("new-key-0123456789")
-    assert not checker.valid("other-key-012345678")
+    checker = KeyChecker([SecretStr(OLD_KEY), SecretStr(NEW_KEY)])
+    assert checker.valid(OLD_KEY)
+    assert checker.valid(NEW_KEY)
+    assert not checker.valid(OTHER_KEY)
     assert not checker.valid(None)
 
 
