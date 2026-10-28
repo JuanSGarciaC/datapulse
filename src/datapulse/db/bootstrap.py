@@ -26,7 +26,7 @@ from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy import Connection, text
 
-from datapulse.config import Environment, get_settings
+from datapulse.config import Environment, get_settings, reject_placeholder_in_prod
 from datapulse.db.engine import build_engine
 from datapulse.observability.logging import configure_logging
 
@@ -66,6 +66,7 @@ def validate_password(user: ServiceUser, env: Environment) -> None:
     secret = user.password.get_secret_value()
     if not secret:
         raise ValueError(f"La contraseña de {user.username} está vacía")
+    reject_placeholder_in_prod(f"La contraseña de {user.username}", secret, env)
     if env is Environment.PROD and len(secret) < MIN_PROD_PASSWORD_LENGTH:
         raise ValueError(
             f"En prod la contraseña de {user.username} debe tener "
@@ -101,6 +102,9 @@ def main() -> int:
     settings = get_settings()
     configure_logging(settings.log_level, settings.log_format)
     users = service_users(ServicePasswords())  # valores leídos del entorno
+    reject_placeholder_in_prod(
+        "DATAPULSE_DB_PASSWORD", settings.db.password.get_secret_value(), settings.env
+    )
     for user in users:
         validate_password(user, settings.env)
     engine = build_engine(settings.db)
