@@ -3,9 +3,16 @@
         materialized='incremental',
         unique_key='order_id',
         incremental_strategy='delete+insert',
-        on_schema_change='fail'
+        on_schema_change='fail',
+        indexes=[
+            {'columns': ['order_id']},
+            {'columns': ['order_date']},
+        ]
     )
 }}
+-- Índices (medidos sobre 2 M de filas, ver docs/data-model.md#rendimiento):
+--   order_id   → el DELETE del incremental pasa de escaneo completo a índice (319 → 69 ms).
+--   order_date → filtros por rango de la API con datos en orden cronológico (66 → 3,5 ms).
 -- depends_on: {{ ref('stg_orders') }}
 -- (el ref dentro de is_incremental() no se detecta solo; se declara aquí)
 -- Hechos de ventas. Granularidad: 1 fila por línea de pedido (versión vigente del pedido).

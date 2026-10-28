@@ -112,3 +112,21 @@ fct_daily_sales (día, categoría)
 
 El correo en claro solo existe en `raw` (que la API no puede leer). Staging y marts usan
 `email_sha256`; una prueba verifica que ninguna tabla de `marts` tiene una columna `email`.
+
+## Rendimiento
+
+Con los datos de ejemplo (~1 100 líneas) cualquier consulta es instantánea, así que los índices
+se decidieron **midiendo sobre 2 millones de filas** con la misma forma que `fct_order_items`
+(PostgreSQL 16, `EXPLAIN ANALYZE`, 1 500 pedidos a reemplazar):
+
+| Operación | Sin índice | Con índice | Índice |
+|-----------|-----------:|-----------:|--------|
+| `DELETE` del incremental (`delete+insert` por `order_id`) | 319 ms (escaneo completo) | 69 ms (index scan) | `fct_order_items(order_id)` |
+| KPI por rango de 3 días, datos en orden cronológico | 66 ms | 3,5 ms | `fct_order_items(order_date)` |
+| El mismo KPI, datos con fechas dispersas por toda la tabla | 80 ms | 196 ms | — |
+
+La última fila es una medición fallida que se conserva a propósito: un índice por fecha solo
+ayuda si las filas de una misma fecha están juntas en disco. En una tabla de hechos los pedidos
+llegan en orden cronológico, que es el caso de la segunda fila, así que el índice se mantiene.
+`fct_daily_sales(order_date)` sigue el mismo criterio. Los índices se declaran en la
+configuración de dbt (`indexes=`), así que se recrean con cada `--full-refresh`.
