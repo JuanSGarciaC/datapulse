@@ -1,3 +1,4 @@
+{{ config(indexes=[{'columns': ['order_date']}]) }}
 -- Agregado diario. Granularidad: 1 fila por (día, categoría). Solo ventas efectivas
 -- (sin cancelados ni devueltos) en revenue/units; las anulaciones se cuentan aparte.
 select
