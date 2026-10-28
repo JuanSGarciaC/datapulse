@@ -1,6 +1,5 @@
 # DataPulse - entorno local reproducible.
-# Fases 1-6: base de datos, migraciones, API simulada, Prefect (servidor + worker) y API.
-# La fase 7 añade el dashboard.
+# Servicios: postgres, migrate, mock-source, prefect-server, worker, api y dashboard.
 #
 # Uso:  cp .env.example .env   (y cambia las contraseñas)
 #       docker compose up --build
@@ -105,7 +104,8 @@ services:
       DATAPULSE_DBT_DB_USER: datapulse_dbt
       DATAPULSE_DBT_DB_PASSWORD: ${DATAPULSE_DBT_DB_PASSWORD:?Define DATAPULSE_DBT_DB_PASSWORD}
       PREFECT_API_URL: http://prefect-server:4200/api
-      DATAPULSE_INGEST_PRODUCTS_API_URL: ${DATAPULSE_INGEST_PRODUCTS_API_URL:-http://mock-source:8081}
+      # Variable distinta de la de .env: dentro de Docker la fuente tiene otro nombre.
+      DATAPULSE_INGEST_PRODUCTS_API_URL: ${DOCKER_PRODUCTS_API_URL:-http://mock-source:8081}
       DATAPULSE_INGEST_LANDING_DIR: /app/data/landing
       DATAPULSE_FLOW_DAILY_CRON: ${DATAPULSE_FLOW_DAILY_CRON:-0 6 * * *}
     volumes:
@@ -145,6 +145,29 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
+
+  # Dashboard: solo habla con la API (clave de lectura propia, revocable por separado).
+  # No recibe ninguna credencial de base de datos.
+  dashboard:
+    build: .
+    image: datapulse-app:local
+    restart: unless-stopped
+    command: ["python", "-m", "datapulse.dashboard"]
+    environment:
+      DATAPULSE_DASHBOARD_HOST: 0.0.0.0
+      DATAPULSE_DASHBOARD_PORT: "8501"
+      DATAPULSE_DASHBOARD_API_URL: http://api:8000
+      DATAPULSE_DASHBOARD_API_KEY: ${DATAPULSE_DASHBOARD_API_KEY:?Define DATAPULSE_DASHBOARD_API_KEY}
+    ports:
+      - "127.0.0.1:${DASHBOARD_HOST_PORT:-8501}:8501"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8501/_stcore/health', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    depends_on:
+      api:
+        condition: service_healthy
 
 volumes:
   pgdata:

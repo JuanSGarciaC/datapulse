@@ -10,7 +10,7 @@
 param(
     [Parameter(Position = 0)]
     [ValidateSet('help', 'setup', 'fmt', 'lint', 'typecheck', 'test', 'test-unit', 'test-live',
-                 'security', 'check', 'migrate', 'generate', 'mock', 'ingest-samples', 'dbt-build', 'dbt-docs', 'up', 'down', 'logs', 'createtestdb')]
+                 'security', 'check', 'migrate', 'generate', 'mock', 'api', 'dashboard', 'pipeline', 'ingest-samples', 'dbt-build', 'dbt-docs', 'up', 'down', 'logs', 'createtestdb')]
     [string]$Command = 'help'
 )
 
@@ -40,7 +40,7 @@ function Invoke-Step([string]$Exe, [string[]]$Arguments) {
 switch ($Command) {
     'help' {
         Get-Help $PSCommandPath -Detailed | Out-Host
-        'Comandos: setup, fmt, lint, typecheck, test, test-unit, test-live, security, check, migrate, generate, mock, ingest-samples, dbt-build, dbt-docs, up, down, logs, createtestdb'
+        'Comandos: setup, fmt, lint, typecheck, test, test-unit, test-live, security, check, migrate, generate, mock, api, dashboard, pipeline, ingest-samples, dbt-build, dbt-docs, up, down, logs, createtestdb'
     }
     'setup'     { Invoke-Step uv @('sync', '--frozen') }
     'fmt'       { Invoke-Step uv @('run', 'ruff', 'format', '.'); Invoke-Step uv @('run', 'ruff', 'check', '.', '--fix') }
@@ -51,6 +51,19 @@ switch ($Command) {
     'test-live' { Invoke-Step uv @('run', 'pytest', 'tests/contract', '-m', 'live', '-v') }
     'generate'  { Invoke-Step uv @('run', 'python', '-m', 'datapulse.synthetic') }
     'mock'      { Invoke-Step uv @('run', 'python', '-m', 'datapulse.mock_source') }
+    'api'       {
+        # La API se conecta con su usuario de solo lectura, nunca con el administrador.
+        Import-DotEnv
+        $env:DATAPULSE_DB_USER = 'datapulse_api'
+        $env:DATAPULSE_DB_PASSWORD = $env:DATAPULSE_API_DB_PASSWORD
+        Invoke-Step uv @('run', 'python', '-m', 'datapulse.api')
+    }
+    'dashboard' { Import-DotEnv; Invoke-Step uv @('run', 'python', '-m', 'datapulse.dashboard') }
+    'pipeline'  {
+        Import-DotEnv
+        Invoke-Step uv @('run', 'python', '-m', 'datapulse.flows', 'seed-landing')
+        Invoke-Step uv @('run', 'python', '-m', 'datapulse.flows', 'run', 'daily')
+    }
     'dbt-build' { Import-DotEnv; Invoke-Step uv @('run', 'dbt', 'build', '--project-dir', 'dbt', '--profiles-dir', 'dbt') }
     'dbt-docs'  {
         Import-DotEnv

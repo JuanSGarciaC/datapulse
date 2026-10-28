@@ -1,6 +1,6 @@
 # Comandos para Linux/macOS/CI. En Windows usa scripts/dev.ps1 (mismos nombres).
 
-.PHONY: ingest-samples dbt-build dbt-docs
+.PHONY: api dashboard pipeline ingest-samples dbt-build dbt-docs
 .PHONY: help setup fmt lint typecheck test test-unit test-live security check migrate generate mock up down logs
 
 help:            ## Lista los comandos
@@ -43,6 +43,15 @@ generate:        ## Regenera data/samples (determinista, seed 42)
 
 mock:            ## API simulada en http://127.0.0.1:8081 (docs en /docs)
 	uv run python -m datapulse.mock_source
+
+api:             ## API de indicadores en http://127.0.0.1:8000 (usuario de solo lectura)
+	set -a; . ./.env; set +a; DATAPULSE_DB_USER=datapulse_api DATAPULSE_DB_PASSWORD="$$DATAPULSE_API_DB_PASSWORD" uv run python -m datapulse.api
+
+dashboard:       ## Dashboard en http://127.0.0.1:8501 (necesita la API)
+	uv run python -m datapulse.dashboard
+
+pipeline:        ## Copia data/samples a data/landing y ejecuta el flujo diario
+	uv run python -m datapulse.flows seed-landing && uv run python -m datapulse.flows run daily
 
 ingest-samples:  ## Carga data/samples (requiere postgres y mock-source levantados)
 	uv run python -m datapulse.ingestion customers data/samples/customers/*.csv

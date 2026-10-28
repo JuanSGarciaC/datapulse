@@ -7,7 +7,7 @@
 Plataforma de ingeniería de datos que convierte archivos (CSV, JSON) y APIs REST paginadas en
 información **confiable, trazable e idempotente** para análisis de negocio.
 
-> **Estado del proyecto: Fase 6 de 8 — API de indicadores.** Lo que existe hoy está implementado y
+> **Estado del proyecto: Fase 7 de 8 — Dashboard.** Lo que existe hoy está implementado y
 > probado; lo que está en el roadmap está **diseñado pero no implementado**. Ver [Roadmap](#roadmap).
 
 ## Qué demuestra este proyecto
@@ -40,7 +40,7 @@ información **confiable, trazable e idempotente** para análisis de negocio.
 | API y API simulada | FastAPI 0.150 | Limitado por Prefect 3.9 (ver ADR-0001) |
 | Cliente HTTP | httpx2 2.16 | Sucesor de httpx; Starlette 1.10 depreca httpx (ADR-0006) |
 | API pública | [DummyJSON](https://dummyjson.com) | Gratuita, e-commerce, paginación real (ADR-0006) |
-| Dashboard *(fase 7)* | Streamlit | Python de punta a punta y consume la API |
+| Dashboard | Streamlit 1.66 + Altair | Python de punta a punta; consume la API sin credenciales de BD ([dashboard.md](docs/dashboard.md)) |
 | Gestor de paquetes | uv | Lockfile reproducible y rápido |
 
 ## Inicio rápido con Docker (Windows, macOS o Linux)
@@ -64,6 +64,7 @@ servicio. Quedan disponibles **solo en tu máquina**:
 | Prefect (UI) | <http://localhost:4200> |
 | API de indicadores (Swagger) | <http://localhost:8000/docs> |
 | API simulada (Swagger) | <http://localhost:8081/docs> |
+| **Dashboard** | <http://localhost:8501> |
 
 Para provocar fallos en la API simulada (necesita el token de `.env`):
 
@@ -95,6 +96,15 @@ docker compose up -d postgres            # solo la base de datos
 .\scripts\dev.ps1 test-live              # contrato contra DummyJSON real (internet)
 .\scripts\dev.ps1 ingest-samples         # carga los datos de ejemplo (necesita postgres + mock)
 .\scripts\dev.ps1 dbt-build              # modelos + pruebas de dbt (usuario datapulse_dbt)
+```
+
+Todo en nativo, sin Docker salvo PostgreSQL (una terminal por servicio):
+
+```powershell
+.\scripts\dev.ps1 mock        # terminal 1: fuente de productos en :8081
+.\scripts\dev.ps1 pipeline    # terminal 2: ingesta + dbt (flujo diario de Prefect)
+.\scripts\dev.ps1 api         # terminal 2: API en :8000 con el usuario de solo lectura
+.\scripts\dev.ps1 dashboard   # terminal 3: dashboard en :8501
 ```
 
 > Si PowerShell bloquea el script: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
@@ -167,7 +177,7 @@ scripts/dev.ps1          comandos para Windows
 | 4 | Orquestación con Prefect: reintentos, registro de ejecuciones, recuperación | ✅ Implementada |
 | 5 | dbt: staging, SCD2, modelo estrella, pruebas y conciliación | ✅ Implementada |
 | 6 | API de indicadores y resultados de pipelines | ✅ Implementada |
-| 7 | Dashboard de calidad, volúmenes, tiempos y errores | Pendiente |
+| 7 | Dashboard de calidad, volúmenes, tiempos y errores | ✅ Implementada |
 | 8 | Integración final, pruebas E2E y documentación de despliegue | Pendiente |
 
 ## Licencia

@@ -86,6 +86,13 @@ Detener todo el modelo por esto ocultaría el resto de los indicadores; un aviso
 en el dashboard. `test_orphan_warnings_match_lines_without_a_dimension` verifica que el número
 de avisos coincide exactamente con las líneas sin dimensión.
 
+Desglose medido con los datos de ejemplo (por eso el dashboard muestra 21 y 25, no 4):
+
+| Aviso | Líneas | Por la fuente | Por cuarentena |
+|-------|-------:|--------------:|---------------:|
+| Producto sin `dim_product` | 21 | 2 (producto `9999`) | 19 (productos con precio nulo/negativo o sin título) |
+| Cliente sin `dim_customer` | 25 | 4 (2 pedidos de `C99999`) | 21 (clientes con email vacío/inválido o fecha imposible) |
+
 ### Resultados en `ops.quality_results`
 
 Cada prueba de dbt se guarda con `layer = 'post_transform'`. dbt informa cuántas filas violan la
