@@ -55,6 +55,8 @@ verificar está en [Limitaciones conocidas](#limitaciones-conocidas).
 
 ## Inicio rápido (Docker, Windows/macOS/Linux)
 
+**Demo en un comando (Windows, Docker Desktop abierto):** `.\scripts\demo.ps1` crea `.env` con secretos aleatorios, levanta todo, ejecuta el pipeline y abre el dashboard. *(Script sin probar en Windows real, como `dev.ps1`.)*
+
 Requisitos: [Docker Desktop](https://www.docker.com/products/docker-desktop/) y Git.
 
 ```powershell
