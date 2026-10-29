@@ -33,7 +33,10 @@ function Import-DotEnv {
 }
 
 function Invoke-Step([string]$Exe, [string[]]$Arguments) {
-    & $Exe @Arguments
+    # Alembic, dbt y docker escriben logs por stderr; en PowerShell 5.1 con 'Stop' eso abortaría el script.
+    $previous = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try { & $Exe @Arguments } finally { $ErrorActionPreference = $previous }
     if ($LASTEXITCODE -ne 0) { throw "Falló: $Exe $($Arguments -join ' ') (código $LASTEXITCODE)" }
 }
 
