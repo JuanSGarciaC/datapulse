@@ -55,7 +55,7 @@ verificar está en [Limitaciones conocidas](#limitaciones-conocidas).
 
 ## Inicio rápido (Docker, Windows/macOS/Linux)
 
-**Demo en un comando (Windows, Docker Desktop abierto):** `.\scripts\demo.ps1` crea `.env` con secretos aleatorios, levanta todo, ejecuta el pipeline y abre el dashboard. *(Script sin probar en Windows real, como `dev.ps1`.)*
+**Demo en un comando (Windows, Docker Desktop abierto):** `.\scripts\demo.ps1` crea `.env` con secretos aleatorios, levanta todo, ejecuta el pipeline y abre el dashboard. *(Verificado en Windows 11 con Docker Desktop.)*
 
 Requisitos: [Docker Desktop](https://www.docker.com/products/docker-desktop/) y Git.
 
@@ -205,8 +205,9 @@ scripts/dev.ps1    comandos para Windows
 
 Lo que el proyecto **no** hace o no se pudo verificar:
 
-- **`scripts/dev.ps1` no se ejecutó en un Windows real** (el entorno de desarrollo no tenía
-  PowerShell). Los comandos que llama sí están verificados; Docker Compose es la vía probada.
+- **`scripts/dev.ps1`:** en Windows 11 se ejecutaron `setup`, `createtestdb`, `migrate` y `check`.
+  Los comandos que arrancan procesos de larga duración (`mock`, `api`, `dashboard`, `pipeline`)
+  no se probaron de forma nativa en Windows; Docker Compose es la vía verificada de punta a punta.
 - **Carga incremental con escaneo completo:** DummyJSON no filtra por fecha, así que cada
   ejecución lee todo el catálogo y filtra en el cliente. Con 200 productos es trivial; con
   millones haría falta una fuente que filtre en el servidor o CDC.

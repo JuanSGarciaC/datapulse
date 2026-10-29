@@ -6,12 +6,12 @@ punta en CI en cada push). La ejecución nativa sirve para desarrollar.
 | Modo | Verificado en | Qué necesitas |
 |------|---------------|---------------|
 | Docker Compose | CI (Ubuntu 24.04): build, migraciones, flujo diario, API, dashboard y pruebas E2E | Docker Desktop (Windows/macOS) o Docker Engine + Compose v2 |
-| Nativo | Linux (pruebas locales y E2E con todos los servicios como procesos) | Python 3.13 vía `uv`, PostgreSQL 16 (puede ser el contenedor `postgres`) |
+| Docker Compose en Windows 11 | `scripts/demo.ps1`, `docker compose ps` (todo healthy), las 3 pestañas del dashboard, pruebas E2E (5/5) e idempotencia del flujo diario | Docker Desktop con WSL 2 |
+| Nativo | Linux (pruebas locales y E2E con todos los servicios como procesos); Windows 11 (`dev.ps1 setup`, `createtestdb`, `migrate` y `check`) | Python 3.13 vía `uv`, PostgreSQL 16 (puede ser el contenedor `postgres`) |
 
-> **Limitación honesta:** `scripts/dev.ps1` está escrito para PowerShell 5.1+ y 7+, pero el
-> entorno donde se desarrolló no tenía PowerShell, así que **no se ejecutó en Windows real**.
-> Los comandos que invoca (`uv`, `docker compose`, `python -m datapulse...`) sí están
-> verificados. Si encuentras un fallo en Windows, abre un issue con la salida.
+> **Alcance de la verificación en Windows:** `dev.ps1 mock`, `api`, `dashboard` y `pipeline`
+> (procesos de larga duración) no se probaron de forma nativa en Windows. Si encuentras un
+> fallo, abre un issue con la salida.
 
 ## 1. Docker Compose (Windows, macOS, Linux)
 
@@ -57,6 +57,11 @@ El `worker` sirve dos despliegues programados: `daily` (cron `DATAPULSE_FLOW_DAI
 | `migrate` falla con `no such file` en un script | Finales de línea CRLF | El repo fuerza LF con `.gitattributes`; vuelve a clonar sin `core.autocrlf=true` |
 | Contenedores lentos o reiniciándose | Poca memoria para WSL2 | Docker Desktop → Settings → Resources: 4 GB o más |
 | `running scripts is disabled` | Política de ejecución | `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` |
+| Docker Desktop: "WSL is unresponsive"; `wsl --version` no responde; `wsl --install` dice `REGDB_E_CLASSNOTREG` | Instalación de WSL dañada | PowerShell como administrador: `wsl --install --no-distribution`, pulsa una tecla para que lo repare, reinicia y comprueba `wsl --version`. Si hace falta, activa antes `VirtualMachinePlatform` y `Microsoft-Windows-Subsystem-Linux` con `dism /online /enable-feature /all` |
+| `uv` no se reconoce | `uv` no está instalado, o la terminal es anterior a la instalación | `winget install --id astral-sh.uv -e` y abre una terminal nueva (el PATH se actualiza al abrirla) |
+| Un script `.ps1` muestra `NativeCommandError` al ejecutar `docker` o `alembic` | En PowerShell 5.1 con `$ErrorActionPreference = 'Stop'`, el stderr de los programas (logs de progreso) se trata como error si se redirige la salida | Corregido en `demo.ps1` y `dev.ps1`: `Invoke-Step` ignora el stderr y comprueba solo el código de salida |
+| `dev.ps1 check` tarda unos 18 minutos | Las pruebas de integración (PostgreSQL, Prefect, dbt) son lentas en Windows | Es normal; durante el desarrollo usa `.\scripts\dev.ps1 test-unit` |
+| `test_bash_can_source_it_strictly` se omite | En Windows `bash` es el lanzador de WSL y no hay distribución instalada | Es esperado: la prueba se omite si `bash` no funciona (en CI sí se ejecuta) |
 | El worker no encuentra los productos | Usaste la URL de tu máquina dentro de Docker | Dentro de Compose la fuente es `DOCKER_PRODUCTS_API_URL` (`http://mock-source:8081`); `DATAPULSE_INGEST_PRODUCTS_API_URL` es para ejecución nativa |
 
 ## 2. Nativo (desarrollo)
