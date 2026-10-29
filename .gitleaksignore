@@ -1,7 +1,7 @@
 # Falsos positivos revisados manualmente (2026-10-28). Formato: commit:archivo:regla:línea
-# El commit 0c7852a (antes 6094ccd, reescrito al cambiar el correo del autor) ya está publicado: no se reescribe el historial; se documenta aquí.
+# El commit b834c33 (antes 6094ccd, reescrito al cambiar el correo del autor) ya está publicado: no se reescribe el historial; se documenta aquí.
 # - docs/api.md: placeholder "change-me-..." en un ejemplo de curl (ahora usa una variable de entorno).
 # - tests: claves de prueba literales (ahora se generan con secrets.token_urlsafe en cada ejecución).
-0c7852adba254d27aeb25afcb010453710c3daf7:docs/api.md:curl-auth-header:16
-0c7852adba254d27aeb25afcb010453710c3daf7:tests/integration/test_api.py:generic-api-key:28
-0c7852adba254d27aeb25afcb010453710c3daf7:tests/unit/test_api_unit.py:generic-api-key:50
+b834c332b1c172e8a76e2c48d289c42dadcb6745:docs/api.md:curl-auth-header:16
+b834c332b1c172e8a76e2c48d289c42dadcb6745:tests/integration/test_api.py:generic-api-key:28
+b834c332b1c172e8a76e2c48d289c42dadcb6745:tests/unit/test_api_unit.py:generic-api-key:50
