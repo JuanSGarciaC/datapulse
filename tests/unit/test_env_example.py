@@ -46,10 +46,22 @@ def test_no_real_secrets_in_example() -> None:
             )
 
 
-@pytest.mark.skipif(shutil.which("bash") is None, reason="bash no disponible")
+def _bash_works() -> bool:
+    """En Windows ``bash`` puede ser el lanzador de WSL sin distribución: existe pero no ejecuta."""
+    if shutil.which("bash") is None:
+        return False
+    probe = subprocess.run(
+        ["bash", "-c", "true"],  # noqa: S607
+        capture_output=True,
+        check=False,
+    )
+    return probe.returncode == 0
+
+
+@pytest.mark.skipif(not _bash_works(), reason="bash no disponible o no funcional")
 def test_bash_can_source_it_strictly() -> None:
     result = subprocess.run(  # noqa: S603 - comando fijo, sin entrada externa
-        ["bash", "-ec", f"set -a; . '{ENV_EXAMPLE}'; set +a"],  # noqa: S607
+        ["bash", "-ec", f"set -a; . '{ENV_EXAMPLE.as_posix()}'; set +a"],  # noqa: S607
         capture_output=True,
         text=True,
         check=False,
