@@ -221,6 +221,8 @@ sembrados a propósito en los datos de ejemplo.
 | [dashboard.md](docs/dashboard.md) | Pestañas del dashboard y capturas |
 | [deployment.md](docs/deployment.md) | Docker Compose, Windows, operación, rotación de secretos |
 | [docs/adr/](docs/adr) | Decisiones de arquitectura (8 ADRs) |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Cómo contribuir: entorno, reglas y commits |
+| [SECURITY.md](SECURITY.md) | Cómo reportar una vulnerabilidad en privado |
 
 ## Estructura
 
