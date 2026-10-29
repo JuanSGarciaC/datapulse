@@ -129,6 +129,27 @@ Las pruebas de integración se omiten localmente si no hay base de datos, pero e
 (`CI=true`) **fallan**: un verde en CI significa que se ejecutaron. Lo mismo vale para las de
 contrato y E2E.
 
+## Documentación
+
+| Documento | Contenido |
+|-----------|-----------|
+| [architecture.md](docs/architecture.md) | Capas, componentes y flujo de datos |
+| [sources.md](docs/sources.md) | Fuentes (CSV, JSON, REST), contratos y defectos sintéticos |
+| [pipeline.md](docs/pipeline.md) | Validación, cuarentena, idempotencia, reintentos y recuperación |
+| [data-model.md](docs/data-model.md) | Modelo estrella, granularidad, pruebas de dbt y rendimiento |
+| [api.md](docs/api.md) | Endpoints, autenticación y ejemplos |
+| [dashboard.md](docs/dashboard.md) | Pestañas del dashboard y capturas |
+| [deployment.md](docs/deployment.md) | Docker Compose, Windows, operación, rotación de secretos |
+| [docs/adr/](docs/adr) | Decisiones de arquitectura (8 ADRs) |
+
+## Verificación local (sin Docker)
+
+Con PostgreSQL 16 activo y el `.env` cargado, `make check` ejecuta lint, tipos, las 272
+pruebas unitarias y de integración (93 % de cobertura), bandit, pip-audit y la comprobación
+de las muestras. El flujo `daily` también se ejecutó a mano de punta a punta: migraciones,
+API simulada, ingesta, dbt (47 pruebas correctas y 2 avisos de huérfanos esperados, sin
+errores) y API de indicadores. Una segunda ejecución no carga filas nuevas (idempotencia).
+
 ## Decisiones técnicas
 
 | ADR | Decisión | Alternativa descartada |

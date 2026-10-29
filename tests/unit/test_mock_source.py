@@ -36,7 +36,9 @@ def client() -> Iterator[TestClient]:
 
 
 # ------------------------------------------------------------------ administración
-def test_admin_disabled_without_token() -> None:
+def test_admin_disabled_without_token(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Aislada del entorno: `dev.ps1 test` / `make test` cargan .env, que define el token.
+    monkeypatch.delenv("DATAPULSE_MOCK_ADMIN_TOKEN", raising=False)
     settings = MockSettings(_env_file=None, catalog_path=CATALOG)
     with TestClient(create_app(settings)) as tc:
         assert tc.get("/_mock/state").status_code == 404
