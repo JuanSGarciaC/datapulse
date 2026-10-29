@@ -2,13 +2,44 @@
 
 [![CI](https://github.com/JuanSGarciaC/datapulse/actions/workflows/ci.yml/badge.svg)](https://github.com/JuanSGarciaC/datapulse/actions/workflows/ci.yml)
 ![Python 3.13](https://img.shields.io/badge/python-3.13-blue)
+![PostgreSQL 16](https://img.shields.io/badge/PostgreSQL-16-336791)
+![Prefect 3](https://img.shields.io/badge/orquestación-Prefect%203-070E10)
+![dbt](https://img.shields.io/badge/modelado-dbt-FF694B)
+![Docker Compose](https://img.shields.io/badge/despliegue-Docker%20Compose-2496ED)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 
-Plataforma de ingeniería de datos que convierte archivos (CSV, JSON) y una API REST paginada en
-información **confiable, trazable e idempotente** para análisis de negocio: ingesta validada con
-cuarentena, orquestación con Prefect, modelo estrella con dbt, API de indicadores y dashboard.
+**Plataforma de ingeniería de datos de punta a punta:** convierte archivos (CSV, JSON) y una API
+REST paginada en información **confiable, trazable e idempotente** para análisis de negocio.
+Ingesta validada con cuarentena, orquestación con Prefect, modelo estrella con dbt, API de
+indicadores y dashboard, todo levantable con un solo comando.
 
-![Dashboard: calidad de datos](docs/img/dashboard-calidad.png)
+![Dashboard de negocio](docs/img/dashboard-negocio.png)
+
+**Todo lo que se describe aquí está implementado y se verifica en CI en cada push**, incluida una
+prueba de extremo a extremo contra el stack levantado en contenedores. Lo que no se pudo
+verificar está en [Limitaciones conocidas](#limitaciones-conocidas).
+
+## Contenido
+
+[Capturas](#capturas) · [Arquitectura](#arquitectura) · [Stack](#stack-tecnológico) ·
+[En números](#en-números) · [Qué demuestra](#qué-demuestra) · [Inicio rápido](#inicio-rápido) ·
+[Desarrollo local](#desarrollo-local-windows-powershell) · [Pruebas](#pruebas) ·
+[Decisiones técnicas](#decisiones-técnicas) · [Documentación](#documentación) ·
+[Seguridad](#seguridad) · [Limitaciones](#limitaciones-conocidas)
+
+## Capturas
+
+| Calidad de datos | Pipelines |
+|:---:|:---:|
+| ![Calidad de datos](docs/img/dashboard-calidad.png) | ![Pipelines](docs/img/dashboard-pipelines.png) |
+| Reglas evaluadas, filas en cuarentena y avisos por regla | Ejecuciones, filas cargadas y rechazadas, duración por flujo |
+
+| Orquestación (Prefect) | API de indicadores (Swagger) |
+|:---:|:---:|
+| ![Prefect](docs/img/prefect-runs.png) | ![API](docs/img/api-swagger.png) |
+| Ejecuciones de los flujos `ingest-*` y `transform` | Endpoints de solo lectura con clave por consumidor |
+
+## Arquitectura
 
 ```mermaid
 flowchart LR
@@ -23,9 +54,20 @@ flowchart LR
     P -.-> STG
 ```
 
-**Todo lo que se describe aquí está implementado y se verifica en CI en cada push**, incluida una
-prueba de extremo a extremo contra el stack levantado en contenedores. Lo que no se pudo
-verificar está en [Limitaciones conocidas](#limitaciones-conocidas).
+Detalle de capas y componentes en [architecture.md](docs/architecture.md).
+
+## Stack tecnológico
+
+| Capa | Tecnología |
+|------|------------|
+| Lenguaje y entorno | Python 3.13, `uv` |
+| Validación | Polars, Pydantic |
+| Orquestación | Prefect 3 (despliegues programados, reintentos, disparo por API) |
+| Almacenamiento | PostgreSQL 16, migraciones con Alembic |
+| Transformación | dbt (staging, marts, SCD2, pruebas y conciliaciones) |
+| Servicio | FastAPI (indicadores) y Streamlit (dashboard) |
+| Infraestructura | Docker Compose, GitHub Actions, Dependabot |
+| Calidad | pytest, ruff, mypy `strict`, bandit, pip-audit, gitleaks |
 
 ## En números
 
@@ -53,15 +95,25 @@ verificar está en [Limitaciones conocidas](#limitaciones-conocidas).
 | Datos reproducibles | Generador determinista (mismos bytes en cada ejecución; LF forzado al escribir y por `.gitattributes`) con respuesta conocida | [sources.md](docs/sources.md) |
 | Observabilidad | Logging JSON con redacción de secretos; ejecuciones, tareas, intentos y calidad en `ops`; dashboard operativo | [dashboard.md](docs/dashboard.md) |
 
-## Inicio rápido (Docker, Windows/macOS/Linux)
-
-**Demo en un comando (Windows, Docker Desktop abierto):** `.\scripts\demo.ps1` crea `.env` con secretos aleatorios, levanta todo, ejecuta el pipeline y abre el dashboard. *(Verificado en Windows 11 con Docker Desktop.)*
+## Inicio rápido
 
 Requisitos: [Docker Desktop](https://www.docker.com/products/docker-desktop/) y Git.
+
+**Demo en un comando (Windows, Docker Desktop abierto):**
 
 ```powershell
 git clone https://github.com/JuanSGarciaC/datapulse.git
 cd datapulse
+.\scripts\demo.ps1
+```
+
+Crea `.env` con secretos aleatorios, levanta todo, ejecuta el pipeline y abre el dashboard.
+*(Verificado en Windows 11 con Docker Desktop.)* Para apagarlo: `docker compose down`.
+
+<details>
+<summary><strong>Paso a paso (Windows, macOS o Linux)</strong></summary>
+
+```powershell
 Copy-Item .env.example .env       # Linux/macOS: cp .env.example .env
 # Edita .env y cambia TODAS las contraseñas y claves "change-me-*"
 docker compose up --build -d
@@ -72,6 +124,8 @@ Copy-Item -Recurse -Force data\samples\customers, data\samples\orders data\landi
 docker compose run --rm worker python -m datapulse.flows run daily
 ```
 
+</details>
+
 | Servicio | Dirección (solo `127.0.0.1`) |
 |----------|-------------------------------|
 | **Dashboard** | <http://localhost:8501> |
@@ -80,7 +134,10 @@ docker compose run --rm worker python -m datapulse.flows run daily
 | API simulada (Swagger) | <http://localhost:8081/docs> |
 | PostgreSQL | `localhost:5433` |
 
-Provocar fallos en la fuente y ver cómo el pipeline se recupera (token de tu `.env`):
+<details>
+<summary><strong>Provocar fallos en la fuente y ver cómo el pipeline se recupera</strong></summary>
+
+Con el token de tu `.env`:
 
 ```powershell
 $token = (Select-String -Path .env -Pattern '^DATAPULSE_MOCK_ADMIN_TOKEN=').Line.Split('=', 2)[1]
@@ -89,6 +146,8 @@ Invoke-RestMethod -Method Put -Uri http://localhost:8081/_mock/faults -Headers $
   -ContentType 'application/json' -Body '{"fail_offsets":{"0":2},"rate_limit":3,"rate_window_s":2}'
 docker compose run --rm worker python -m datapulse.flows run products
 ```
+
+</details>
 
 Guía completa (nativo, operación, rotación de secretos, copias, problemas en Windows):
 [docs/deployment.md](docs/deployment.md).
@@ -131,26 +190,11 @@ Las pruebas de integración se omiten localmente si no hay base de datos, pero e
 (`CI=true`) **fallan**: un verde en CI significa que se ejecutaron. Lo mismo vale para las de
 contrato y E2E.
 
-## Documentación
-
-| Documento | Contenido |
-|-----------|-----------|
-| [architecture.md](docs/architecture.md) | Capas, componentes y flujo de datos |
-| [sources.md](docs/sources.md) | Fuentes (CSV, JSON, REST), contratos y defectos sintéticos |
-| [pipeline.md](docs/pipeline.md) | Validación, cuarentena, idempotencia, reintentos y recuperación |
-| [data-model.md](docs/data-model.md) | Modelo estrella, granularidad, pruebas de dbt y rendimiento |
-| [api.md](docs/api.md) | Endpoints, autenticación y ejemplos |
-| [dashboard.md](docs/dashboard.md) | Pestañas del dashboard y capturas |
-| [deployment.md](docs/deployment.md) | Docker Compose, Windows, operación, rotación de secretos |
-| [docs/adr/](docs/adr) | Decisiones de arquitectura (8 ADRs) |
-
-## Verificación local (sin Docker)
-
-Con PostgreSQL 16 activo y el `.env` cargado, `make check` ejecuta lint, tipos, las 272
-pruebas unitarias y de integración (93 % de cobertura), bandit, pip-audit y la comprobación
-de las muestras. El flujo `daily` también se ejecutó a mano de punta a punta: migraciones,
-API simulada, ingesta, dbt (47 pruebas correctas y 2 avisos de huérfanos esperados, sin
-errores) y API de indicadores. Una segunda ejecución no carga filas nuevas (idempotencia).
+**Verificado a mano en Windows 11 con Docker real:** `demo.ps1`, los servicios en estado
+*healthy*, las tres pestañas del dashboard con datos, las 5 pruebas E2E, `dev.ps1 check`
+completo (lint, tipos, 271 pruebas, seguridad y muestras) y la idempotencia: una segunda
+ejecución del flujo `daily` no carga filas nuevas. Las 2 advertencias de dbt son los huérfanos
+sembrados a propósito en los datos de ejemplo.
 
 ## Decisiones técnicas
 
@@ -164,6 +208,19 @@ errores) y API de indicadores. Una segunda ejecución no carga filas nuevas (ide
 | [0006](docs/adr/0006-public-api-and-mock-contract.md) | DummyJSON real + réplica simulada validada por contrato | Solo API real (no se pueden provocar fallos) o solo simulación (nada garantiza fidelidad) |
 | [0007](docs/adr/0007-validation-design.md) | Validar antes de cargar, cuarentena por fila, rechazo del lote si supera el presupuesto | Cargar todo y limpiar después |
 | [0008](docs/adr/0008-scd2-and-incremental-models.md) | SCD2 desde la historia de `raw`; incremental por pedido | Snapshots de dbt (dependen de cuándo se ejecuten) |
+
+## Documentación
+
+| Documento | Contenido |
+|-----------|-----------|
+| [architecture.md](docs/architecture.md) | Capas, componentes y flujo de datos |
+| [sources.md](docs/sources.md) | Fuentes (CSV, JSON, REST), contratos y defectos sintéticos |
+| [pipeline.md](docs/pipeline.md) | Validación, cuarentena, idempotencia, reintentos y recuperación |
+| [data-model.md](docs/data-model.md) | Modelo estrella, granularidad, pruebas de dbt y rendimiento |
+| [api.md](docs/api.md) | Endpoints, autenticación y ejemplos |
+| [dashboard.md](docs/dashboard.md) | Pestañas del dashboard y capturas |
+| [deployment.md](docs/deployment.md) | Docker Compose, Windows, operación, rotación de secretos |
+| [docs/adr/](docs/adr) | Decisiones de arquitectura (8 ADRs) |
 
 ## Estructura
 
@@ -185,7 +242,7 @@ migrations/        Alembic: esquemas, roles, permisos, tablas raw y ops
 data/samples/      datos de ejemplo versionados + manifest.json
 tests/             unit, integration, contract, e2e
 docs/              arquitectura, fuentes, pipeline, modelo, API, dashboard, despliegue, ADRs
-scripts/dev.ps1    comandos para Windows
+scripts/           demo.ps1 (demo en un comando) y dev.ps1 (comandos para Windows)
 ```
 
 ## Seguridad
@@ -222,4 +279,4 @@ Lo que el proyecto **no** hace o no se pudo verificar:
 
 ## Licencia
 
-[MIT](LICENSE)
+[MIT](LICENSE) · Hecho por [JuanSGarciaC](https://github.com/JuanSGarciaC).
