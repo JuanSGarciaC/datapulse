@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Comandos de desarrollo de DataPulse para Windows (PowerShell 5.1+ o 7+).
 .EXAMPLE

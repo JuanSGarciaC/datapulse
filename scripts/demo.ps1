@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Levanta DataPulse completo con Docker y abre el dashboard (demo de un solo comando).
 .DESCRIPTION
