@@ -71,20 +71,22 @@ Detalle de capas y componentes en [architecture.md](docs/architecture.md).
 
 ## En números
 
+Medido en el [CI del 2026-11-01](https://github.com/JuanSGarciaC/datapulse/actions/runs/41326982015) (ubuntu-24.04, Python 3.13, PostgreSQL en contenedor).
+
 | | |
 |---|---|
 | Pruebas Python | **290**: 209 unitarias, 50 de integración contra PostgreSQL real, 26 de contrato (13 contra DummyJSON real), 5 E2E contra el stack |
 | Pruebas de dbt | **39** (unicidad, relaciones, valores aceptados y 5 conciliaciones singulares) |
 | Cobertura | 93 % de líneas y ramas (el CI exige ≥ 90 %) |
 | Defectos sintéticos | **37** documentados en `manifest.json`; una prueba exige que el pipeline los detecte **exactamente** |
-| Calidad estática | ruff, mypy `strict` (código y pruebas), bandit, pip-audit, gitleaks sobre todo el historial |
+| Calidad estática | ruff, mypy `strict` (código y pruebas), bandit, pip-audit, gitleaks (commits nuevos en cada push/PR; todo el historial cada semana y bajo demanda) |
 | Decisiones | 8 ADRs con alternativas descartadas |
 
 ## Qué demuestra
 
 | Tema | Cómo | Dónde |
 |------|------|-------|
-| Calidad de datos | Contratos por fuente, cuarentena con motivo, presupuesto de errores por lote, cambios de esquema a `_extra` | [ADR-0007](docs/adr/0007-validation-design.md) |
+| Calidad de datos | Contratos por fuente, cuarentena con motivo, presupuesto de errores por lote, cambios de esquema a `_extra` | [ADR-0007](docs/adr/0007-validation-design.md), [caso de estudio](docs/QA_CASE_STUDY.md) |
 | Idempotencia | Hash de contenido por lote (un reenvío con otro nombre no se recarga), hash por registro, marcas de agua con solapamiento | [ADR-0004](docs/adr/0004-idempotency-strategy.md) |
 | Resiliencia | Reintentos con `Retry-After` y *backoff* con *jitter*; carga atómica por lote; bloqueo por fuente; la marca de agua solo avanza si la carga confirma | [pipeline.md](docs/pipeline.md) |
 | Orquestación real | Prefect: despliegues programados, reintentos de tarea solo ante fallos transitorios, disparo por API enlazado con `ops.pipeline_runs` | [ADR-0001](docs/adr/0001-orchestration-prefect.md) |
@@ -214,6 +216,7 @@ sembrados a propósito en los datos de ejemplo.
 | Documento | Contenido |
 |-----------|-----------|
 | [architecture.md](docs/architecture.md) | Capas, componentes y flujo de datos |
+| [QA_CASE_STUDY.md](docs/QA_CASE_STUDY.md) | Caso de estudio: un defecto real, de la fuente al indicador, con cuarentena y conciliación |
 | [sources.md](docs/sources.md) | Fuentes (CSV, JSON, REST), contratos y defectos sintéticos |
 | [pipeline.md](docs/pipeline.md) | Validación, cuarentena, idempotencia, reintentos y recuperación |
 | [data-model.md](docs/data-model.md) | Modelo estrella, granularidad, pruebas de dbt y rendimiento |
