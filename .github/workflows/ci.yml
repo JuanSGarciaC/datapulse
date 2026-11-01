@@ -83,7 +83,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
-          fetch-depth: 0  # gitleaks revisa todo el historial, no solo el último commit
+          fetch-depth: 0  # push/PR: gitleaks revisa los commits nuevos; schedule y workflow_dispatch: todo el historial
       - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e  # v10.3.2
         with:
           version: ${{ env.UV_VERSION }}
