@@ -18,9 +18,11 @@ consumidores. Consecuencias:
 ## Mapa del pipeline
 
 Encima de las pestañas, el recorrido completo de los datos: fuentes → validación → `raw` →
-dbt → pruebas de marts. Cada nodo muestra el estado de su última ejecución, con texto y color.
+dbt → pruebas de marts. Los nodos de flujo muestran el estado de su última ejecución; los de
+validación, `raw` y pruebas de marts resumen las reglas y los lotes acumulados. Siempre con
+texto y color.
 
-- Una arista **fluye** solo si por ella ya pasaron datos.
+- Una arista **fluye** solo si su etapa de origen tiene ejecuciones o datos.
 - Un nodo **late** mientras su flujo está en curso.
 - Al pasar el puntero (o el foco del teclado) por un nodo se ve su detalle y se encienden sus
   aristas.
@@ -31,7 +33,8 @@ dbt → pruebas de marts. Cada nodo muestra el estado de su última ejecución, 
 
 Si se define `DATAPULSE_DASHBOARD_ADMIN_KEY` (el mismo valor que `DATAPULSE_API_ADMIN_KEY`),
 el mapa ofrece dos botones: **Ejecutar flujo diario** y **Ejecutar ingesta de productos**.
-Tras pulsar uno, el mapa se refresca solo cada 5 s hasta que la ejecución termina.
+Tras pulsar uno, el mapa se refresca solo cada 5 s mientras haya una ejecución en curso o
+durante 60 s; después el refresco se apaga.
 
 Sin esa variable los botones no existen y el panel es de solo lectura. `scripts/demo.ps1` la
 activa; `.env.example` la trae comentada. El motivo y los límites están en

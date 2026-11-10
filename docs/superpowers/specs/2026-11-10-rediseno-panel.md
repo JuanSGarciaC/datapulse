@@ -44,8 +44,8 @@ en curso, el nodo late. Al pasar el puntero por un nodo se ve su detalle.
 
 ### 4. Disparo opcional
 Botones «Ejecutar flujo diario» y «Ejecutar ingesta de productos» (los dos despliegues de la
-lista cerrada de la API). Tras disparar, el mapa se refresca solo cada 5 s hasta que la
-ejecución termina.
+lista cerrada de la API). Tras disparar, el mapa se refresca solo cada 5 s mientras haya una
+ejecución en curso o durante 60 s.
 
 ## Fuera de alcance
 Frontend aparte, arrastre y zoom, endpoints nuevos, login en el panel.

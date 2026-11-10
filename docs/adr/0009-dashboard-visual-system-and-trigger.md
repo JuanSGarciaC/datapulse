@@ -12,13 +12,14 @@ el pipeline de un vistazo y, si se puede, verlo ejecutarse.
 1. **Seguir en Streamlit** y darle un sistema visual propio con una hoja CSS y unas líneas de
    JavaScript estático (`dashboard/theme.py`).
 2. **El mapa del pipeline es SVG generado por una función pura** (`dashboard/pipeline_map.py`):
-   datos de la API → HTML. El movimiento informa: una arista fluye solo si por ella ya pasaron
-   datos, y un nodo late solo mientras su flujo está en curso.
+   datos de la API → HTML. El movimiento informa: una arista fluye solo si su etapa de origen
+   tiene datos, y un nodo late solo mientras su flujo está en curso.
 3. **El disparo de pipelines desde el panel es opcional y viene apagado.** Solo aparece si se
    define `DATAPULSE_DASHBOARD_ADMIN_KEY`. Sin ella el panel sigue siendo un cliente de solo
    lectura, como establece [ADR-0005](0005-least-privilege-roles.md).
 4. **Tras disparar, el mapa se refresca cada 5 s** mientras haya una ejecución en curso o
-   durante 60 s; después el refresco se apaga.
+   durante 60 s; después el refresco se apaga. Una ejecución «en curso» de más de 15 minutos
+   se trata como huérfana y no lo mantiene encendido.
 
 ## Alternativas descartadas
 | Opción | Motivo |

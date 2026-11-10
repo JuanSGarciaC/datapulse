@@ -31,8 +31,9 @@ verificar está en [Limitaciones conocidas](#limitaciones-conocidas).
 
 ![Mapa del pipeline](docs/img/dashboard-mapa.png)
 
-*Mapa del pipeline: cada etapa con el estado de su última ejecución. Las aristas fluyen solo
-si por ellas ya pasaron datos; al señalar un nodo se ve su detalle. Con la clave de
+*Mapa del pipeline: cada flujo con el estado de su última ejecución, y la validación y los
+lotes con su acumulado. Una arista fluye solo si su etapa de origen tiene datos; al señalar
+un nodo se ve su detalle. Con la clave de
 administración, los botones disparan un flujo real y el mapa se actualiza solo.*
 
 | Calidad de datos | Pipelines |
@@ -81,7 +82,7 @@ Medido en el [CI del 2026-11-01](https://github.com/JuanSGarciaC/datapulse/actio
 
 | | |
 |---|---|
-| Pruebas Python | **290**: 209 unitarias, 50 de integración contra PostgreSQL real, 26 de contrato (13 contra DummyJSON real), 5 E2E contra el stack |
+| Pruebas Python | **304**: 223 unitarias, 50 de integración contra PostgreSQL real, 26 de contrato (13 contra DummyJSON real), 5 E2E contra el stack |
 | Pruebas de dbt | **39** (unicidad, relaciones, valores aceptados y 5 conciliaciones singulares) |
 | Cobertura | 93 % de líneas y ramas (el CI exige ≥ 90 %) |
 | Defectos sintéticos | **37** documentados en `manifest.json`; una prueba exige que el pipeline los detecte **exactamente** |
@@ -201,7 +202,7 @@ contrato y E2E.
 **Verificado a mano en Windows 11 con Docker real:** `demo.ps1`, los servicios en estado
 *healthy*, el mapa y las tres pestañas del dashboard con datos, el disparo de un flujo desde
 el panel (el mapa se actualizó solo a los 14 s), las 5 pruebas E2E, `dev.ps1 check`
-completo (lint, tipos, 271 pruebas, seguridad y muestras) y la idempotencia: una segunda
+completo (lint, tipos, 286 pruebas, seguridad y muestras) y la idempotencia: una segunda
 ejecución del flujo `daily` no carga filas nuevas. Las 2 advertencias de dbt son los huérfanos
 sembrados a propósito en los datos de ejemplo.
 
