@@ -78,7 +78,8 @@ class ApiClient:
             ) from exc
         if response.status_code == 401:  # noqa: PLR2004
             raise ApiError(
-                "La API rechazó la clave (DATAPULSE_DASHBOARD_API_KEY ausente o inválida)."
+                "La API rechazó la clave. Revisa DATAPULSE_DASHBOARD_API_KEY o, al disparar "
+                "un flujo, DATAPULSE_DASHBOARD_ADMIN_KEY."
             )
         if response.status_code >= 400:  # noqa: PLR2004
             detail = ""

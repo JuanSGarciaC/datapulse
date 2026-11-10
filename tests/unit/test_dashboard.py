@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import secrets
-from datetime import date
+from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
 import httpx2 as httpx
@@ -190,6 +190,33 @@ def test_trigger_needs_admin_key_and_starts_the_live_refresh() -> None:
     assert at.session_state["_live"] is True  # el mapa pasa a refrescarse solo
 
 
+def test_a_running_flow_turns_the_refresh_on_but_an_orphan_row_does_not() -> None:
+    class Running(FakeClient):
+        started = datetime.now(UTC)
+
+        def pipeline_runs(self, *_: Any) -> list[dict[str, Any]]:
+            return [RUNS[0] | {"status": "running", "started_at": self.started.isoformat()}]
+
+    assert _page(Running()).session_state["_live"] is True
+    Running.started = datetime.now(UTC) - timedelta(hours=2)  # el worker murió hace horas
+    assert "_live" not in _page(Running()).session_state
+
+
+def test_layer_filter_also_filters_the_failed_results_table() -> None:
+    class WithResults(FakeClient):
+        def failed_quality_results(self, *_: Any) -> list[dict[str, Any]]:
+            return [
+                {"layer": layer, "table_name": "t", "rule_name": layer, "severity": "error",
+                 "rows_failed": 1, "details": {}, "checked_at": "2026-01-03T10:00:00Z"}
+                for layer in ("pre_load", "post_transform")
+            ]  # fmt: skip
+
+    at = _page(WithResults())
+    at.radio(key="quality_layer").set_value("pre_load").run()
+    tabla = next(d.value for d in at.dataframe if "rule_name" in d.value.columns)
+    assert list(tabla["rule_name"]) == ["pre_load"]
+
+
 def test_trigger_failure_is_shown_and_does_not_start_the_refresh() -> None:
     at = _page(FakeClient(admin=True))
     at.button(key="trigger_products").click().run()
@@ -276,6 +303,14 @@ def test_map_escapes_text_from_the_api() -> None:
     )
     assert "<script>" not in html
     assert "&lt;script&gt;" in html
+
+
+def test_map_has_no_line_breaks_that_would_end_the_html_block() -> None:
+    # Un error de PostgreSQL trae «\nDETAIL: ...»; una línea en blanco rompería el SVG.
+    run = _run("transform", "failed", error_message="Boom\n\nDETAIL: fila 3")
+    svg = pipeline_map.render([run], [], []).split("</style>")[1]
+    assert "\n" not in svg
+    assert "Boom DETAIL: fila 3" in svg
 
 
 # ------------------------------------------------------------------ gráficos

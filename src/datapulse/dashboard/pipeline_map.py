@@ -1,7 +1,7 @@
 """Mapa del pipeline: datos de la API → SVG (función pura, sin Streamlit).
 
 Fuentes → validación → raw → dbt → marts. Cada nodo lleva el estado de su última
-ejecución. Las aristas solo fluyen si por ellas ya pasaron datos, y un nodo late mientras
+ejecución. Una arista solo fluye si su etapa de origen tiene datos, y un nodo late mientras
 su flujo está en curso: el movimiento informa, no decora.
 
 Todo texto que viene de la API pasa por ``html.escape``: el resultado se inserta como HTML.
@@ -9,7 +9,7 @@ Todo texto que viene de la API pasa por ``html.escape``: el resultado se inserta
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from html import escape
 from typing import Any, Final
 
@@ -48,7 +48,7 @@ def _flow_node(key: str, title: str, x: int, y: int, run: dict[str, Any] | None)
         f"inicio {run['started_at'][11:19]} UTC"
     )
     if run["error_message"]:
-        detail += f" · {run['error_type']}: {run['error_message']}"[:120]
+        detail += f" · {run['error_message']}"[:120]  # el mensaje ya incluye el tipo
     # dbt no cuenta filas: su nodo muestra solo la duración.
     moved = run["rows_read"] or run["rows_loaded"]
     line = f"{run['rows_loaded']:,} filas{seconds}" if moved else seconds.removeprefix(" · ")
@@ -129,7 +129,7 @@ _CSS: Final = """
 .dp-map .edge.flowing{stroke:#5b9dff;stroke-opacity:.8;stroke-dasharray:6 10;
   animation:dp-flow 1.6s linear infinite}
 .dp-map .is-success{--c:#3ddc84}.dp-map .is-partial{--c:#ffc247}.dp-map .is-failed{--c:#ff5d5d}
-.dp-map .is-running{--c:#5b9dff}.dp-map .is-idle{--c:#6b7488}
+.dp-map .is-running{--c:#5b9dff}.dp-map .is-idle{--c:#8a93a8}
 .dp-map .is-running .box{stroke:var(--c);animation:dp-pulse 1.4s ease-in-out infinite}
 @keyframes dp-flow{to{stroke-dashoffset:-32}}
 @keyframes dp-pulse{50%{stroke-width:3;stroke-opacity:.35}}
@@ -161,7 +161,8 @@ def _node(n: Node) -> str:
     state = n.state if n.state in STATUS_LABEL else "idle"
     label = STATUS_LABEL.get(n.state, "sin datos")
     return (
-        f'<g class="node n-{n.key} is-{state}" tabindex="0">'
+        f'<g class="node n-{n.key} is-{state}" tabindex="0" role="img" '
+        f'aria-label="{escape(n.detail)}">'
         f"<title>{escape(n.detail)}</title>"
         f'<rect class="box" x="{n.x}" y="{n.y}" width="{W}" height="{H}" rx="12"/>'
         f'<circle class="dot" cx="{n.x + 16}" cy="{n.y + 20}" r="4"/>'
@@ -176,12 +177,17 @@ def _node(n: Node) -> str:
 def render(
     runs: list[dict[str, Any]], quality: list[dict[str, Any]], batches: list[dict[str, Any]]
 ) -> str:
-    items = nodes(runs, quality, batches)
+    # Sin saltos de línea: st.markdown cierra el bloque HTML en una línea en blanco, y los
+    # mensajes de error de la base de datos suelen traerlos.
+    items = [
+        replace(n, line=" ".join(n.line.split()), detail=" ".join(n.detail.split()))
+        for n in nodes(runs, quality, batches)
+    ]
     by_key = {n.key: n for n in items}
     summary = "; ".join(f"{n.title}: {STATUS_LABEL.get(n.state, 'sin datos')}" for n in items)
     return (
         f"<style>{_CSS}{_highlight_css(list(by_key))}</style>"
-        f'<svg class="dp-map" viewBox="0 0 {VIEW[0]} {VIEW[1]}" role="img" '
+        f'<svg class="dp-map" viewBox="0 0 {VIEW[0]} {VIEW[1]}" role="group" '
         f'aria-label="Mapa del pipeline. {escape(summary)}">'
         + "".join(_edge(by_key[a], by_key[b]) for a, b in EDGES)
         + f'<text class="hint" x="{VIEW[0] // 2}" y="{VIEW[1] - 16}">'

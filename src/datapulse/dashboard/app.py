@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import time
 from collections.abc import Callable
-from datetime import date
+from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
 import streamlit as st
@@ -30,6 +30,9 @@ METRICS = {"revenue": "Ingresos", "units": "Unidades"}
 # ejecución concreta; cambiarlo si los flujos pasan a durar más de un minuto.
 WATCH_S = 60
 REFRESH_S = 5
+# Una ejecución «en curso» más vieja que esto es una fila huérfana (el worker murió): no debe
+# mantener el refresco encendido para siempre.
+RUNNING_MAX_AGE = timedelta(minutes=15)
 
 
 def _client() -> Any:
@@ -129,7 +132,9 @@ def _quality(client: Any) -> None:
         st.success("Todas las reglas pasan.")
     st.subheader("Últimos resultados fallidos")
     st.dataframe(
-        client.failed_quality_results(),
+        # La API no filtra los resultados por capa: se filtra aquí para que la tabla
+        # acompañe a las tarjetas y al gráfico.
+        [r for r in client.failed_quality_results() if layer in {None, r["layer"]}],
         hide_index=True,
         width="stretch",
         column_order=(
@@ -259,9 +264,11 @@ def _overview(client: Any) -> None:
         except ApiError as exc:
             st.error(str(exc))
             return
-    live = any(r["status"] == "running" for r in runs) or time.time() < st.session_state.get(
-        "_watch_until", 0
+    recent = datetime.now(UTC) - RUNNING_MAX_AGE
+    running = any(
+        r["status"] == "running" and datetime.fromisoformat(r["started_at"]) > recent for r in runs
     )
+    live = running or time.time() < st.session_state.get("_watch_until", 0)
     if live != st.session_state.get("_live", False):
         # Rehace la página entera: activa o apaga el refresco y actualiza las pestañas.
         st.session_state["_live"] = live
