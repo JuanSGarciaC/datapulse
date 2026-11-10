@@ -78,13 +78,13 @@ Detalle de capas y componentes en [architecture.md](docs/architecture.md).
 
 ## En números
 
-Medido en el [CI del 2026-11-01](https://github.com/JuanSGarciaC/datapulse/actions/runs/41326982015) (ubuntu-24.04, Python 3.13, PostgreSQL en contenedor).
+Medido en el [CI del 2026-11-10](https://github.com/JuanSGarciaC/datapulse/actions/runs/42906717769) (ubuntu-24.04, Python 3.13, PostgreSQL en contenedor).
 
 | | |
 |---|---|
 | Pruebas Python | **304**: 223 unitarias, 50 de integración contra PostgreSQL real, 26 de contrato (13 contra DummyJSON real), 5 E2E contra el stack |
 | Pruebas de dbt | **39** (unicidad, relaciones, valores aceptados y 5 conciliaciones singulares) |
-| Cobertura | 93 % de líneas y ramas (el CI exige ≥ 90 %) |
+| Cobertura | 91 % de líneas y ramas (el CI exige ≥ 90 %); la página del panel se prueba con `AppTest`, que la herramienta de cobertura no mide |
 | Defectos sintéticos | **37** documentados en `manifest.json`; una prueba exige que el pipeline los detecte **exactamente** |
 | Calidad estática | ruff, mypy `strict` (código y pruebas), bandit, pip-audit, gitleaks (commits nuevos en cada push/PR; todo el historial cada semana y bajo demanda) |
 | Decisiones | 9 ADRs con alternativas descartadas |
