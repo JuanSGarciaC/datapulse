@@ -40,7 +40,7 @@ docker compose run --rm worker python -m datapulse.flows run daily
 
 | Servicio | URL (solo `127.0.0.1`) | Para qué |
 |----------|------------------------|----------|
-| Dashboard | <http://localhost:8501> | Negocio, calidad de datos, pipelines |
+| Dashboard | <http://localhost:8501> | Mapa del pipeline, negocio, calidad de datos, pipelines |
 | API (Swagger) | <http://localhost:8000/docs> | Indicadores y resultados; cabecera `X-API-Key` |
 | Prefect UI | <http://localhost:4200> | Flujos, ejecuciones, reintentos, programación |
 | API simulada | <http://localhost:8081/docs> | Fuente de productos con fallos inyectables |
@@ -110,6 +110,7 @@ debe decidir una persona con acceso al servidor.
 |---------|-------------------------------------|
 | Claves de la API | Añade la nueva a `DATAPULSE_API_KEYS` (lista separada por comas), reinicia `api`, migra los clientes y elimina la vieja |
 | Clave del dashboard | Es una entrada más de `DATAPULSE_API_KEYS`: misma operación, y actualiza `DATAPULSE_DASHBOARD_API_KEY` |
+| Disparo desde el dashboard | `DATAPULSE_DASHBOARD_ADMIN_KEY` debe ser igual a `DATAPULSE_API_ADMIN_KEY`: cámbialas juntas y reinicia `api` y `dashboard`. Para apagar el disparo, déjala vacía ([ADR-0009](adr/0009-dashboard-visual-system-and-trigger.md)) |
 | Contraseñas de usuarios de servicio | Cambia `DATAPULSE_*_DB_PASSWORD` y `docker compose run --rm migrate`: el bootstrap es idempotente y hace `ALTER ROLE ... PASSWORD` |
 | Token de la API simulada | `DATAPULSE_MOCK_ADMIN_TOKEN` y reinicia `mock-source` |
 

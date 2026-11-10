@@ -17,11 +17,12 @@ from typing import Any, Final
 
 import altair as alt
 
-SERIES: Final = ("#2a78d6", "#eb6834", "#1baf7a")  # paleta validada: azul, naranja, aqua
-STATUS: Final = {"error": "#d03b3b", "warn": "#fab219", "ok": "#0ca30c"}
+# Paleta para fondo oscuro (contraste >= 4.5:1 sobre #111726): azul, naranja, aqua.
+SERIES: Final = ("#5b9dff", "#ff8a5c", "#2fd4a0")
+STATUS: Final = {"error": "#ff5d5d", "warn": "#ffc247", "ok": "#3ddc84"}
 STATUS_LABEL: Final = {"error": "Error (cuarentena)", "warn": "Aviso"}
-TEXT_MUTED: Final = "#52514e"
-GRID: Final = "#e6e5e0"
+TEXT_MUTED: Final = "#9aa4b8"
+GRID: Final = "#1f2738"
 
 
 Figure = alt.Chart | alt.LayerChart
@@ -34,7 +35,8 @@ def _base(values: list[dict[str, Any]]) -> alt.Chart:
 
 def _configure[C: (alt.Chart, alt.LayerChart)](chart: C) -> C:
     configured: C = (
-        chart.configure_axis(
+        chart.configure(background="transparent")
+        .configure_axis(
             labelColor=TEXT_MUTED,
             titleColor=TEXT_MUTED,
             gridColor=GRID,
@@ -62,26 +64,40 @@ def revenue_by_day(daily: list[dict[str, Any]]) -> Figure:
     hover = alt.selection_point(fields=["day"], nearest=True, on="pointerover", empty=False)
     base = _base(values).encode(
         # Una marca por día: sin esto Vega pone marcas cada pocas horas y repite la fecha.
+        # Escala UTC: «2026-01-01» es medianoche UTC y, en hora local, un navegador al oeste
+        # de Greenwich lo mostraría como el día anterior.
         x=alt.X(
             "day:T",
             title=None,
+            scale=alt.Scale(type="utc"),
             axis=alt.Axis(format="%d %b", labelAngle=0, tickCount={"interval": "day", "step": 1}),
         ),
         y=alt.Y("revenue:Q", title="Ingresos (USD)", axis=alt.Axis(format="~s")),
     )
     line = base.mark_line(strokeWidth=2, color=SERIES[0])
+    area = base.mark_area(
+        line=False,
+        color=alt.Gradient(
+            gradient="linear",
+            stops=[
+                alt.GradientStop(color="rgba(91,157,255,0)", offset=0),
+                alt.GradientStop(color="rgba(91,157,255,0.35)", offset=1),
+            ],
+            x1=1, x2=1, y1=1, y2=0,
+        ),
+    )  # fmt: skip
     points = (
         base.mark_point(filled=True, size=80, color=SERIES[0])
         .encode(
             opacity=alt.condition(hover, alt.value(1), alt.value(0)),
             tooltip=[
-                alt.Tooltip("day:T", title="Día", format="%Y-%m-%d"),
+                alt.Tooltip("utcyearmonthdate(day):T", title="Día", format="%Y-%m-%d"),
                 alt.Tooltip("revenue:Q", title="Ingresos", format=",.2f"),
             ],
         )
         .add_params(hover)
     )
-    return _configure(alt.LayerChart(layer=[line, points]))
+    return _configure(alt.LayerChart(layer=[area, line, points]))
 
 
 def revenue_by_category(rows: list[dict[str, Any]]) -> Figure:

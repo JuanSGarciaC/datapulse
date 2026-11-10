@@ -8,6 +8,8 @@ from pathlib import Path
 
 from streamlit.web import cli as stcli
 
+from datapulse.dashboard import theme
+
 
 def main() -> None:
     page = Path(__file__).with_name("app.py")
@@ -26,7 +28,15 @@ def main() -> None:
         "--server.enableXsrfProtection",
         "true",
         "--theme.base",
-        "light",
+        "dark",
+        "--theme.primaryColor",
+        theme.PRIMARY,
+        "--theme.backgroundColor",
+        theme.BACKGROUND,
+        "--theme.secondaryBackgroundColor",
+        theme.SURFACE,
+        "--theme.textColor",
+        theme.TEXT,
         "--client.toolbarMode",
         "minimal",
     ]

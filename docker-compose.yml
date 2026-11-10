@@ -158,6 +158,8 @@ services:
       DATAPULSE_DASHBOARD_PORT: "8501"
       DATAPULSE_DASHBOARD_API_URL: http://api:8000
       DATAPULSE_DASHBOARD_API_KEY: ${DATAPULSE_DASHBOARD_API_KEY:?Define DATAPULSE_DASHBOARD_API_KEY}
+      # Opcional: vacía = panel de solo lectura, sin botones de disparo (ADR-0009).
+      DATAPULSE_DASHBOARD_ADMIN_KEY: ${DATAPULSE_DASHBOARD_ADMIN_KEY:-}
     ports:
       - "127.0.0.1:${DASHBOARD_HOST_PORT:-8501}:8501"
     healthcheck:
