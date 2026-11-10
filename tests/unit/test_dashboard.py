@@ -1,4 +1,4 @@
-"""Dashboard: cliente HTTP, gráficos (funciones puras) y página completa con AppTest."""
+"""Dashboard: cliente HTTP, gráficos y mapa (funciones puras) y página con AppTest."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ import pytest
 from pydantic import SecretStr
 from streamlit.testing.v1 import AppTest
 
-from datapulse.dashboard import charts
+from datapulse.dashboard import charts, pipeline_map, theme
 from datapulse.dashboard.client import ApiClient, ApiError, DashboardSettings
 from datapulse.dashboard.formatting import money_compact as _money_compact
 from tests.conftest import ROOT
@@ -59,12 +59,34 @@ RUNS = [
 ]  # fmt: skip
 
 
+BATCHES = [
+    {"batch_id": "0b0d3c1e-0000-4000-8000-000000000001", "source_name": "customers_csv",
+     "source_ref": "customers_2026-01-01.csv", "content_sha256": "ab" * 32, "status": "success",
+     "row_count": 80, "rejected_count": 3, "run_id": RUN_ID,
+     "created_at": "2026-01-03T06:00:01Z", "updated_at": "2026-01-03T06:00:02Z"},
+]  # fmt: skip
+
+
 class FakeClient:
     """Implementa la interfaz que usa la página, con datos fijos."""
 
-    def __init__(self, *, fail_quality: bool = False, empty: bool = False) -> None:
+    def __init__(
+        self, *, fail_quality: bool = False, empty: bool = False, admin: bool = False
+    ) -> None:
         self.fail_quality = fail_quality
         self.empty = empty
+        self.can_trigger = admin
+        self.triggered: list[str] = []
+        self.calls: list[tuple[Any, ...]] = []
+
+    def batches(self, *_: Any) -> list[dict[str, Any]]:
+        return BATCHES
+
+    def trigger(self, name: str) -> dict[str, Any]:
+        if name == "products":
+            raise ApiError("La API respondió 503. el orquestador no está disponible")
+        self.triggered.append(name)
+        return {"deployment": name, "flow_run_id": RUN_ID, "state": "SCHEDULED"}
 
     def ready(self) -> dict[str, Any]:
         return {"status": "ok", "database": "ok"}
@@ -83,11 +105,13 @@ class FakeClient:
             {"category": "beauty", "orders": 5, "units": 7, "revenue": "140.50"},
         ]  # fmt: skip
 
-    def top_products(self, *_: Any) -> list[dict[str, Any]]:
+    def top_products(self, *args: Any) -> list[dict[str, Any]]:
+        self.calls.append(("top_products", *args))
         return [{"product_id": 7, "title": "Pro Laptops 007", "category": "laptops",
                  "units": 1, "revenue": "899.50"}]  # fmt: skip
 
-    def quality_summary(self, *_: Any) -> list[dict[str, Any]]:
+    def quality_summary(self, *args: Any) -> list[dict[str, Any]]:
+        self.calls.append(("quality_summary", *args))
         if self.fail_quality:
             raise ApiError("La API respondió 503.")
         return QUALITY
@@ -98,11 +122,12 @@ class FakeClient:
     def volumes(self, *_: Any) -> list[dict[str, Any]]:
         return VOLUMES
 
-    def pipeline_runs(self, *_: Any) -> list[dict[str, Any]]:
+    def pipeline_runs(self, *args: Any) -> list[dict[str, Any]]:
+        self.calls.append(("pipeline_runs", *args))
         return RUNS
 
     def run_detail(self, run_id: str) -> dict[str, Any]:
-        return RUNS[0] | {"tasks": [], "quality_failures": 2, "params": {}}
+        return RUNS[0] | {"tasks": [], "quality_failures": 2, "params": {"trigger": "api"}}
 
 
 def _page(fake: FakeClient) -> AppTest:
@@ -119,18 +144,66 @@ def test_page_renders_three_tabs_with_metrics() -> None:
     metrics = {m.label: m.value for m in at.metric}
     assert metrics["Ingresos"] == "$ 1.04 k"
     assert metrics["Pedidos"] == "6"
-    assert metrics["❌ Filas con error (cuarentena)"] == "3"
-    assert metrics["⚠️ Filas con aviso"] == "2"
-    assert metrics["❌ Con fallo"] == "1"
+    assert metrics["Unidades"] == "8"
+    assert metrics["Filas con error (cuarentena)"] == "3"
+    assert metrics["Filas con aviso"] == "2"
+    assert metrics["Con fallo"] == "1"
     assert metrics["Filas rechazadas"] == "10"
     assert any("DbtBuildError" in e.value for e in at.error)  # detalle de la ejecución fallida
+    assert any("Fallos de calidad: 2" in c.value for c in at.caption)
+    # Los lotes de ingesta tienen pantalla, con el estado en texto.
+    lotes = [d.value for d in at.dataframe if "huella" in d.value.columns]
+    assert lotes[0].iloc[0]["referencia"] == "customers_2026-01-01.csv"
+    assert lotes[0].iloc[0]["estado"] == "éxito"
+    assert any("dp-map" in m.value for m in at.markdown)  # el mapa se dibuja
+    assert not at.button  # sin clave de administración no hay disparo
+
+
+def test_no_emojis_in_labels() -> None:
+    at = _page(FakeClient())
+    texts = [m.label for m in at.metric] + [t.label for t in at.tabs]
+    assert all(ch.isascii() or ch.isalpha() for text in texts for ch in text), texts
+
+
+def test_filters_reach_the_api() -> None:
+    fake = FakeClient()
+    at = _page(fake)
+    at.radio(key="top_metric").set_value("units")
+    at.radio(key="quality_layer").set_value("pre_load")
+    at.selectbox(key="runs_status").set_value("failed").run()
+    assert not at.exception
+    assert ("top_products", 10, date(2026, 1, 1), date(2026, 1, 3), "units") in fake.calls
+    assert ("quality_summary", "pre_load") in fake.calls
+    assert ("pipeline_runs", 100, "failed") in fake.calls
+
+
+def test_trigger_needs_admin_key_and_starts_the_live_refresh() -> None:
+    fake = FakeClient(admin=True)
+    at = _page(fake)
+    assert [b.label for b in at.button] == [
+        "Ejecutar flujo diario",
+        "Ejecutar ingesta de productos",
+    ]
+    at.button(key="trigger_daily").click().run()
+    assert not at.exception
+    assert fake.triggered == ["daily"]
+    assert at.session_state["_live"] is True  # el mapa pasa a refrescarse solo
+
+
+def test_trigger_failure_is_shown_and_does_not_start_the_refresh() -> None:
+    at = _page(FakeClient(admin=True))
+    at.button(key="trigger_products").click().run()
+    assert not at.exception
+    assert any("orquestador" in e.value for e in at.error)
+    assert "_watch_until" not in at.session_state
 
 
 def test_api_failure_in_one_tab_does_not_break_the_others() -> None:
     at = _page(FakeClient(fail_quality=True))
     assert not at.exception
     assert [e.value for e in at.error] == [
-        "La API respondió 503.",
+        "La API respondió 503.",  # el mapa usa el resumen de calidad
+        "La API respondió 503.",  # la pestaña de calidad
         "DbtBuildError: 2 pruebas fallaron",
     ]
     assert {m.label for m in at.metric} >= {"Ingresos", "Ejecuciones"}
@@ -156,6 +229,53 @@ def test_unreachable_api_shows_a_warning() -> None:
 
     at = _page(Down())
     assert any("no están disponibles" in w.value for w in at.warning)
+
+
+# ------------------------------------------------------------------ mapa del pipeline
+def _run(flow: str, status: str, **extra: Any) -> dict[str, Any]:
+    return RUNS[0] | {"flow_name": flow, "status": status, "error_message": None} | extra
+
+
+def test_map_shows_the_latest_run_of_each_stage() -> None:
+    runs = [
+        _run("ingest_customers", "failed", started_at="2026-01-01T06:00:00Z"),
+        _run("ingest_customers", "success", started_at="2026-01-02T06:00:00Z", rows_loaded=263),
+        _run("transform", "running", started_at="2026-01-02T06:01:00Z", duration_s=None),
+    ]
+    by_key = {n.key: n for n in pipeline_map.nodes(runs, QUALITY, BATCHES)}
+    assert by_key["customers"].state == "success"  # manda la ejecución más reciente
+    assert by_key["customers"].line == "263 filas · 5.2 s"
+    assert by_key["orders"].state == "idle"
+    assert by_key["dbt"].state == "running"
+    assert by_key["dbt"].line == "0 filas"  # en curso: aún sin duración
+    idle_rows = pipeline_map.nodes(
+        [_run("transform", "success", rows_read=0, rows_loaded=0)], [], []
+    )
+    assert idle_rows[5].line == "5.2 s"  # dbt no cuenta filas: solo la duración
+    assert by_key["validation"].state == "partial"  # 3 filas con error en pre_load
+    assert "3 filas con error" in by_key["validation"].detail
+    assert by_key["raw"].line == "1 lotes · 80 filas"
+
+    html = pipeline_map.render(runs, QUALITY, BATCHES)
+    assert 'class="node n-dbt is-running"' in html
+    # Solo fluyen las aristas por las que ya pasaron datos.
+    assert 'class="edge e-customers e-validation flowing"' in html
+    assert 'class="edge e-orders e-validation"' in html
+
+
+def test_map_without_data_is_all_idle() -> None:
+    html = pipeline_map.render([], [], [])
+    assert html.count("is-idle") == 7 + 1  # siete nodos y la regla CSS
+    assert 'flowing"' not in html
+
+
+def test_map_escapes_text_from_the_api() -> None:
+    evil = "<script>alert(1)</script>"
+    html = pipeline_map.render(
+        [_run("transform", "failed", error_type="X", error_message=evil, trigger=evil)], [], []
+    )
+    assert "<script>" not in html
+    assert "&lt;script&gt;" in html
 
 
 # ------------------------------------------------------------------ gráficos
@@ -190,6 +310,19 @@ def test_revenue_by_day_sums_categories_per_day() -> None:
         {"day": "2026-01-01", "revenue": 1000.0},
         {"day": "2026-01-02", "revenue": 40.0},
     ]
+
+
+def test_revenue_by_day_does_not_shift_days_with_the_browser_timezone() -> None:
+    spec = _spec(charts.revenue_by_day(DAILY))
+    assert spec["layer"][0]["encoding"]["x"]["scale"]["type"] == "utc"
+    tooltip = spec["layer"][-1]["encoding"]["tooltip"][0]
+    assert tooltip["timeUnit"] == "utcyearmonthdate"
+
+
+def test_theme_css_survives_the_html_sanitizer() -> None:
+    # El saneador de st.html descarta una hoja de estilo que contenga algo con forma de etiqueta.
+    assert "<" not in theme.CSS
+    assert "<" not in theme.JS
 
 
 def test_single_series_charts_have_no_legend_and_use_primary_color() -> None:
@@ -239,6 +372,44 @@ def test_client_sends_key_in_header_and_serializes_dates() -> None:
     assert KEY not in str(seen[0].url)  # la clave nunca viaja en la URL
 
 
+def test_client_sends_the_new_filters() -> None:
+    page = {"items": [], "limit": 100, "offset": 0, "total": 0}
+    client, seen = _client(lambda r: httpx.Response(200, json=page))
+    client.daily_sales(category="beauty")
+    client.pipeline_runs(50, "failed")
+    client.batches()
+    assert seen[0].url.params["category"] == "beauty"
+    assert dict(seen[1].url.params) == {"limit": "50", "status": "failed"}
+    assert seen[2].url.path == "/v1/ingestion/batches"
+    client, seen = _client(lambda r: httpx.Response(200, json=[]))
+    client.top_products(metric="units")
+    assert seen[0].url.params["metric"] == "units"
+
+
+def test_trigger_uses_the_admin_key_and_is_off_without_it() -> None:
+    admin = secrets.token_urlsafe(24)
+    seen: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        return httpx.Response(202, json={"deployment": "d", "flow_run_id": RUN_ID, "state": "S"})
+
+    http = httpx.Client(base_url="http://api", transport=httpx.MockTransport(handler))
+    client = ApiClient("http://api", SecretStr(KEY), http=http, admin_key=SecretStr(admin))
+    assert client.can_trigger
+    assert client.trigger("daily")["state"] == "S"
+    assert (seen[0].method, seen[0].url.path) == ("POST", "/v1/admin/pipelines/daily/runs")
+    assert seen[0].headers["X-API-Key"] == admin  # nunca la clave de lectura
+
+    # Sin clave, o con la variable vacía, el panel es de solo lectura y no llama a la API.
+    for missing in (None, SecretStr("")):
+        readonly = ApiClient("http://api", SecretStr(KEY), http=http, admin_key=missing)
+        assert not readonly.can_trigger
+        with pytest.raises(ApiError, match="solo lectura"):
+            readonly.trigger("daily")
+    assert len(seen) == 1
+
+
 def test_client_follows_pagination_until_total() -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         offset = int(request.url.params["offset"])
@@ -284,6 +455,7 @@ def test_settings_read_from_environment(monkeypatch: pytest.MonkeyPatch) -> None
     settings = DashboardSettings(_env_file=None)
     assert settings.api_url == "http://api:8000"
     assert KEY not in repr(settings)
+    assert settings.admin_key is None  # el disparo es opcional y viene apagado
     assert isinstance(ApiClient.from_settings(settings), ApiClient)
 
 
@@ -309,3 +481,4 @@ def test_entrypoint_builds_hardened_streamlit_command(monkeypatch: pytest.Monkey
     assert args["--server.enableXsrfProtection"] == "true"
     assert json.loads(args["--server.headless"]) is True
     assert args["--client.toolbarMode"] == "minimal"
+    assert args["--theme.base"] == "dark"

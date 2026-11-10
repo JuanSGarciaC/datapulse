@@ -239,5 +239,12 @@ def test_dashboard_page_renders_with_real_data(api: TestClient) -> None:
     ).json()
     metrics = {m.label: m.value for m in at.metric}
     assert metrics["Pedidos"] == f"{kpis['orders']:,}"
-    assert int(metrics["❌ Filas con error (cuarentena)"].replace(",", "")) > 0
+    assert int(metrics["Filas con error (cuarentena)"].replace(",", "")) > 0
+    lotes = [d.value for d in at.dataframe if "huella" in d.value.columns]
+    assert len(lotes[0]) > 0  # los lotes de ingesta reales llegan a la pantalla
+    mapa = next(m.value for m in at.markdown if "dp-map" in m.value)
+    # Validación, raw, dbt y pruebas de marts tienen datos reales (la ingesta de esta
+    # prueba se registra como «ingest_all», no por fuente).
+    for key in ("validation", "raw", "dbt", "marts"):
+        assert f"n-{key} is-idle" not in mapa
     assert not [e.value for e in at.error if "API" in e.value]  # ninguna pestaña falló

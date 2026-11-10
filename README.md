@@ -29,6 +29,12 @@ verificar está en [Limitaciones conocidas](#limitaciones-conocidas).
 
 ## Capturas
 
+![Mapa del pipeline](docs/img/dashboard-mapa.png)
+
+*Mapa del pipeline: cada etapa con el estado de su última ejecución. Las aristas fluyen solo
+si por ellas ya pasaron datos; al señalar un nodo se ve su detalle. Con la clave de
+administración, los botones disparan un flujo real y el mapa se actualiza solo.*
+
 | Calidad de datos | Pipelines |
 |:---:|:---:|
 | ![Calidad de datos](docs/img/dashboard-calidad.png) | ![Pipelines](docs/img/dashboard-pipelines.png) |
@@ -80,7 +86,7 @@ Medido en el [CI del 2026-11-01](https://github.com/JuanSGarciaC/datapulse/actio
 | Cobertura | 93 % de líneas y ramas (el CI exige ≥ 90 %) |
 | Defectos sintéticos | **37** documentados en `manifest.json`; una prueba exige que el pipeline los detecte **exactamente** |
 | Calidad estática | ruff, mypy `strict` (código y pruebas), bandit, pip-audit, gitleaks (commits nuevos en cada push/PR; todo el historial cada semana y bajo demanda) |
-| Decisiones | 8 ADRs con alternativas descartadas |
+| Decisiones | 9 ADRs con alternativas descartadas |
 
 ## Qué demuestra
 
@@ -95,7 +101,7 @@ Medido en el [CI del 2026-11-01](https://github.com/JuanSGarciaC/datapulse/actio
 | Mínimo privilegio | Un rol por componente; `raw` append-only; la API solo lee `marts`/`ops`; el dashboard no tiene credenciales de BD | [ADR-0005](docs/adr/0005-least-privilege-roles.md) |
 | Pruebas de contrato | La misma suite contra la API simulada y contra DummyJSON real (cada push y cada semana) | [ADR-0006](docs/adr/0006-public-api-and-mock-contract.md) |
 | Datos reproducibles | Generador determinista (mismos bytes en cada ejecución; LF forzado al escribir y por `.gitattributes`) con respuesta conocida | [sources.md](docs/sources.md) |
-| Observabilidad | Logging JSON con redacción de secretos; ejecuciones, tareas, intentos y calidad en `ops`; dashboard operativo | [dashboard.md](docs/dashboard.md) |
+| Observabilidad | Logging JSON con redacción de secretos; ejecuciones, tareas, intentos y calidad en `ops`; dashboard operativo con mapa del pipeline, lotes de ingesta y disparo opcional de flujos | [dashboard.md](docs/dashboard.md), [ADR-0009](docs/adr/0009-dashboard-visual-system-and-trigger.md) |
 
 ## Inicio rápido
 
@@ -183,7 +189,7 @@ mismos nombres. Si PowerShell bloquea el script:
 
 | Tipo | Qué cubre | Requiere |
 |------|-----------|----------|
-| Unitarias | Configuración y secretos, validación de cada fuente, cliente REST (reintentos, `Retry-After`), generador, API simulada, API (auth, validación, errores), dashboard (cliente, gráficos y página con `AppTest`) | Nada |
+| Unitarias | Configuración y secretos, validación de cada fuente, cliente REST (reintentos, `Retry-After`), generador, API simulada, API (auth, validación, errores), dashboard (cliente, gráficos, mapa del pipeline, filtros, disparo y página con `AppTest`) | Nada |
 | Integración | Migraciones (ida y vuelta, deriva), matriz de permisos, **respuesta conocida contra el manifiesto**, idempotencia, incremental, atomicidad ante fallos, bloqueo concurrente, Prefect real, dbt real (SCD2, versiones tardías, incremental = *full refresh*), cada KPI frente a un cálculo SQL independiente, dashboard contra la API real | PostgreSQL |
 | Contrato | Una suite contra la API simulada y, con `-m live`, contra DummyJSON real | Internet para `live` |
 | E2E | Caja negra contra el stack: disparo por la API admin → Prefect → worker → fuente con 503 y 429 → API; trazabilidad `flow_run_id` ↔ `ops`; defectos conocidos visibles por HTTP | Stack levantado (`-m e2e`) |
@@ -193,7 +199,8 @@ Las pruebas de integración se omiten localmente si no hay base de datos, pero e
 contrato y E2E.
 
 **Verificado a mano en Windows 11 con Docker real:** `demo.ps1`, los servicios en estado
-*healthy*, las tres pestañas del dashboard con datos, las 5 pruebas E2E, `dev.ps1 check`
+*healthy*, el mapa y las tres pestañas del dashboard con datos, el disparo de un flujo desde
+el panel (el mapa se actualizó solo a los 14 s), las 5 pruebas E2E, `dev.ps1 check`
 completo (lint, tipos, 271 pruebas, seguridad y muestras) y la idempotencia: una segunda
 ejecución del flujo `daily` no carga filas nuevas. Las 2 advertencias de dbt son los huérfanos
 sembrados a propósito en los datos de ejemplo.
@@ -210,6 +217,7 @@ sembrados a propósito en los datos de ejemplo.
 | [0006](docs/adr/0006-public-api-and-mock-contract.md) | DummyJSON real + réplica simulada validada por contrato | Solo API real (no se pueden provocar fallos) o solo simulación (nada garantiza fidelidad) |
 | [0007](docs/adr/0007-validation-design.md) | Validar antes de cargar, cuarentena por fila, rechazo del lote si supera el presupuesto | Cargar todo y limpiar después |
 | [0008](docs/adr/0008-scd2-and-incremental-models.md) | SCD2 desde la historia de `raw`; incremental por pedido | Snapshots de dbt (dependen de cuándo se ejecuten) |
+| [0009](docs/adr/0009-dashboard-visual-system-and-trigger.md) | Panel en Streamlit con sistema visual propio, mapa del pipeline en SVG y disparo opcional | Frontend aparte en React (duplica un panel ya probado y añade otra cadena de herramientas) |
 
 ## Documentación
 
@@ -241,13 +249,14 @@ src/datapulse/
   flows/           flujos y despliegues de Prefect
   transform/       dbt desde Python (dbtRunner) y registro de sus pruebas en ops
   api/             API de indicadores (FastAPI, solo lectura salvo el disparo admin)
-  dashboard/       Streamlit: cliente de la API, gráficos y página
+  dashboard/       Streamlit: cliente de la API, gráficos, mapa del pipeline, tema y página
 dbt/               staging, marts, pruebas genéricas y conciliaciones
 migrations/        Alembic: esquemas, roles, permisos, tablas raw y ops
 data/samples/      datos de ejemplo versionados + manifest.json
 tests/             unit, integration, contract, e2e
 docs/              arquitectura, fuentes, pipeline, modelo, API, dashboard, despliegue, ADRs
-scripts/           demo.ps1 (demo en un comando) y dev.ps1 (comandos para Windows)
+scripts/           demo.ps1 (demo en un comando), dev.ps1 (comandos para Windows) y
+                   screenshots.py (capturas y comprobación visual en un navegador)
 ```
 
 ## Seguridad
@@ -273,6 +282,9 @@ Lo que el proyecto **no** hace o no se pudo verificar:
 - **Carga incremental con escaneo completo:** DummyJSON no filtra por fecha, así que cada
   ejecución lee todo el catálogo y filtra en el cliente. Con 200 productos es trivial; con
   millones haría falta una fuente que filtre en el servidor o CDC.
+- **El acabado visual del panel depende de selectores internos de Streamlit** (`data-testid`).
+  Una versión nueva puede cambiarlos: el panel seguiría funcionando sin el acabado.
+  `scripts/screenshots.py` lo detecta, pero se ejecuta a mano, no en CI.
 - **Pensado para una máquina:** sin TLS, sin login en el dashboard, Prefect sin autenticación y
   sin límite de peticiones en la API. La lista de cambios para un entorno real está en
   [deployment.md](docs/deployment.md#4-antes-de-un-entorno-real).

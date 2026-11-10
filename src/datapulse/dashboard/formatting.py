@@ -21,3 +21,14 @@ def money_compact(value: Any) -> str:
         if abs(amount) >= limit:
             return f"$ {amount / limit:,.2f} {suffix}"
     return f"$ {amount:,.2f}"
+
+
+# Estados con texto (nunca solo color ni iconos): ejecuciones y lotes de ingesta.
+STATUS_LABEL = {
+    "success": "éxito",
+    "partial": "parcial",
+    "failed": "fallo",
+    "running": "en curso",
+    "processing": "procesando",
+    "rejected": "rechazado",
+}
