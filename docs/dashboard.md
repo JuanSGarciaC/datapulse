@@ -27,6 +27,8 @@ texto y color.
 - Al pasar el puntero (o el foco del teclado) por un nodo se ve su detalle y se encienden sus
   aristas.
 
+![Mapa del pipeline en movimiento](img/dashboard-demo.gif)
+
 ![Mapa del pipeline](img/dashboard-mapa.png)
 
 ### Disparar un pipeline desde el panel (opcional)
@@ -51,6 +53,7 @@ activa; `.env.example` la trae comentada. El motivo y los límites están en
 ![Negocio](img/dashboard-negocio.png)
 ![Calidad de datos](img/dashboard-calidad.png)
 ![Pipelines](img/dashboard-pipelines.png)
+![Ejecuciones, detalle y lotes de ingesta](img/dashboard-lotes.png)
 
 *Capturas con los datos sintéticos de `data/samples` tras dos ejecuciones del flujo diario.
 La ejecución con fallo es real: la primera vez la fuente de productos no era alcanzable, los

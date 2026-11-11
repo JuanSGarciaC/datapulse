@@ -29,12 +29,17 @@ verificar está en [Limitaciones conocidas](#limitaciones-conocidas).
 
 ## Capturas
 
-![Mapa del pipeline](docs/img/dashboard-mapa.png)
+![Mapa del pipeline en movimiento](docs/img/dashboard-demo.gif)
 
-*Mapa del pipeline: cada flujo con el estado de su última ejecución, y la validación y los
-lotes con su acumulado. Una arista fluye solo si su etapa de origen tiene datos; al señalar
-un nodo se ve su detalle. Con la clave de
-administración, los botones disparan un flujo real y el mapa se actualiza solo.*
+*Grabación real del panel: el puntero recorre el mapa y se pulsa «Ejecutar flujo diario». Las
+tres fuentes terminan y dbt queda «en curso» sin recargar la página. Cada flujo muestra el
+estado de su última ejecución; la validación y los lotes, su acumulado. Una arista fluye solo
+si su etapa de origen tiene datos.*
+
+| Mapa del pipeline | Ejecuciones, detalle y lotes de ingesta |
+|:---:|:---:|
+| ![Mapa del pipeline](docs/img/dashboard-mapa.png) | ![Lotes de ingesta](docs/img/dashboard-lotes.png) |
+| Al señalar un nodo se ve su detalle y se encienden sus aristas | Cada lote con su huella SHA-256: un reenvío idéntico no crea lote |
 
 | Calidad de datos | Pipelines |
 |:---:|:---:|
@@ -45,6 +50,20 @@ administración, los botones disparan un flujo real y el mapa se actualiza solo.
 |:---:|:---:|
 | ![Prefect](docs/img/prefect-runs.png) | ![API](docs/img/api-swagger.png) |
 | Ejecuciones de los flujos `ingest-*` y `transform` | Endpoints de solo lectura con clave por consumidor |
+
+### Evidencias del rediseño del panel (2026-11-10)
+
+Todas las imágenes de esta sección salen de `scripts/screenshots.py` contra el stack levantado
+con `scripts/demo.ps1`; el script falla si el acabado visual no llega al navegador.
+
+| Comprobación | Resultado |
+|--------------|-----------|
+| [CI del PR #11](https://github.com/JuanSGarciaC/datapulse/pull/11) (lint y tipos, pruebas, seguridad, contrato, Docker) | 5 de 5 en verde |
+| Pruebas unitarias y de integración en CI | 286 pasan; cobertura 91 % (umbral 90 %) |
+| E2E contra el stack en Docker (Windows 11) | 5 de 5 |
+| Navegador real (Edge): mapa con 7 nodos, borde animado, brillo que sigue al puntero, detalle al señalar, movimiento reducido | Pasa |
+| Disparo desde el panel: botón → API → Prefect → worker → mapa | El mapa se actualiza solo, sin recargar |
+| Revisión de código independiente | Sin hallazgos graves ni de seguridad; los de gravedad media, corregidos |
 
 ## Arquitectura
 
