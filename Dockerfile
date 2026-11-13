@@ -27,7 +27,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 FROM python:${PYTHON_VERSION}-slim AS runtime
 LABEL org.opencontainers.image.title="datapulse" \
       org.opencontainers.image.source="https://github.com/JuanSGarciaC/datapulse" \
-      org.opencontainers.image.licenses="MIT"
+      org.opencontainers.image.licenses="LicenseRef-Proprietary"
 
 ENV PATH="/app/.venv/bin:${PATH}" \
     PREFECT_HOME=/var/lib/prefect \

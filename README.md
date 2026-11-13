@@ -6,7 +6,7 @@
 ![Prefect 3](https://img.shields.io/badge/orquestación-Prefect%203-070E10)
 ![dbt](https://img.shields.io/badge/modelado-dbt-FF694B)
 ![Docker Compose](https://img.shields.io/badge/despliegue-Docker%20Compose-2496ED)
-![License: MIT](https://img.shields.io/badge/license-MIT-green)
+![Licencia: todos los derechos reservados](https://img.shields.io/badge/licencia-todos%20los%20derechos%20reservados-lightgrey)
 
 **Plataforma de ingeniería de datos de punta a punta:** convierte archivos (CSV, JSON) y una API
 REST paginada en información **confiable, trazable e idempotente** para análisis de negocio.
@@ -316,4 +316,4 @@ Lo que el proyecto **no** hace o no se pudo verificar:
 
 ## Licencia
 
-[MIT](LICENSE) · Hecho por [JuanSGarciaC](https://github.com/JuanSGarciaC).
+Todos los derechos reservados. El código se publica para consulta como parte de mi portafolio: puedes leerlo, pero no usarlo, copiarlo, modificarlo ni distribuirlo sin mi autorización por escrito. Ver [LICENSE](LICENSE). Hecho por [JuanSGarciaC](https://github.com/JuanSGarciaC).

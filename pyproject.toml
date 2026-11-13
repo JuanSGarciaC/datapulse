@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Plataforma de ingeniería de datos: ingesta, validación, orquestación y modelado analítico trazable."
 readme = "README.md"
 requires-python = ">=3.13,<3.14"
-license = { text = "MIT" }
+license = { text = "Proprietary" }
 authors = [{ name = "Juan S. Garcia C.", email = "276046067+JuanSGarciaC@users.noreply.github.com" }]
 # Las dependencias se añaden por fase: solo se declara lo que el código usa.
 dependencies = [
