@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DataPulse · De archivos sueltos a indicadores confiables</title>
+  <meta name="description" content="Plataforma de ingeniería de datos de punta a punta: ingesta validada con cuarentena, Prefect, dbt con modelo estrella y SCD2, API de indicadores y panel.">
+  <link rel="stylesheet" href="styles.css">
+  <script>document.documentElement.classList.add('js');</script>
+  <script src="main.js" defer></script>
+</head>
+<body>
+  <header class="top">
+    <span class="brand">DataPulse</span>
+    <nav aria-label="Secciones">
+      <a href="#recorrido">Recorrido</a>
+      <a href="#numeros">En números</a>
+      <a href="#capturas">Capturas</a>
+      <a href="#pruebalo">Pruébalo</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Hero · B1 split text -->
+    <section class="hero">
+      <p class="kicker">Ingeniería de datos de punta a punta</p>
+      <h1 class="split">De archivos sueltos a indicadores en los que se puede confiar.</h1>
+      <p class="lede">CSV, JSON y una API REST paginada entran por contratos de validación, se cargan de forma
+        idempotente, se modelan con dbt y salen como indicadores por una API de solo lectura.
+        Todo se levanta con un comando y se verifica en CI en cada push.</p>
+      <p class="actions">
+        <a class="btn" href="#recorrido">Ver el recorrido de los datos</a>
+        <a class="btn ghost" href="https://github.com/JuanSGarciaC/datapulse">Código en GitHub</a>
+      </p>
+    </section>
+
+    <!-- Recorrido · C3 scrub (efecto estrella) + C13 color por capa -->
+    <section id="recorrido" class="scrub-wrap" aria-labelledby="recorrido-t">
+      <div class="scrub-sticky">
+        <div class="bgs" aria-hidden="true">
+          <div class="bg bg-0" data-show="-1 .2"></div>
+          <div class="bg bg-1" data-show=".2 .4"></div>
+          <div class="bg bg-2" data-show=".4 .6"></div>
+          <div class="bg bg-3" data-show=".6 .8"></div>
+          <div class="bg bg-4" data-show=".8"></div>
+        </div>
+
+        <div class="scrub-inner">
+          <div class="scrub-head">
+            <h2 id="recorrido-t">Seis registros reales cruzan las capas</h2>
+            <p class="hint">Desliza: la animación avanza y retrocede con el scroll. Los registros salen de
+              <code>data/samples</code> y sus defectos están anotados en <code>manifest.json</code>.</p>
+          </div>
+
+          <ol class="rail" aria-hidden="true">
+            <li data-stage="0">Fuentes</li>
+            <li data-stage="1">Validación</li>
+            <li data-stage="2">raw</li>
+            <li data-stage="3">staging</li>
+            <li data-stage="4">marts</li>
+          </ol>
+
+          <ol class="steps">
+            <li data-show="-1 .2"><strong>1 · Fuentes.</strong> Llegan sin tipos y en dos formatos: líneas de CSV de
+              clientes y pedidos en JSON. Un mismo pedido puede llegar en dos lotes.</li>
+            <li data-show=".2 .4"><strong>2 · Validación.</strong> Los contratos de Polars revisan cada fila. Las
+              inválidas no se pierden: van a cuarentena con el campo y el motivo.</li>
+            <li data-show=".4 .6"><strong>3 · raw.</strong> Lo válido se carga sin modificar (solo se añaden filas), cada
+              fila con la huella SHA-256 de su lote. Un archivo reenviado con otro nombre pero el mismo contenido no
+              crea un lote nuevo.</li>
+            <li data-show=".6 .8"><strong>4 · staging.</strong> dbt tipa y normaliza. Si un pedido llega dos veces,
+              gana la versión más reciente: O000065 pasa de <em>paid</em> a <em>cancelled</em>.</li>
+            <li data-show=".8"><strong>5 · marts.</strong> El modelo estrella: dimensiones con historial SCD2 y hechos
+              por línea de pedido. Las ventas diarias se concilian con los hechos en una prueba de dbt.</li>
+          </ol>
+
+          <div class="stage" aria-label="Registros de ejemplo y su estado final">
+            <p class="zone zone-out" data-show=".2">Fuera del flujo</p>
+
+            <div class="row" data-row="c3">
+              <span class="src">customers_2026-01-01.csv</span>
+              <span class="vals">
+                <code class="v v-src" data-show="-1 .62">C00003,Sebastián,Rodríguez,sebastian.rodriguez.3@example.com,Medellín,CO,retail,2024-11-13</code>
+                <code class="v v-typed" data-show=".62">customer_id C00003 · city Medellín · segment retail · signup 2024-11-13</code>
+              </span>
+              <span class="note ok" data-show=".26 .42">✓ contrato cumplido</span>
+              <span class="note lote" data-show=".44 .82">lote sha256 2ca922fd…</span>
+              <span class="note mart" data-show=".84">→ dim_customer (versión vigente, SCD2)</span>
+            </div>
+
+            <div class="row bad" data-row="c9">
+              <span class="src">customers_2026-01-01.csv</span>
+              <span class="vals"><code class="v">C00009,Natalia,Peña,natalia.pena.9.at.example.com,Guadalajara,MX,…</code></span>
+              <span class="note err" data-show=".25">cuarentena · email: «email sin @»</span>
+            </div>
+
+            <div class="row bad" data-row="o231">
+              <span class="src">orders_batch_002.json</span>
+              <span class="vals"><code class="v">{"order_id":"O000231","items":[{"product_id":162,"quantity":0,…}]}</code></span>
+              <span class="note err" data-show=".27">cuarentena · items.quantity fuera de rango: 0</span>
+            </div>
+
+            <div class="row" data-row="o65a">
+              <span class="src">orders_batch_001.json</span>
+              <span class="vals"><code class="v">{"order_id":"O000065","status":"paid","updated_at":"2026-01-01T15:56:00Z",…}</code></span>
+              <span class="note lote" data-show=".44 .64">lote sha256 eeca346e…</span>
+              <span class="note old" data-show=".63">versión anterior: se descarta</span>
+            </div>
+
+            <div class="row" data-row="o65b">
+              <span class="src">orders_batch_003.json</span>
+              <span class="vals">
+                <code class="v v-src" data-show="-1 .62">{"order_id":"O000065","status":"cancelled","updated_at":"2026-01-03T19:53:00Z",…}</code>
+                <code class="v v-typed" data-show=".62">order_id O000065 · status cancelled · updated_at 2026-01-03 19:53 UTC</code>
+              </span>
+              <span class="note lote" data-show=".44 .64">lote sha256 97dbbfca…</span>
+              <span class="note ok" data-show=".66 .82">✓ versión más reciente</span>
+              <span class="note mart" data-show=".84">→ fct_order_items</span>
+            </div>
+
+            <div class="row skip" data-row="rs">
+              <span class="src">customers_2026-01-02_resend.csv</span>
+              <span class="vals"><code class="v">35 filas · sha256 2ff346bc…</code></span>
+              <span class="note warn" data-show=".46">lote omitido: mismo contenido que customers_2026-01-02.csv</span>
+            </div>
+
+            <div class="row mart-card" data-row="daily" data-show=".84">
+              <span class="src">marts</span>
+              <span class="vals"><code class="v">fct_daily_sales</code></span>
+              <span class="note mart">se concilia con fct_order_items (prueba dbt)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- En números · A7 count-up -->
+    <section id="numeros" class="band reveal" aria-labelledby="numeros-t">
+      <h2 id="numeros-t">En números</h2>
+      <ul class="stats stagger">
+        <li><span class="num" data-count="304">304</span><span class="lbl">pruebas Python: unitarias, de integración contra PostgreSQL, de contrato y E2E</span></li>
+        <li><span class="num" data-count="39">39</span><span class="lbl">pruebas de dbt, con 5 conciliaciones</span></li>
+        <li><span class="num" data-count="91" data-suffix=" %">91 %</span><span class="lbl">de cobertura de líneas y ramas (el CI exige ≥ 90 %)</span></li>
+        <li><span class="num" data-count="37">37</span><span class="lbl">defectos sintéticos que el pipeline debe detectar, ni uno más ni uno menos</span></li>
+        <li><span class="num" data-count="9">9</span><span class="lbl">ADRs con sus alternativas descartadas</span></li>
+      </ul>
+      <p class="source">Medido en el CI del 2026-11-10 (ubuntu-24.04, Python 3.13, PostgreSQL en contenedor).</p>
+    </section>
+
+    <!-- Qué demuestra · A2 stagger -->
+    <section class="band reveal" aria-labelledby="demuestra-t">
+      <h2 id="demuestra-t">Qué demuestra</h2>
+      <ul class="cards stagger">
+        <li><h3>Calidad de datos</h3><p>Contratos por fuente, cuarentena con motivo y presupuesto de errores por lote. Las columnas nuevas de una fuente van a <code>_extra</code>.</p></li>
+        <li><h3>Idempotencia</h3><p>Huella del contenido de cada lote y de cada registro, y marcas de agua con solapamiento. Repetir una carga no duplica nada.</p></li>
+        <li><h3>Resiliencia</h3><p>Reintentos que respetan <code>Retry-After</code>, con espera exponencial aleatorizada. Carga atómica por lote y bloqueo por fuente.</p></li>
+        <li><h3>Orquestación real</h3><p>Prefect 3: despliegues programados, reintentos solo ante fallos transitorios y disparo por API.</p></li>
+        <li><h3>Modelado analítico</h3><p>Modelo estrella con SCD2 que reconstruye cualquier fecha pasada y admite versiones tardías. El modo incremental da lo mismo que reconstruir todo.</p></li>
+        <li><h3>Mínimo privilegio</h3><p>Un rol por componente. La API solo lee <code>marts</code> y <code>ops</code>, y el panel no tiene credenciales de la base de datos.</p></li>
+      </ul>
+    </section>
+
+    <!-- Capturas · A1 -->
+    <section id="capturas" class="band" aria-labelledby="capturas-t">
+      <h2 id="capturas-t" class="reveal">Capturas del panel</h2>
+      <figure class="shot wide reveal">
+        <img src="../docs/img/dashboard-demo.gif" alt="Grabación del panel: se pulsa «Ejecutar flujo diario» y el mapa del pipeline se actualiza sin recargar" loading="lazy" width="1280" height="800">
+        <figcaption>Grabación real: se pulsa «Ejecutar flujo diario» y el mapa se actualiza sin recargar la página.</figcaption>
+      </figure>
+      <div class="shots stagger">
+        <figure class="shot reveal"><img src="../docs/img/dashboard-negocio.png" alt="Vista de negocio del panel" loading="lazy"><figcaption>Indicadores de negocio</figcaption></figure>
+        <figure class="shot reveal"><img src="../docs/img/dashboard-calidad.png" alt="Vista de calidad de datos del panel" loading="lazy"><figcaption>Calidad de datos y cuarentena</figcaption></figure>
+        <figure class="shot reveal"><img src="../docs/img/dashboard-lotes.png" alt="Lotes de ingesta con su huella SHA-256" loading="lazy"><figcaption>Lotes de ingesta con su SHA-256</figcaption></figure>
+        <figure class="shot reveal"><img src="../docs/img/prefect-runs.png" alt="Ejecuciones de los flujos en Prefect" loading="lazy"><figcaption>Orquestación en Prefect</figcaption></figure>
+      </div>
+    </section>
+
+    <!-- Pruébalo · H3 terminal -->
+    <section id="pruebalo" class="band reveal" aria-labelledby="pruebalo-t">
+      <h2 id="pruebalo-t">Pruébalo en un comando</h2>
+      <p>Requisitos: Windows con Docker Desktop abierto y Git. El script crea <code>.env</code> con secretos
+        aleatorios, levanta el stack, ejecuta el flujo diario y deja el panel listo.</p>
+      <div class="term" role="img" aria-label="Terminal de PowerShell ejecutando scripts/demo.ps1">
+        <div class="term-bar" aria-hidden="true"><i></i><i></i><i></i><span>PowerShell</span></div>
+<pre class="term-body"><span class="cmd">git clone https://github.com/JuanSGarciaC/datapulse.git</span>
+<span class="cmd">cd datapulse</span>
+<span class="cmd">.\scripts\demo.ps1</span>
+<span class="out">.env creado con secretos aleatorios (no se versiona).</span>
+<span class="dim"># … salida de docker compose up --build …</span>
+<span class="out">Esperando a que el worker y Prefect estén listos...</span>
+<span class="dim"># … ingesta + dbt del flujo diario …</span>
+<span class="out"> </span>
+<span class="out good">DataPulse está listo:</span>
+<span class="out">  Dashboard   http://localhost:8501</span>
+<span class="out">  API (docs)  http://localhost:8000/docs   (clave en .env: DATAPULSE_API_KEYS)</span>
+<span class="out">  Prefect     http://localhost:4200</span>
+<span class="out">Para apagarlo: docker compose down</span></pre>
+      </div>
+      <p class="source">Las líneas sin <code>#</code> son las que imprime <code>scripts/demo.ps1</code>; lo comentado resume la salida de Docker y del flujo.</p>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <p>DataPulse · © 2026 Juan Sebastián García C. Todos los derechos reservados (ver <code>LICENSE</code>).</p>
+    <p><a href="https://github.com/JuanSGarciaC/datapulse">github.com/JuanSGarciaC/datapulse</a></p>
+  </footer>
+</body>
+</html>
