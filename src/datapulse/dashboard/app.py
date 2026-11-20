@@ -15,7 +15,7 @@ from typing import Any
 
 import streamlit as st
 
-from datapulse.dashboard import charts, pipeline_map, theme
+from datapulse.dashboard import charts, flow, pipeline_map, theme
 from datapulse.dashboard.client import ApiClient, ApiError
 from datapulse.dashboard.formatting import STATUS_LABEL
 from datapulse.dashboard.formatting import money as _money
@@ -258,9 +258,12 @@ def _overview(client: Any) -> None:
                     _trigger(client, name)
         try:
             runs = client.pipeline_runs(100)
-            svg = pipeline_map.render(runs, client.quality_summary(), client.batches(100))
+            quality, batches = client.quality_summary(), client.batches(100)
+            svg = pipeline_map.render(runs, quality, batches)
             # st.html descarta el SVG (su saneador solo admite HTML); st.markdown lo conserva.
             st.markdown(svg, unsafe_allow_html=True)
+            # Partículas encima del SVG: registros válidos y en cuarentena fluyendo.
+            flow.mount(pipeline_map.flow_model(runs, quality, batches))
         except ApiError as exc:
             st.error(str(exc))
             return

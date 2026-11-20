@@ -5,6 +5,9 @@ ejecución. Una arista solo fluye si su etapa de origen tiene datos, y un nodo l
 su flujo está en curso: el movimiento informa, no decora.
 
 Todo texto que viene de la API pasa por ``html.escape``: el resultado se inserta como HTML.
+
+``flow_model`` resume los mismos datos en números (sin texto de la API) para la capa de
+partículas del navegador (``dashboard/flow.py``): el SVG es la verdad y se lee sin JavaScript.
 """
 
 from __future__ import annotations
@@ -18,6 +21,8 @@ from datapulse.dashboard.formatting import STATUS_LABEL
 W: Final = 190
 H: Final = 72
 VIEW: Final = (1200, 340)
+# Bandeja de cuarentena, bajo el nodo de validación: adonde van las filas con error.
+BIN: Final = (300, 236, 130, 40)
 
 
 @dataclass(frozen=True)
@@ -131,6 +136,15 @@ _CSS: Final = """
 .dp-map .is-success{--c:#3ddc84}.dp-map .is-partial{--c:#ffc247}.dp-map .is-failed{--c:#ff5d5d}
 .dp-map .is-running{--c:#5b9dff}.dp-map .is-idle{--c:#8a93a8}
 .dp-map .is-running .box{stroke:var(--c);animation:dp-pulse 1.4s ease-in-out infinite}
+.dp-map .qedge{fill:none;stroke:rgba(255,255,255,.10);stroke-width:1.5;stroke-dasharray:3 5}
+.dp-map .qedge.full{stroke:#ff5d5d;stroke-opacity:.55}
+.dp-map .bin rect{fill:#0d121e;stroke:rgba(255,255,255,.10);stroke-dasharray:4 4}
+.dp-map .bin.full rect{stroke:#ff5d5d;stroke-opacity:.6}
+.dp-map .bin-t{fill:#9aa4b8;font-size:11px;text-anchor:middle;letter-spacing:.04em;
+  text-transform:uppercase}
+.dp-map .bin-n{fill:#e6eaf2;font-size:12px;font-weight:600;text-anchor:middle}
+.dp-map .bin.full .bin-n{fill:#ff8f8f}
+.dp-flow-on .dp-map .edge.flowing{animation:none;stroke-dasharray:none;stroke-opacity:.35}
 @keyframes dp-flow{to{stroke-dashoffset:-32}}
 @keyframes dp-pulse{50%{stroke-width:3;stroke-opacity:.35}}
 @media (prefers-reduced-motion:reduce){
@@ -147,13 +161,44 @@ def _highlight_css(keys: list[str]) -> str:
     )
 
 
-def _edge(a: Node, b: Node) -> str:
+def _curve(a: Node, b: Node) -> tuple[int, ...]:
+    """Curva cúbica de la arista: inicio, dos puntos de control y fin."""
     x1, y1, x2, y2 = a.x + W, a.y + H // 2, b.x, b.y + H // 2
     bend = (x1 + x2) // 2
+    return (x1, y1, bend, y1, bend, y2, x2, y2)
+
+
+def _quarantine_curve(validation: Node) -> tuple[int, ...]:
+    x1, y1 = validation.x + W // 2, validation.y + H
+    bx, by, bw, _ = BIN
+    x2, y2 = bx + bw // 2, by
+    return (x1, y1, x1, y1 + 20, x2, y2 - 20, x2, y2)
+
+
+def _path(c: tuple[int, ...]) -> str:
+    return f"M{c[0]},{c[1]} C{c[2]},{c[3]} {c[4]},{c[5]} {c[6]},{c[7]}"
+
+
+def _edge(a: Node, b: Node) -> str:
     flowing = " flowing" if a.state != "idle" else ""
+    return f'<path class="edge e-{a.key} e-{b.key}{flowing}" d="{_path(_curve(a, b))}"/>'
+
+
+def _rejected(batches: list[dict[str, Any]]) -> int:
+    return sum(b["rejected_count"] for b in batches)
+
+
+def _quarantine(validation: Node, batches: list[dict[str, Any]]) -> str:
+    rejected = _rejected(batches)
+    x, y, w, h = BIN
+    full = " full" if rejected else ""
     return (
-        f'<path class="edge e-{a.key} e-{b.key}{flowing}" '
-        f'd="M{x1},{y1} C{bend},{y1} {bend},{y2} {x2},{y2}"/>'
+        f'<path class="qedge e-validation{full}" d="{_path(_quarantine_curve(validation))}"/>'
+        f'<g class="bin{full}" role="img" aria-label="Cuarentena: {rejected:,} filas">'
+        f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="8"/>'
+        f'<text class="bin-t" x="{x + w // 2}" y="{y + 17}">Cuarentena</text>'
+        f'<text class="bin-n" x="{x + w // 2}" y="{y + 32}">{rejected:,} filas</text>'
+        "</g>"
     )
 
 
@@ -190,8 +235,68 @@ def render(
         f'<svg class="dp-map" viewBox="0 0 {VIEW[0]} {VIEW[1]}" role="group" '
         f'aria-label="Mapa del pipeline. {escape(summary)}">'
         + "".join(_edge(by_key[a], by_key[b]) for a, b in EDGES)
+        + _quarantine(by_key["validation"], batches)
         + f'<text class="hint" x="{VIEW[0] // 2}" y="{VIEW[1] - 16}">'
         "Pasa el puntero por un nodo para ver su detalle</text>"
         + "".join(_node(n) for n in items)
         + "</svg>"
     )
+
+
+# Flujo de cada fuente de ingesta → su nodo en el mapa.
+_SOURCES: Final = {
+    "customers": "ingest_customers",
+    "orders": "ingest_orders",
+    "products": "ingest_products",
+}
+
+
+def _share(part: float, whole: float) -> float:
+    return round(min(1.0, part / whole), 4) if whole > 0 else 0.0
+
+
+def flow_model(
+    runs: list[dict[str, Any]], quality: list[dict[str, Any]], batches: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Lo que necesita la capa de partículas: geometría, ritmos y proporciones.
+
+    Solo números y claves fijas, nunca texto de la API. Cada fuente emite partículas en
+    proporción a las filas que leyó en su última ejecución; una parte igual a su tasa de
+    rechazo se desvía a la cuarentena. En dbt → marts, la parte con aviso sale en ámbar.
+    """
+    by_key = {n.key: n for n in nodes(runs, quality, batches)}
+    read: dict[str, int] = {}
+    rejected: dict[str, float] = {}
+    for key, flow in _SOURCES.items():
+        run = _latest(runs, flow)
+        read[key] = (run["rows_read"] or 0) if run else 0
+        rejected[key] = _share(run["rows_rejected"] or 0, read[key]) if run else 0.0
+    most = max(read.values(), default=0)
+    post = [q for q in quality if q["layer"] == "post_transform"]
+    warned = sum(q["rows_failed"] for q in post if q["severity"] == "warn")
+    evaluated = sum(q.get("rows_evaluated") or 0 for q in post)
+    edges = []
+    for a, b in EDGES:
+        src = by_key[a]
+        # Ritmo relativo (de 0 a 1): las fuentes, por filas leídas; el resto hereda lo que llega.
+        rate = round((read[a] / most) ** 0.5, 4) if a in read and most else 1.0
+        edges.append(
+            {
+                "from": a,
+                "to": b,
+                "curve": list(_curve(src, by_key[b])),
+                "flowing": src.state != "idle",
+                "rate": rate if src.state != "idle" else 0.0,
+                "running": src.state == "running" or by_key[b].state == "running",
+            }
+        )
+    return {
+        "view": list(VIEW),
+        "edges": edges,
+        "quarantine": {
+            "curve": list(_quarantine_curve(by_key["validation"])),
+            "share": rejected,
+            "rows": _rejected(batches),
+        },
+        "warn_share": _share(warned, evaluated) if warned else 0.0,
+    }

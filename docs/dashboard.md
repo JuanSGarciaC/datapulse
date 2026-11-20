@@ -24,6 +24,11 @@ texto y color.
 
 - Una arista **fluye** solo si su etapa de origen tiene ejecuciones o datos.
 - Un nodo **late** mientras su flujo está en curso.
+- **Registros que fluyen:** sobre el mapa, partículas que representan paquetes de registros.
+  Cada fuente emite según las filas que leyó; en Validación, la parte rechazada se desvía en
+  rojo a la **bandeja de cuarentena** (con su número de filas, también sin JavaScript) y en
+  dbt → marts la parte con aviso sale en ámbar. Con `prefers-reduced-motion` no hay
+  partículas; en móvil hay menos. Ver [ADR-0010](adr/0010-pipeline-flow-particles.md).
 - Al pasar el puntero (o el foco del teclado) por un nodo se ve su detalle y se encienden sus
   aristas.
 
@@ -76,8 +81,9 @@ nuevas de clientes y pedidos) y cargó los productos.*
 - Rojo y ámbar se reservan para estados y siempre van acompañados de texto (no solo color).
   Sin iconos ni emojis.
 - Tema oscuro; la paleta de series y de estados está elegida para ese fondo.
-- El movimiento informa (aristas y nodos del mapa) o responde al puntero (brillo de las
-  tarjetas), y se apaga con `prefers-reduced-motion`.
+- El movimiento informa (aristas, nodos y registros del mapa) o responde al puntero (brillo de
+  las tarjetas), y se apaga con `prefers-reduced-motion`. Las cifras de las tarjetas cuentan
+  hasta su valor y los gráficos entran con un barrido la primera vez que se ven.
 - Las tarjetas usan cifras compactas (`$ 2.61 M`) con el valor exacto en la ayuda, para que
   nunca se trunquen.
 - Cada gráfico tiene una tabla equivalente (vista accesible).

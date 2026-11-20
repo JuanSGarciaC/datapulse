@@ -12,7 +12,7 @@ import pytest
 from pydantic import SecretStr
 from streamlit.testing.v1 import AppTest
 
-from datapulse.dashboard import charts, pipeline_map, theme
+from datapulse.dashboard import charts, flow, pipeline_map, theme
 from datapulse.dashboard.client import ApiClient, ApiError, DashboardSettings
 from datapulse.dashboard.formatting import money_compact as _money_compact
 from tests.conftest import ROOT
@@ -311,6 +311,48 @@ def test_map_has_no_line_breaks_that_would_end_the_html_block() -> None:
     svg = pipeline_map.render([run], [], []).split("</style>")[1]
     assert "\n" not in svg
     assert "Boom DETAIL: fila 3" in svg
+
+
+def test_map_shows_the_quarantine_bin_with_its_rows() -> None:
+    html = pipeline_map.render([], QUALITY, BATCHES)
+    assert 'class="bin full"' in html
+    assert "3 filas</text>" in html  # rejected_count del lote
+    assert 'class="bin"' in pipeline_map.render([], [], [])  # vacía: sin color de error
+
+
+def test_flow_model_carries_rates_and_quarantine_shares_without_api_text() -> None:
+    runs = [
+        _run("ingest_customers", "success", rows_read=400, rows_rejected=8, trigger="<x>"),
+        _run("ingest_orders", "running", rows_read=100, rows_rejected=0),
+        _run("transform", "success"),
+    ]
+    model = pipeline_map.flow_model(runs, QUALITY, BATCHES)
+    edges = {(e["from"], e["to"]): e for e in model["edges"]}
+    assert edges["customers", "validation"]["rate"] == 1.0  # la fuente con más filas
+    assert edges["orders", "validation"]["rate"] == 0.5  # raíz de 100/400
+    assert edges["orders", "validation"]["running"]
+    assert not edges["products", "validation"]["flowing"]  # sin ejecuciones: no emite
+    assert edges["products", "validation"]["rate"] == 0.0
+    assert model["quarantine"]["share"] == {"customers": 0.02, "orders": 0.0, "products": 0.0}
+    assert model["quarantine"]["rows"] == 3
+    assert model["warn_share"] == 1.0  # 2 avisos sobre 1 fila evaluada: se acota a 1
+    # La geometría coincide con la del SVG.
+    assert edges["raw", "dbt"]["curve"] == [700, 150, 725, 150, 725, 150, 750, 150]
+    assert "<x>" not in json.dumps(model)
+
+
+def test_flow_model_without_data_emits_nothing() -> None:
+    model = pipeline_map.flow_model([], [], [])
+    assert not any(e["flowing"] or e["rate"] for e in model["edges"])
+    assert model["warn_share"] == 0.0
+
+
+def test_flow_layer_respects_reduced_motion_and_pauses() -> None:
+    js = flow.JS
+    assert "prefers-reduced-motion: reduce" in js
+    assert "IntersectionObserver" in js
+    assert "visibilitychange" in js
+    assert "dp-flow-on" in js  # los guiones CSS solo se apagan cuando el lienzo arranca
 
 
 # ------------------------------------------------------------------ gráficos
