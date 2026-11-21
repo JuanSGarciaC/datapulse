@@ -15,7 +15,7 @@ from contextlib import asynccontextmanager
 from datetime import date, datetime
 from typing import Annotated, Any, Final, Literal, cast
 
-from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request, Response
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Path, Query, Request, Response
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
 from sqlalchemy import Engine, text
@@ -29,6 +29,7 @@ from datapulse.api.schemas import (
     DailyVolume,
     Health,
     KpiSummary,
+    OrderLineage,
     Page,
     PipelineRun,
     PipelineRunDetail,
@@ -232,6 +233,19 @@ def ops_router() -> APIRouter:
         if run is None:
             raise HTTPException(status_code=404, detail="ejecución no encontrada")
         return run
+
+    @router.get("/lineage/orders/{order_id}", response_model=OrderLineage, tags=["linaje"])
+    def order_lineage(
+        db: Db,
+        order_id: Annotated[str, Path(pattern=r"^O\d{6}$", examples=["O000065"])],
+    ) -> dict[str, Any]:
+        """Cada línea del hecho, cada versión recibida (la vigente es la que eligió dbt), su
+        lote con sha256, su archivo y la ejecución que lo cargó; o su paso por cuarentena."""
+        with db.connect() as conn:
+            lineage = repo.order_lineage(conn, order_id)
+        if lineage is None:
+            raise HTTPException(status_code=404, detail="pedido no encontrado")
+        return lineage
 
     @router.get("/metrics/volumes", response_model=list[DailyVolume], tags=["pipelines"])
     def volumes(db: Db, days: Annotated[int, Query(ge=1, le=366)] = 30) -> list[dict[str, Any]]:

@@ -172,6 +172,10 @@ class ApiClient:
         )
         return result
 
+    def order_lineage(self, order_id: str) -> dict[str, Any]:
+        result: dict[str, Any] = self._get(f"/v1/lineage/orders/{order_id}")
+        return result
+
     def quarantine(self) -> list[dict[str, Any]]:
         """Filas en cuarentena (la API ya quita nombres y enmascara el email)."""
         return self._all_pages("/v1/quality/quarantine", {}, max_items=2000)

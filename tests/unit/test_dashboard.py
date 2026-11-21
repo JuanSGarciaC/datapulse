@@ -83,6 +83,30 @@ QUARANTINE = [
 ]  # fmt: skip
 
 
+def _version(rank: int, status: str, updated: str, ref: str, sha: str) -> dict[str, Any]:
+    return {"version_rank": rank, "is_current": rank == 1, "status": status,
+            "customer_id": "C00102", "order_ts": "2026-01-01T10:00:00Z", "updated_at": updated,
+            "ingested_at": "2026-01-03T06:00:01Z", "item_count": 2, "batch_id": RUN_ID,
+            "source_ref": ref, "row_number": 65, "content_sha256": sha, "run_id": RUN_ID,
+            "flow_name": "ingest_orders", "trigger": "schedule",
+            "run_started_at": "2026-01-03T06:00:00Z"}  # fmt: skip
+
+
+LINEAGE = {
+    "order_id": "O000065",
+    "versions": [
+        _version(2, "paid", "2026-01-01T15:56:00Z", "orders_batch_001.json", "eeca346e" * 8),
+        _version(1, "cancelled", "2026-01-03T19:53:00Z", "orders_batch_003.json", "97dbbfca" * 8),
+    ],
+    "fact_lines": [
+        {"line_no": 1, "product_id": 8, "quantity": 4, "unit_price": "1300.10",
+         "line_amount": "5200.40", "status": "cancelled", "is_revenue": False,
+         "order_date": "2026-01-01", "batch_id": RUN_ID},
+    ],
+    "quarantined": [],
+}  # fmt: skip
+
+
 class FakeClient:
     """Implementa la interfaz que usa la página, con datos fijos."""
 
@@ -148,6 +172,11 @@ class FakeClient:
     def quarantine(self) -> list[dict[str, Any]]:
         return [] if self.empty else QUARANTINE
 
+    def order_lineage(self, order_id: str) -> dict[str, Any]:
+        if order_id != "O000065":
+            raise ApiError("La API respondió 404. pedido no encontrado")
+        return LINEAGE
+
     def validate_file(self, source: str, data: bytes) -> dict[str, Any]:
         # Las mismas funciones que usa la API, sin HTTP: el veredicto es el real.
         return _preview(VALIDATORS[source](data)).model_dump()
@@ -168,6 +197,7 @@ def test_page_renders_its_tabs_with_metrics() -> None:
         "Calidad de datos",
         "Pipelines",
         "Probar contratos",
+        "Linaje",
     ]
     metrics = {m.label: m.value for m in at.metric}
     assert metrics["Ingresos"] == "$ 1.04 k"
@@ -619,3 +649,29 @@ def test_quarantine_tray_filters_by_field_and_key() -> None:
 def test_empty_quarantine_says_so() -> None:
     at = _page(FakeClient(empty=True))
     assert any("No hay filas en cuarentena" in s.value for s in at.success)
+
+
+# ------------------------------------------------------------------ linaje
+def _markdown(at: AppTest) -> str:
+    return " ".join(m.value for m in at.markdown)
+
+
+def test_lineage_follows_an_order_from_the_fact_to_its_file_and_run() -> None:
+    at = _page(FakeClient())
+    assert not at.exception
+    text = _markdown(at)
+    assert "no cuenta como ingreso (cancelled)" in text
+    assert "orders_batch_003.json" in text  # archivo de la versión vigente
+    assert "97dbbfca" * 8 in text  # huella completa del lote
+    assert "ingest_orders" in text
+    versions = next(d.value for d in at.dataframe if "versión" in d.value.columns)
+    assert list(versions["versión"]) == ["superada", "vigente"]
+    assert list(versions["status"]) == ["paid", "cancelled"]
+
+
+def test_lineage_validates_the_id_and_handles_unknown_orders() -> None:
+    at = _page(FakeClient())
+    at.text_input(key="lineage_id").input("hola").run()
+    assert any("O seguida de 6 dígitos" in e.value for e in at.error)
+    at.text_input(key="lineage_id").input("o999999").run()
+    assert any("No hay rastro de O999999" in i.value for i in at.info)

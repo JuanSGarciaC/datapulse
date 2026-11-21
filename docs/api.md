@@ -37,6 +37,7 @@ curl -H "X-API-Key: $key" "http://localhost:8000/v1/kpis/summary"
 | `GET /v1/pipeline-runs` | Ejecuciones (paginado) | `status`, `flow_name` |
 | `GET /v1/pipeline-runs/{run_id}` | Detalle: tareas, intentos, duraciones, fallos de calidad | — |
 | `GET /v1/ingestion/batches` | Lotes ingeridos con su sha256 (trazabilidad) | `source`, `status` |
+| `GET /v1/lineage/orders/{order_id}` | Linaje de un pedido: sus líneas en `marts.fct_order_items`, cada versión recibida (la vigente es la que eligió dbt), su lote con sha256, el archivo, la fila y la ejecución; o su paso por cuarentena. Lee la vista `ops.v_order_lineage` (404 si no hay rastro) | `order_id` con forma `O000065` |
 | `GET /v1/metrics/volumes` | Volúmenes y duraciones por día y flujo | `days` ≤ 366 |
 | `GET /v1/quality/summary` | Resumen por regla (filas evaluadas y fallidas, último resultado) | `since`, `layer` |
 | `GET /v1/quality/results` | Resultados individuales (paginado) | `table_name`, `passed` |

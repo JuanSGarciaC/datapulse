@@ -234,6 +234,52 @@ def test_quarantine_filters_and_hides_personal_data(api: TestClient) -> None:
     assert {q["record_key"] for q in rule["items"]} == {"C00009", "C00119"}
 
 
+def test_lineage_of_an_order_that_arrived_twice(api: TestClient) -> None:
+    lineage = api.get("/v1/lineage/orders/O000065", headers=AUTH).json()
+    versions = lineage["versions"]
+    assert [(v["status"], v["is_current"]) for v in versions] == [
+        ("paid", False),
+        ("cancelled", True),
+    ]
+    assert [v["source_ref"] for v in versions] == ["orders_batch_001.json", "orders_batch_003.json"]
+    current = versions[1]
+    assert len(current["content_sha256"]) == 64
+    assert current["flow_name"] == "ingest_all"
+    # Las líneas del hecho salen del lote de la versión vigente, y no cuentan como ingreso.
+    assert lineage["fact_lines"]
+    assert {f["batch_id"] for f in lineage["fact_lines"]} == {current["batch_id"]}
+    assert not any(f["is_revenue"] for f in lineage["fact_lines"])
+
+
+def test_lineage_of_a_quarantined_order_and_unknown_ids(api: TestClient) -> None:
+    lineage = api.get("/v1/lineage/orders/O000231", headers=AUTH).json()
+    assert lineage["versions"] == []
+    assert lineage["fact_lines"] == []
+    assert lineage["quarantined"][0]["source_ref"] == "orders_batch_002.json"
+    assert api.get("/v1/lineage/orders/O999999", headers=AUTH).status_code == 404
+    assert api.get("/v1/lineage/orders/DROP TABLE", headers=AUTH).status_code == 422
+
+
+def test_lineage_current_version_is_the_one_dbt_chose(warehouse: Engine) -> None:
+    mismatches = sql(
+        warehouse,
+        """
+        SELECT count(*) FROM ops.v_order_lineage v
+        JOIN staging.stg_orders s USING (order_id)
+        WHERE v.version_rank = 1
+          AND (v.status, v.updated_at, v.batch_id) IS DISTINCT FROM
+              (s.status, s.updated_at, s._batch_id)
+        """,
+    )
+    assert mismatches[0] == 0
+    counts = sql(
+        warehouse,
+        "SELECT (SELECT count(DISTINCT order_id) FROM ops.v_order_lineage),"
+        " (SELECT count(*) FROM staging.stg_orders)",
+    )
+    assert counts[0] == counts[1]
+
+
 def test_readiness_with_a_real_database(api: TestClient) -> None:
     assert api.get("/health/ready").json() == {"status": "ok", "database": "up"}
 

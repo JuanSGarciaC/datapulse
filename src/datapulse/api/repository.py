@@ -143,6 +143,21 @@ _QUARANTINE: Final = text("""
     ORDER BY quarantined_at DESC, quarantine_id DESC
     LIMIT :limit OFFSET :offset
 """)
+_ORDER_VERSIONS: Final = text("""
+    SELECT version_rank, version_rank = 1 AS is_current, status, customer_id, order_ts,
+           updated_at, ingested_at, item_count, batch_id, source_ref, row_number,
+           content_sha256, run_id, flow_name, trigger, run_started_at
+    FROM ops.v_order_lineage
+    WHERE order_id = :order_id
+    ORDER BY updated_at, ingested_at
+""")
+_ORDER_FACTS: Final = text("""
+    SELECT line_no, product_id, quantity, unit_price, line_amount, status, is_revenue,
+           order_date, _batch_id AS batch_id
+    FROM marts.fct_order_items
+    WHERE order_id = :order_id
+    ORDER BY line_no
+""")
 _VOLUMES: Final = text("""
     SELECT (started_at AT TIME ZONE 'UTC')::date AS day, flow_name,
            count(*)::int AS runs,
@@ -267,3 +282,17 @@ def quarantine(
 ) -> tuple[list[dict[str, Any]], int]:
     params = {"source": source, "rule": rule, "field": field, "record_key": record_key}
     return _page(conn, _QUARANTINE, params | {"limit": limit, "offset": offset})
+
+
+def order_lineage(conn: Connection, order_id: str) -> dict[str, Any] | None:
+    versions = _rows(conn, _ORDER_VERSIONS, {"order_id": order_id})
+    facts = _rows(conn, _ORDER_FACTS, {"order_id": order_id})
+    rejected, _ = quarantine(
+        conn, source="orders_json", rule=None, field=None, record_key=order_id,
+        limit=50, offset=0,
+    )  # fmt: skip
+    if not (versions or facts or rejected):
+        return None
+    return {
+        "order_id": order_id, "versions": versions, "fact_lines": facts, "quarantined": rejected,
+    }  # fmt: skip

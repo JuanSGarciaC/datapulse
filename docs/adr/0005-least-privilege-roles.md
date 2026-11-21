@@ -29,3 +29,5 @@
   el lote y el archivo; los nombres no salen y el email llega enmascarado. Se retiran a
   `dp_pipeline` y `dp_transform` los permisos que heredarían en `ops`, para que la vista no
   sea una puerta a `raw`. Una prueba de integración lo verifica.
+- La migración 0004 aplica el mismo trato a `ops.v_order_lineage` (linaje de pedidos): de
+  `raw.orders` solo expone estado, fechas, lote, archivo y fila, sin líneas ni `_extra`.

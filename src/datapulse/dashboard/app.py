@@ -8,6 +8,7 @@ errores y lotes de ingesta). Todo llega por la API; el dashboard no toca la base
 
 from __future__ import annotations
 
+import re
 import time
 from collections.abc import Callable
 from datetime import UTC, date, datetime, timedelta
@@ -41,6 +42,7 @@ CONTRACT_SOURCES = {
 }
 EXAMPLES = Path(__file__).with_name("examples")
 MAX_UPLOAD_BYTES = 1_000_000  # el mismo tope que aplica la API
+ORDER_ID = re.compile(r"O\d{6}")
 
 
 def _client() -> Any:
@@ -378,6 +380,100 @@ def _contract_result(result: dict[str, Any], name: str) -> None:
             st.dataframe(result["failed_rules"], hide_index=True, width="stretch")
 
 
+def _lineage(client: Any) -> None:
+    st.caption(
+        "Escribe un pedido y sigue su rastro: del indicador a cada versión recibida, su lote "
+        "con huella SHA-256, el archivo y la ejecución que lo cargó."
+    )
+    left, right = st.columns([1, 2])
+    order_id = left.text_input("Pedido", value="O000065", max_chars=7, key="lineage_id")
+    order_id = order_id.strip().upper()
+    right.caption(
+        "Para probar: O000065 llegó dos veces · O000231 fue a cuarentena · O000001 es un "
+        "pedido normal."
+    )
+    if not ORDER_ID.fullmatch(order_id):
+        st.error("Escribe una O seguida de 6 dígitos, por ejemplo O000065.")
+        return
+    try:
+        lineage = client.order_lineage(order_id)
+    except ApiError as exc:
+        if "404" not in str(exc):
+            raise
+        st.info(f"No hay rastro de {order_id}: no llegó en ningún archivo.")
+        return
+    _lineage_facts(lineage)
+    _lineage_versions(lineage)
+    if lineage["quarantined"]:
+        with st.container(border=True):
+            st.markdown("**En cuarentena** · no se cargó")
+            for q in lineage["quarantined"]:
+                reasons = "; ".join(f"{e['field']}: {e['message']}" for e in q["errors"])
+                st.markdown(
+                    f"`{q['source_ref']}`, fila {q['row_number']} · lote "
+                    f"`{q['content_sha256'][:12]}` · {reasons}"
+                )
+
+
+def _lineage_facts(lineage: dict[str, Any]) -> None:
+    lines = lineage["fact_lines"]
+    with st.container(border=True):
+        st.markdown("**1 · En el indicador** · `marts.fct_order_items`")
+        if not lines:
+            st.markdown("No llegó a marts.")
+            return
+        amount = sum(float(line["line_amount"]) for line in lines)
+        counts = lines[0]["is_revenue"]
+        verdict = (
+            "cuenta como ingreso" if counts else f"no cuenta como ingreso ({lines[0]['status']})"
+        )
+        st.markdown(f"{len(lines)} líneas · importe {_money(amount)} · {verdict}")
+        st.dataframe(lines, hide_index=True, width="stretch")
+
+
+def _lineage_versions(lineage: dict[str, Any]) -> None:
+    versions = lineage["versions"]
+    if not versions:
+        return
+    st.caption("↑ viene de")
+    with st.container(border=True):
+        st.markdown(
+            f"**2 · Versiones recibidas** · `raw.orders` · {len(versions)} "
+            + ("versión" if len(versions) == 1 else "versiones: gana la más reciente")
+        )
+        st.dataframe(
+            [
+                {
+                    "versión": "vigente" if v["is_current"] else "superada",
+                    "status": v["status"],
+                    "actualizado": v["updated_at"][:16].replace("T", " "),
+                    "archivo": v["source_ref"],
+                    "fila": v["row_number"],
+                    "lote (sha256)": v["content_sha256"][:12],
+                }
+                for v in versions
+            ],
+            hide_index=True,
+            width="stretch",
+        )
+    current = next(v for v in versions if v["is_current"])
+    st.caption("↑ viene de")
+    with st.container(border=True):
+        st.markdown("**3 · Lote y archivo** de la versión vigente")
+        st.markdown(
+            f"`{current['source_ref']}`, fila {current['row_number']} · "
+            f"sha256 `{current['content_sha256']}`"
+        )
+    st.caption("↑ lo cargó")
+    with st.container(border=True):
+        st.markdown("**4 · Ejecución**")
+        started = (current["run_started_at"] or "")[:16].replace("T", " ")
+        st.markdown(
+            f"flujo `{current['flow_name']}` · disparo {current['trigger']} · {started} · "
+            f"run_id `{current['run_id']}`"
+        )
+
+
 # El intervalo se decide con lo visto en la pasada anterior: Streamlit lo fija al decorar.
 @st.fragment(run_every=REFRESH_S if st.session_state.get("_live") else None)
 def _overview(client: Any) -> None:
@@ -438,8 +534,8 @@ def main() -> None:
         st.error("La fecha «Desde» no puede ser posterior a «Hasta».")
         return
 
-    business, quality, pipelines, contracts = st.tabs(
-        ["Negocio", "Calidad de datos", "Pipelines", "Probar contratos"]
+    business, quality, pipelines, contracts, lineage = st.tabs(
+        ["Negocio", "Calidad de datos", "Pipelines", "Probar contratos", "Linaje"]
     )
     with business:
         _guarded(_business, client, date_from, date_to)
@@ -449,6 +545,8 @@ def main() -> None:
         _guarded(_pipelines, client, int(days))
     with contracts:
         _guarded(_contracts, client)
+    with lineage:
+        _guarded(_lineage, client)
 
 
 def _guarded(render: Callable[..., None], *args: Any) -> None:
