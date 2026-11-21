@@ -41,6 +41,7 @@ curl -H "X-API-Key: $key" "http://localhost:8000/v1/kpis/summary"
 | `GET /v1/metrics/volumes` | Volúmenes y duraciones por día y flujo | `days` ≤ 366 |
 | `GET /v1/quality/summary` | Resumen por regla (filas evaluadas y fallidas, último resultado) | `since`, `layer` |
 | `GET /v1/quality/results` | Resultados individuales (paginado) | `table_name`, `passed` |
+| `GET /v1/quality/freshness` | Frescura por fuente: última carga buena (éxito o parcial; una ingesta sin cambios también cuenta), último intento y su estado, antigüedad en horas y `fresh`/`stale`/`never` frente al SLA (`DATAPULSE_API_FRESHNESS_SLA_HOURS`, 26 h por defecto) | — |
 | `GET /v1/quality/quarantine` | Filas apartadas por los contratos: errores, archivo, lote y ejecución. Lee la vista `ops.v_quarantine`, que quita los nombres y enmascara el email antes de que lleguen a la API (paginado) | `source`, `rule`, `field`, `record_key` |
 | `POST /v1/contracts/{customers\|orders}/validate` | Prueba un archivo contra los contratos y devuelve qué filas irían a cuarentena y por qué. **No escribe nada** (funciona aunque la BD esté caída). Cuerpo: el archivo tal cual, hasta 1 MB (413 si lo supera) | clave de lectura |
 | `POST /v1/admin/pipelines/{daily\|products}/runs` | Dispara un despliegue de Prefect (202) | clave admin |

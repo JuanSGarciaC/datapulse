@@ -247,3 +247,15 @@ class OrderLineage(BaseModel):
     versions: list[OrderVersion]
     fact_lines: list[FactLine]
     quarantined: list[QuarantinedRecord]
+
+
+class SourceFreshness(BaseModel):
+    """¿Está al día cada fuente? Cuenta la última carga terminada (aunque no trajera cambios)."""
+
+    source_name: str
+    last_success_at: datetime | None
+    last_attempt_at: datetime
+    last_status: str
+    age_hours: float | None
+    sla_hours: float
+    status: str  # fresh | stale | never

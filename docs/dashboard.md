@@ -31,6 +31,15 @@ texto y color.
 
 ![Mapa del pipeline](img/dashboard-mapa.png)
 
+### Frescura por fuente
+
+Cada nodo de fuente lleva a la derecha una insignia: **al día** (verde) si su última carga
+buena es más reciente que el SLA, **atrasada N h** (rojo) si no, y **sin cargas** si nunca
+cargó bien. Cuenta la última carga buena, no el último intento: un fallo puntual no vuelve
+vieja una fuente que cargó hace una hora. El detalle del nodo dice la antigüedad y el SLA
+(`GET /v1/quality/freshness`). Para verla roja en la demo basta con bajar
+`DATAPULSE_API_FRESHNESS_SLA_HOURS`.
+
 ### Disparar un pipeline desde el panel (opcional)
 
 Si se define `DATAPULSE_DASHBOARD_ADMIN_KEY` (el mismo valor que `DATAPULSE_API_ADMIN_KEY`),

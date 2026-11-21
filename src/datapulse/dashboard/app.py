@@ -490,7 +490,9 @@ def _overview(client: Any) -> None:
                 _chaos_buttons(client, chaos, cols[2], cols[3])
         try:
             runs = client.pipeline_runs(100)
-            svg = pipeline_map.render(runs, client.quality_summary(), client.batches(100))
+            svg = pipeline_map.render(
+                runs, client.quality_summary(), client.batches(100), client.freshness()
+            )
             # st.html descarta el SVG (su saneador solo admite HTML); st.markdown lo conserva.
             st.markdown(svg, unsafe_allow_html=True)
         except ApiError as exc:

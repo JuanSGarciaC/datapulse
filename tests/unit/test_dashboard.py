@@ -109,6 +109,18 @@ LINEAGE = {
     "quarantined": [],
 }  # fmt: skip
 
+FRESHNESS: list[dict[str, Any]] = [
+    {"source_name": "customers_csv", "last_success_at": "2026-01-03T06:00:05Z",
+     "last_attempt_at": "2026-01-03T06:00:00Z", "last_status": "partial", "age_hours": 3.2,
+     "sla_hours": 26.0, "status": "fresh"},
+    {"source_name": "products_api", "last_success_at": "2026-01-01T06:00:05Z",
+     "last_attempt_at": "2026-01-03T06:00:00Z", "last_status": "failed", "age_hours": 51.4,
+     "sla_hours": 26.0, "status": "stale"},
+    {"source_name": "orders_json", "last_success_at": None,
+     "last_attempt_at": "2026-01-03T06:00:00Z", "last_status": "failed", "age_hours": None,
+     "sla_hours": 26.0, "status": "never"},
+]  # fmt: skip
+
 
 class FakeClient:
     """Implementa la interfaz que usa la página, con datos fijos."""
@@ -174,6 +186,9 @@ class FakeClient:
 
     def quarantine(self) -> list[dict[str, Any]]:
         return [] if self.empty else QUARANTINE
+
+    def freshness(self) -> list[dict[str, Any]]:
+        return FRESHNESS
 
     def order_lineage(self, order_id: str) -> dict[str, Any]:
         if order_id != "O000065":
@@ -750,3 +765,18 @@ def test_source_chaos_is_off_without_url_or_token() -> None:
     assert not SourceChaos("http://127.0.0.1:8106", None).available
     with pytest.raises(ApiError, match="no está configurada"):
         SourceChaos(None, None).break_source()
+
+
+# ------------------------------------------------------------------ frescura
+def test_map_shows_freshness_badges_per_source() -> None:
+    svg = pipeline_map.render(RUNS, QUALITY, BATCHES, FRESHNESS)
+    assert '<text class="fresh f-fresh"' in svg
+    assert ">al día<" in svg
+    assert ">atrasada 51 h<" in svg
+    assert ">sin cargas<" in svg
+    assert "última carga buena hace 51 h (SLA 26 h)" in svg  # en el detalle accesible
+    assert svg.count('class="fresh ') == 3  # solo los nodos de fuente
+
+
+def test_map_without_freshness_has_no_badges() -> None:
+    assert 'class="fresh ' not in pipeline_map.render(RUNS, QUALITY, BATCHES)

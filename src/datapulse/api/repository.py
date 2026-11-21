@@ -158,6 +158,17 @@ _ORDER_FACTS: Final = text("""
     WHERE order_id = :order_id
     ORDER BY line_no
 """)
+_FRESHNESS: Final = text("""
+    SELECT source_name,
+           max(finished_at) FILTER (WHERE status IN ('success', 'partial')) AS last_success_at,
+           max(started_at) AS last_attempt_at,
+           (array_agg(status ORDER BY started_at DESC))[1] AS last_status,
+           now() AS checked_at
+    FROM ops.pipeline_runs
+    WHERE source_name IS NOT NULL
+    GROUP BY source_name
+    ORDER BY source_name
+""")
 _VOLUMES: Final = text("""
     SELECT (started_at AT TIME ZONE 'UTC')::date AS day, flow_name,
            count(*)::int AS runs,
@@ -296,3 +307,7 @@ def order_lineage(conn: Connection, order_id: str) -> dict[str, Any] | None:
     return {
         "order_id": order_id, "versions": versions, "fact_lines": facts, "quarantined": rejected,
     }  # fmt: skip
+
+
+def freshness(conn: Connection) -> list[dict[str, Any]]:
+    return _rows(conn, _FRESHNESS, {})

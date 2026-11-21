@@ -6,6 +6,7 @@ import json
 import secrets
 import uuid
 from collections.abc import Iterator
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -14,7 +15,7 @@ from fastapi.testclient import TestClient
 from pydantic import SecretStr, ValidationError
 from sqlalchemy import create_engine
 
-from datapulse.api.app import MAX_UPLOAD_BYTES, create_app
+from datapulse.api.app import MAX_UPLOAD_BYTES, _freshness, create_app
 from datapulse.api.security import KeyChecker
 from datapulse.api.settings import ApiSettings
 
@@ -296,3 +297,19 @@ def test_preview_reports_unreadable_files_as_rejected(
     response = _validate(client, source, body)
     assert response.status_code == 200
     assert reason in response.json()["rejected_reason"]
+
+
+# ------------------------------------------------------------------ frescura
+@pytest.mark.parametrize(
+    ("age_h", "expected"),
+    [(None, "never"), (0.5, "fresh"), (26.0, "fresh"), (26.1, "stale")],
+)
+def test_freshness_status_against_the_sla(age_h: float | None, expected: str) -> None:
+    now = datetime(2026, 1, 3, 12, tzinfo=UTC)
+    last = None if age_h is None else now - timedelta(hours=age_h)
+    row = {"source_name": "orders_json", "last_success_at": last, "last_attempt_at": now,
+           "last_status": "success", "checked_at": now}  # fmt: skip
+    result = _freshness(row, 26.0)
+    assert result["status"] == expected
+    assert "checked_at" not in result
+    assert result["age_hours"] == (None if age_h is None else round(age_h, 1))

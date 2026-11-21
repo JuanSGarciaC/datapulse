@@ -39,6 +39,7 @@ from datapulse.api.schemas import (
     QuarantinePreviewRow,
     RowIssue,
     RuleOutcome,
+    SourceFreshness,
     TopProduct,
     TriggerRequest,
     TriggerResponse,
@@ -223,8 +224,24 @@ def paged_router(paging: Callable[..., tuple[int, int]]) -> APIRouter:
     return router
 
 
-def ops_router() -> APIRouter:
+def _freshness(row: dict[str, Any], sla_hours: float) -> dict[str, Any]:
+    last = row["last_success_at"]
+    age = None if last is None else (row["checked_at"] - last).total_seconds() / 3600
+    status = "never" if age is None else ("fresh" if age <= sla_hours else "stale")
+    row = {k: v for k, v in row.items() if k != "checked_at"}
+    return row | {"age_hours": None if age is None else round(age, 1), "sla_hours": sla_hours,
+                  "status": status}  # fmt: skip
+
+
+def ops_router(settings: ApiSettings) -> APIRouter:
     router = APIRouter()
+
+    @router.get("/quality/freshness", response_model=list[SourceFreshness], tags=["calidad"])
+    def freshness(db: Db) -> list[dict[str, Any]]:
+        """Por fuente: última carga buena, su antigüedad y si cumple el SLA de frescura."""
+        with db.connect() as conn:
+            rows = repo.freshness(conn)
+        return [_freshness(r, settings.freshness_sla_hours) for r in rows]
 
     @router.get("/pipeline-runs/{run_id}", response_model=PipelineRunDetail, tags=["pipelines"])
     def run_detail(db: Db, run_id: uuid.UUID) -> dict[str, Any]:
@@ -439,7 +456,7 @@ def create_app(
     routers = (
         business_router(),
         paged_router(_paging_dependency(settings)),
-        ops_router(),
+        ops_router(settings),
         contracts_router(),
     )
     for router in routers:

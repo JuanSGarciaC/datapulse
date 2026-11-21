@@ -175,6 +175,10 @@ class ApiClient:
         )
         return result
 
+    def freshness(self) -> list[dict[str, Any]]:
+        result: list[dict[str, Any]] = self._get("/v1/quality/freshness")
+        return result
+
     def order_lineage(self, order_id: str) -> dict[str, Any]:
         result: dict[str, Any] = self._get(f"/v1/lineage/orders/{order_id}")
         return result
