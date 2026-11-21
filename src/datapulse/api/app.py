@@ -34,6 +34,7 @@ from datapulse.api.schemas import (
     PipelineRunDetail,
     QualityResult,
     QualitySummary,
+    QuarantinedRecord,
     QuarantinePreviewRow,
     RowIssue,
     RuleOutcome,
@@ -197,6 +198,25 @@ def paged_router(paging: Callable[..., tuple[int, int]]) -> APIRouter:
             items, total = repo.quality_results(
                 conn, table_name=table_name, passed=passed, limit=page[0], offset=page[1]
             )
+        return _page(items, total, page)
+
+    @router.get("/quality/quarantine", response_model=Page[QuarantinedRecord], tags=["calidad"])
+    def quarantine(
+        db: Db,
+        page: Paging,
+        *,
+        source: ShortText = None,
+        rule: ShortText = None,
+        field: ShortText = None,
+        record_key: ShortText = None,
+    ) -> dict[str, Any]:
+        """Filas apartadas por los contratos: motivo, lote y archivo. Nombres fuera, email
+        enmascarado (la vista ``ops.v_quarantine`` lo hace antes de que llegue a la API)."""
+        with db.connect() as conn:
+            items, total = repo.quarantine(
+                conn, source=source, rule=rule, field=field, record_key=record_key,
+                limit=page[0], offset=page[1],
+            )  # fmt: skip
         return _page(items, total, page)
 
     return router

@@ -67,6 +67,21 @@ BATCHES = [
      "created_at": "2026-01-03T06:00:01Z", "updated_at": "2026-01-03T06:00:02Z"},
 ]  # fmt: skip
 
+QUARANTINE = [
+    {"quarantine_id": 2, "source_name": "customers_csv", "source_ref": "customers_2026-01-01.csv",
+     "batch_id": "0b0d3c1e-0000-4000-8000-000000000001", "content_sha256": "2ca922fd" + "0" * 56,
+     "run_id": RUN_ID, "row_number": 9, "record_key": "C00009",
+     "errors": [{"rule": "format:email", "field": "email", "message": "no cumple el patrón"}],
+     "payload_masked": {"customer_id": "C00009", "email": "na***"},
+     "quarantined_at": "2026-01-03T06:00:01Z"},
+    {"quarantine_id": 1, "source_name": "orders_json", "source_ref": "orders_batch_002.json",
+     "batch_id": "0b0d3c1e-0000-4000-8000-000000000002", "content_sha256": "20bddfbb" + "0" * 56,
+     "run_id": RUN_ID, "row_number": 81, "record_key": "O000231",
+     "errors": [{"rule": "range:items.quantity", "field": "items.quantity",
+                 "message": "debe ser > 0, llegó 0"}],
+     "payload_masked": {"order_id": "O000231"}, "quarantined_at": "2026-01-03T06:00:02Z"},
+]  # fmt: skip
+
 
 class FakeClient:
     """Implementa la interfaz que usa la página, con datos fijos."""
@@ -129,6 +144,9 @@ class FakeClient:
 
     def run_detail(self, run_id: str) -> dict[str, Any]:
         return RUNS[0] | {"tasks": [], "quality_failures": 2, "params": {"trigger": "api"}}
+
+    def quarantine(self) -> list[dict[str, Any]]:
+        return [] if self.empty else QUARANTINE
 
     def validate_file(self, source: str, data: bytes) -> dict[str, Any]:
         # Las mismas funciones que usa la API, sin HTTP: el veredicto es el real.
@@ -536,7 +554,11 @@ def test_contract_example_shows_which_rows_go_to_quarantine_and_why() -> None:
     assert any("Sube un archivo" in i.value for i in at.info)
     at.button(key="contract_example_customers").click().run()
     assert not at.exception
-    table = next(d.value for d in at.dataframe if "motivo" in d.value.columns)
+    table = next(
+        d.value
+        for d in at.dataframe
+        if "motivo" in d.value.columns and "lote" not in d.value.columns
+    )
     assert set(table["clave"]) == {"C00009", "C00014", "C00062"}
     assert set(table["campo"]) == {"email", "signup_date"}
     metrics = {m.label: m.value for m in at.metric}
@@ -548,7 +570,11 @@ def test_contract_example_for_orders() -> None:
     at = _page(FakeClient())
     at.radio(key="contract_source").set_value("orders").run()
     at.button(key="contract_example_orders").click().run()
-    table = next(d.value for d in at.dataframe if "motivo" in d.value.columns)
+    table = next(
+        d.value
+        for d in at.dataframe
+        if "motivo" in d.value.columns and "lote" not in d.value.columns
+    )
     assert set(table["clave"]) == {"O000170", "O000231"}
 
 
@@ -565,3 +591,31 @@ def test_contract_examples_are_exact_copies_of_sample_rows() -> None:
     )
     example = json.loads((examples / "pedidos_con_defectos.json").read_text(encoding="utf-8"))
     assert all(order in batch["orders"] for order in example["orders"])
+
+
+# ------------------------------------------------------------------ bandeja de cuarentena
+def _tray(at: AppTest) -> Any:
+    return next(d.value for d in at.dataframe if "lote" in d.value.columns)
+
+
+def test_quarantine_tray_lists_reason_file_and_masked_value() -> None:
+    at = _page(FakeClient())
+    tray = _tray(at)
+    assert list(tray["clave"]) == ["C00009", "O000231"]
+    assert tray.iloc[0]["valor"] == "na***"  # el email llega enmascarado desde la API
+    assert tray.iloc[1]["valor"] == "—"  # campo anidado: no se inventa un valor
+    assert tray.iloc[0]["archivo"] == "customers_2026-01-01.csv"
+
+
+def test_quarantine_tray_filters_by_field_and_key() -> None:
+    at = _page(FakeClient())
+    at.selectbox(key="q_field").set_value("email").run()
+    assert list(_tray(at)["clave"]) == ["C00009"]
+    at.selectbox(key="q_field").set_value(None).run()
+    at.text_input(key="q_key").input("o000231").run()
+    assert list(_tray(at)["clave"]) == ["O000231"]
+
+
+def test_empty_quarantine_says_so() -> None:
+    at = _page(FakeClient(empty=True))
+    assert any("No hay filas en cuarentena" in s.value for s in at.success)

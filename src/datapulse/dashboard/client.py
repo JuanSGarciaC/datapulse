@@ -172,6 +172,10 @@ class ApiClient:
         )
         return result
 
+    def quarantine(self) -> list[dict[str, Any]]:
+        """Filas en cuarentena (la API ya quita nombres y enmascara el email)."""
+        return self._all_pages("/v1/quality/quarantine", {}, max_items=2000)
+
     def validate_file(self, source: str, data: bytes) -> dict[str, Any]:
         """Prueba un archivo contra los contratos; la API no guarda nada."""
         result: dict[str, Any] = self._request(

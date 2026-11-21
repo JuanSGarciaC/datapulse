@@ -129,6 +129,20 @@ _BATCHES: Final = text("""
     LIMIT :limit OFFSET :offset
 """)
 
+_QUARANTINE: Final = text("""
+    SELECT quarantine_id, source_name, source_ref, batch_id, content_sha256, run_id,
+           row_number, record_key, errors, payload_masked, quarantined_at,
+           count(*) OVER () AS _total
+    FROM ops.v_quarantine
+    WHERE (CAST(:source AS text) IS NULL OR source_name = CAST(:source AS text))
+      AND (CAST(:rule AS text) IS NULL
+           OR errors @> jsonb_build_array(jsonb_build_object('rule', CAST(:rule AS text))))
+      AND (CAST(:field AS text) IS NULL
+           OR errors @> jsonb_build_array(jsonb_build_object('field', CAST(:field AS text))))
+      AND (CAST(:record_key AS text) IS NULL OR record_key = CAST(:record_key AS text))
+    ORDER BY quarantined_at DESC, quarantine_id DESC
+    LIMIT :limit OFFSET :offset
+""")
 _VOLUMES: Final = text("""
     SELECT (started_at AT TIME ZONE 'UTC')::date AS day, flow_name,
            count(*)::int AS runs,
@@ -239,3 +253,17 @@ def batches(
 
 def daily_volumes(conn: Connection, days: int) -> list[dict[str, Any]]:
     return _rows(conn, _VOLUMES, {"days": days})
+
+
+def quarantine(
+    conn: Connection,
+    *,
+    source: str | None,
+    rule: str | None,
+    field: str | None,
+    record_key: str | None,
+    limit: int,
+    offset: int,
+) -> tuple[list[dict[str, Any]], int]:
+    params = {"source": source, "rule": rule, "field": field, "record_key": record_key}
+    return _page(conn, _QUARANTINE, params | {"limit": limit, "offset": offset})

@@ -23,3 +23,9 @@
 - Si la API se ve comprometida, no puede modificar datos ni leer `raw` (datos sin minimizar).
 - Los roles son objetos de **clúster**: el downgrade de la migración no los borra (pueden estar
   en uso en otra base del mismo servidor, como la de pruebas). Es una limitación documentada.
+- **Excepción acotada (2026-11-21):** la bandeja de cuarentena del panel necesita leer
+  `raw.quarantine`. En lugar de dar `raw` a `dp_reader`, la migración 0003 crea la vista
+  `ops.v_quarantine`. La vista corre con los permisos de su dueño y solo expone los errores,
+  el lote y el archivo; los nombres no salen y el email llega enmascarado. Se retiran a
+  `dp_pipeline` y `dp_transform` los permisos que heredarían en `ops`, para que la vista no
+  sea una puerta a `raw`. Una prueba de integración lo verifica.

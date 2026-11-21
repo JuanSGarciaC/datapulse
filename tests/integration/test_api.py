@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import json
 import random
+import re
 import secrets
 from collections.abc import Iterator
 from decimal import Decimal
@@ -186,6 +188,50 @@ def test_batches_and_volumes_for_lineage(api: TestClient) -> None:
     volumes = api.get("/v1/metrics/volumes", params={"days": 7}, headers=AUTH).json()
     assert {v["flow_name"] for v in volumes} == {"ingest_all", "transform"}
     assert all(v["avg_duration_s"] is not None for v in volumes)
+
+
+ROW_DEFECTS = {
+    "invalid_format", "invalid_type", "missing_required", "out_of_range", "empty_collection",
+}  # fmt: skip
+FILE_SOURCES = {"customers_csv", "orders_json"}
+
+
+def test_quarantine_holds_exactly_the_annotated_row_defects(api: TestClient) -> None:
+    manifest = json.loads((SAMPLES / "manifest.json").read_text(encoding="utf-8"))
+    # Solo las fuentes de archivo se ingieren completas: del catálogo de productos la fuente
+    # simulada sirve la versión vigente, y algunos defectos solo existen en la primera.
+    expected = {
+        d["key"]
+        for d in manifest["defects"]
+        if d["kind"] in ROW_DEFECTS and d["source"] in FILE_SOURCES
+    }
+    page = api.get("/v1/quality/quarantine", params={"limit": 500}, headers=AUTH).json()
+    assert page["total"] == len(page["items"])
+    got = {q["record_key"] for q in page["items"] if q["source_name"] in FILE_SOURCES}
+    assert got == expected
+    first = page["items"][0]
+    assert len(first["content_sha256"]) == 64
+    assert first["source_ref"]
+
+
+def test_quarantine_filters_and_hides_personal_data(api: TestClient) -> None:
+    email = api.get(
+        "/v1/quality/quarantine", params={"field": "email", "limit": 500}, headers=AUTH
+    ).json()["items"]
+    assert email
+    assert all(any(e["field"] == "email" for e in q["errors"]) for q in email)
+    for q in email:
+        assert not {"first_name", "last_name"} & q["payload_masked"].keys()
+        masked = q["payload_masked"]["email"]
+        assert masked is None or re.fullmatch(r".{0,2}\*\*\*(@.*)?", masked), masked
+    one = api.get("/v1/quality/quarantine", params={"record_key": "O000231"}, headers=AUTH).json()[
+        "items"
+    ]
+    assert [e["field"] for e in one[0]["errors"]] == ["items.quantity"]
+    rule = api.get(
+        "/v1/quality/quarantine", params={"rule": "format:email", "limit": 500}, headers=AUTH
+    ).json()
+    assert {q["record_key"] for q in rule["items"]} == {"C00009", "C00119"}
 
 
 def test_readiness_with_a_real_database(api: TestClient) -> None:

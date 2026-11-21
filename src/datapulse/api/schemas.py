@@ -189,3 +189,19 @@ class ValidationPreview(BaseModel):
     rejected_reason: str | None
     quarantined: list[QuarantinePreviewRow]
     failed_rules: list[RuleOutcome]
+
+
+class QuarantinedRecord(BaseModel):
+    """Una fila apartada por los contratos, con su lote y sin datos personales."""
+
+    quarantine_id: int
+    source_name: str
+    source_ref: str
+    batch_id: uuid.UUID
+    content_sha256: str
+    run_id: uuid.UUID | None
+    row_number: int | None
+    record_key: str | None
+    errors: list[RowIssue]
+    payload_masked: dict[str, Any]
+    quarantined_at: datetime

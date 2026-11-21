@@ -155,6 +155,62 @@ def _quality(client: Any) -> None:
             "details",
         ),
     )
+    _quarantine_tray(client)
+
+
+def _quarantine_tray(client: Any) -> None:
+    st.subheader("Bandeja de cuarentena")
+    st.caption(
+        "Cada fila apartada antes de cargarse, con su motivo y el archivo del que vino. Los "
+        "nombres no salen de la base de datos y el email llega enmascarado."
+    )
+    rows = [
+        {
+            "clave": q["record_key"],
+            "campo": e["field"],
+            "motivo": e["message"],
+            # Valor que falló, si es un campo de primer nivel (ya enmascarado si es el email).
+            "valor": _shown(q["payload_masked"], e["field"]),
+            "archivo": q["source_ref"],
+            "fila": q["row_number"],
+            "fuente": q["source_name"],
+            "regla": e["rule"],
+            "lote": q["content_sha256"][:12],
+            "recibida": q["quarantined_at"][:16].replace("T", " "),
+        }
+        for q in client.quarantine()
+        for e in q["errors"]
+    ]
+    if not rows:
+        st.success("No hay filas en cuarentena.")
+        return
+    c1, c2, c3 = st.columns([1, 1, 1])
+    source = c1.selectbox(
+        "Fuente", [None, *sorted({r["fuente"] for r in rows})],
+        format_func=lambda v: v or "Todas", key="q_source",
+    )  # fmt: skip
+    field = c2.selectbox(
+        "Campo", [None, *sorted({r["campo"] or "" for r in rows})],
+        format_func=lambda v: v or "Todos", key="q_field",
+    )  # fmt: skip
+    key = c3.text_input("Buscar clave", key="q_key", max_chars=40).strip()
+    shown = [
+        r
+        for r in rows
+        if source in {None, r["fuente"]}
+        and field in {None, r["campo"] or ""}
+        and (not key or key.lower() in str(r["clave"] or "").lower())
+    ]
+    files = len({r["archivo"] for r in rows})
+    st.caption(f"{len(shown)} de {len(rows)} errores, en {files} archivos.")
+    st.dataframe(shown, hide_index=True, width="stretch")
+
+
+def _shown(payload: dict[str, Any], field: str | None) -> str:
+    value = payload.get(field) if field else None
+    if field and field in payload:
+        return "(vacío)" if value is None else str(value)[:80]
+    return "—"
 
 
 def _pipelines(client: Any, days: int) -> None:
