@@ -780,3 +780,39 @@ def test_map_shows_freshness_badges_per_source() -> None:
 
 def test_map_without_freshness_has_no_badges() -> None:
     assert 'class="fresh ' not in pipeline_map.render(RUNS, QUALITY, BATCHES)
+
+
+# ------------------------------------------------------------------ tendencia de calidad
+def _ingest(source: str | None, when: str, read: int, rejected: int) -> dict[str, Any]:
+    return RUNS[0] | {"source_name": source, "started_at": when, "rows_read": read,
+                      "rows_rejected": rejected, "status": "partial"}  # fmt: skip
+
+
+def test_quarantine_trend_is_rate_per_ingest_run_with_the_budget_line() -> None:
+    runs = [
+        _ingest("orders_json", "2026-01-02T06:00:00Z", 155, 4),
+        _ingest("customers_csv", "2026-01-01T06:00:00Z", 200, 7),
+        _ingest(None, "2026-01-02T06:05:00Z", 10, 0),  # transform: no es una ingesta
+        _ingest("products_api", "2026-01-03T06:00:00Z", 0, 0),  # sin filas: sin punto
+    ]
+    spec = _spec(charts.quarantine_rate_by_run(runs))
+    values = _values(spec)
+    assert [(v["source"], round(v["rate"], 3)) for v in values] == [
+        ("customers_csv", 0.035),  # ordenadas por inicio
+        ("orders_json", 0.026),
+    ]
+    color = spec["layer"][0]["encoding"]["color"]["scale"]
+    assert color["domain"] == list(charts.SOURCES)  # colores fijos por fuente
+    assert spec["layer"][1]["data"]["values"] == [{"budget": charts.ERROR_BUDGET}]
+    assert spec["layer"][1]["mark"]["color"] == charts.STATUS["error"]
+
+
+def test_quality_tab_shows_the_trend_or_says_there_is_none() -> None:
+    class WithIngests(FakeClient):
+        def pipeline_runs(self, *args: Any) -> list[dict[str, Any]]:
+            return [*RUNS, _ingest("orders_json", "2026-01-02T06:00:00Z", 155, 4)]
+
+    at = _page(WithIngests())
+    assert any("presupuesto" in c.value for c in at.caption)
+    assert not any("Aún no hay ingestas" in i.value for i in at.info)
+    assert any("Aún no hay ingestas" in i.value for i in _page(FakeClient()).info)

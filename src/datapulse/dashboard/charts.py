@@ -211,3 +211,56 @@ def duration_by_flow(volumes: list[dict[str, Any]]) -> Figure:
         )
     )
     return _configure(chart.properties(height=max(120, 34 * len(values))))
+
+
+# Presupuesto de errores por lote de los contratos (TabularContract.max_error_rate y
+# validate_orders): por encima, el lote entero se rechaza.
+ERROR_BUDGET: Final = 0.2
+SOURCES: Final = ("customers_csv", "orders_json", "products_api")
+
+
+def quarantine_rate_by_run(runs: list[dict[str, Any]]) -> Figure:
+    """Porcentaje de filas apartadas en cada ejecución de ingesta, con el presupuesto."""
+    values = [
+        {
+            # Con segundos: las ingestas de un mismo flujo empiezan en el mismo minuto.
+            "when": r["started_at"][5:19].replace("T", " "),
+            "source": r["source_name"],
+            "rate": (r["rows_rejected"] or 0) / r["rows_read"],
+            "read": r["rows_read"],
+            "rejected": r["rows_rejected"] or 0,
+            "status": r["status"],
+        }
+        for r in sorted(runs, key=lambda r: r["started_at"])
+        if r["source_name"] in SOURCES and r["rows_read"]
+    ]
+    lines = (
+        _base(values)
+        .mark_line(point=True, strokeWidth=2)
+        .encode(
+            x=alt.X(
+                "when:O",
+                title=None,
+                sort=None,
+                axis=alt.Axis(labelAngle=0, labelOverlap="greedy"),
+            ),
+            y=alt.Y("rate:Q", title="Filas en cuarentena", axis=alt.Axis(format="%")),
+            color=alt.Color("source:N", scale=alt.Scale(domain=list(SOURCES), range=list(SERIES))),
+            tooltip=[
+                alt.Tooltip("when:O", title="Inicio (UTC)"),
+                alt.Tooltip("source:N", title="Fuente"),
+                alt.Tooltip("rate:Q", title="En cuarentena", format=".1%"),
+                alt.Tooltip("rejected:Q", title="Filas apartadas", format=","),
+                alt.Tooltip("read:Q", title="Filas leídas", format=","),
+                alt.Tooltip("status:N", title="Estado"),
+            ],
+        )
+    )
+    budget = alt.Chart(alt.Data(values=[{"budget": ERROR_BUDGET}]))
+    rule = budget.mark_rule(color=STATUS["error"], strokeDash=[6, 4], strokeWidth=2).encode(
+        y="budget:Q"
+    )
+    label = budget.mark_text(
+        color=STATUS["error"], align="right", dy=-8, fontSize=12, text="presupuesto por lote: 20 %"
+    ).encode(y="budget:Q", x=alt.value("width"))
+    return _configure(lines + rule + label)

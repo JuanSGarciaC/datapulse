@@ -131,6 +131,17 @@ def _quality(client: Any) -> None:
     cols[1].metric("Filas con error (cuarentena)", f"{errors:,}", border=True)
     cols[2].metric("Filas con aviso", f"{warns:,}", border=True)
 
+    st.subheader("Cuarentena por ejecución")
+    st.caption(
+        "Porcentaje de filas apartadas en cada ingesta. Si un lote supera el presupuesto "
+        "(línea roja), se rechaza entero: el problema es del archivo, no de filas sueltas."
+    )
+    trend = [r for r in client.pipeline_runs(100) if r["source_name"] and r["rows_read"]]
+    if trend:
+        st.altair_chart(charts.quarantine_rate_by_run(trend), width="stretch", theme=None)
+    else:
+        st.info("Aún no hay ingestas con filas leídas.")
+
     st.subheader("Reglas con fallos")
     if failing:
         st.altair_chart(charts.quality_failures(summary), width="stretch", theme=None)
