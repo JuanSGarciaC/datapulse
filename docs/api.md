@@ -40,6 +40,7 @@ curl -H "X-API-Key: $key" "http://localhost:8000/v1/kpis/summary"
 | `GET /v1/metrics/volumes` | Volúmenes y duraciones por día y flujo | `days` ≤ 366 |
 | `GET /v1/quality/summary` | Resumen por regla (filas evaluadas y fallidas, último resultado) | `since`, `layer` |
 | `GET /v1/quality/results` | Resultados individuales (paginado) | `table_name`, `passed` |
+| `POST /v1/contracts/{customers\|orders}/validate` | Prueba un archivo contra los contratos y devuelve qué filas irían a cuarentena y por qué. **No escribe nada** (funciona aunque la BD esté caída). Cuerpo: el archivo tal cual, hasta 1 MB (413 si lo supera) | clave de lectura |
 | `POST /v1/admin/pipelines/{daily\|products}/runs` | Dispara un despliegue de Prefect (202) | clave admin |
 
 **Paginación:** `limit` (por defecto 50, máximo 500) y `offset`. La respuesta trae `total`,

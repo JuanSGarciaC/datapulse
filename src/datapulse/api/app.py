@@ -13,9 +13,10 @@ import uuid
 from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager
 from datetime import date, datetime
-from typing import Annotated, Any, Literal, cast
+from typing import Annotated, Any, Final, Literal, cast
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request, Response
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
 from sqlalchemy import Engine, text
 from sqlalchemy.exc import OperationalError, SQLAlchemyError
@@ -33,14 +34,20 @@ from datapulse.api.schemas import (
     PipelineRunDetail,
     QualityResult,
     QualitySummary,
+    QuarantinePreviewRow,
+    RowIssue,
+    RuleOutcome,
     TopProduct,
     TriggerRequest,
     TriggerResponse,
+    ValidationPreview,
 )
 from datapulse.api.security import KeyChecker, require_key
 from datapulse.api.settings import ApiSettings
 from datapulse.config import get_settings
 from datapulse.db.engine import build_engine
+from datapulse.validation.files import validate_customers_csv, validate_orders_json
+from datapulse.validation.report import ValidationReport
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +60,15 @@ DEPLOYMENTS: dict[str, str] = {
 RunStatus = Literal["running", "success", "failed", "partial"]
 BatchStatus = Literal["processing", "success", "failed", "rejected"]
 Layer = Literal["pre_load", "post_transform"]
+# Validador en vivo: tope de tamaño y de filas listadas para que un archivo no agote memoria.
+MAX_UPLOAD_BYTES: Final = 1_000_000
+MAX_LISTED_ROWS: Final = 200
+VALIDATORS: Final = {"customers": validate_customers_csv, "orders": validate_orders_json}
+_EXAMPLE_CSV: Final = (
+    "customer_id,first_name,last_name,email,city,country,segment,signup_date,updated_at\n"
+    "C00009,Natalia,Peña,natalia.pena.9.at.example.com,Guadalajara,MX,enterprise,"
+    "2024-07-22,2026-01-01T09:18:00Z\n"
+)
 
 
 def prefect_trigger(deployment: str, parameters: dict[str, Any]) -> tuple[uuid.UUID, str]:
@@ -212,6 +228,86 @@ def ops_router() -> APIRouter:
     return router
 
 
+async def _read_capped(request: Request, cap: int) -> bytes:
+    declared = request.headers.get("content-length")
+    if declared and declared.isdigit() and int(declared) > cap:
+        raise HTTPException(status_code=413, detail=f"el archivo supera {cap:,} bytes")
+    data = bytearray()
+    async for chunk in request.stream():
+        data += chunk
+        if len(data) > cap:  # la cabecera puede mentir o faltar (envío por trozos)
+            raise HTTPException(status_code=413, detail=f"el archivo supera {cap:,} bytes")
+    return bytes(data)
+
+
+def _preview(report: ValidationReport) -> ValidationPreview:
+    return ValidationPreview(
+        source=report.source,
+        rows_read=report.rows_read,
+        rows_valid=len(report.valid),
+        rows_quarantined=len(report.quarantined),
+        duplicates_dropped=report.duplicates_dropped,
+        error_rate=round(report.error_rate, 4),
+        rejected_reason=report.rejected_reason,
+        quarantined=[
+            QuarantinePreviewRow(
+                row_number=q.row_number,
+                record_key=None if q.record_key is None else str(q.record_key)[:100],
+                errors=[RowIssue(rule=e.rule, field=e.field, message=e.message) for e in q.errors],
+            )
+            for q in report.quarantined[:MAX_LISTED_ROWS]
+        ],
+        failed_rules=[
+            RuleOutcome(
+                rule=r.rule,
+                severity=r.severity.value,
+                rows_evaluated=r.rows_evaluated,
+                rows_failed=r.rows_failed,
+            )
+            for r in report.results
+            if not r.passed
+        ],
+    )
+
+
+def contracts_router() -> APIRouter:
+    router = APIRouter(tags=["contratos"])
+
+    @router.post(
+        "/contracts/{source}/validate",
+        response_model=ValidationPreview,
+        summary="Prueba un archivo contra los contratos (no guarda nada)",
+        openapi_extra={
+            "requestBody": {
+                "required": True,
+                "description": f"El archivo tal cual, hasta {MAX_UPLOAD_BYTES:,} bytes.",
+                "content": {
+                    "text/csv": {"schema": {"type": "string"}, "example": _EXAMPLE_CSV},
+                    "application/json": {
+                        "schema": {"type": "object"},
+                        "example": {"orders": [{"order_id": "O000231", "items": []}]},
+                    },
+                },
+            }
+        },
+    )
+    async def validate_file(
+        request: Request, source: Literal["customers", "orders"]
+    ) -> ValidationPreview:
+        data = await _read_capped(request, MAX_UPLOAD_BYTES)
+        if not data.strip():
+            raise HTTPException(status_code=400, detail="el archivo está vacío")
+        # Polars y json son trabajo de CPU: fuera del bucle de eventos.
+        report = await run_in_threadpool(VALIDATORS[source], data)
+        logger.info(
+            "contract_preview",
+            extra={"source": source, "bytes": len(data), "quarantined": len(report.quarantined)},
+        )
+        return _preview(report)
+
+    return router
+
+
 def admin_router() -> APIRouter:
     router = APIRouter(
         prefix="/v1/admin",
@@ -306,7 +402,13 @@ def create_app(
     _install_middleware_and_handlers(app)
 
     read_auth = [Depends(require_key("read_keys"))]
-    for router in (business_router(), paged_router(_paging_dependency(settings)), ops_router()):
+    routers = (
+        business_router(),
+        paged_router(_paging_dependency(settings)),
+        ops_router(),
+        contracts_router(),
+    )
+    for router in routers:
         app.include_router(router, prefix="/v1", dependencies=read_auth)
     app.include_router(admin_router())
     return app

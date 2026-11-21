@@ -6,8 +6,6 @@ desde la CLI o desde pruebas, sin orquestador.
 
 from __future__ import annotations
 
-import io
-import json
 import logging
 from datetime import timedelta
 from pathlib import Path
@@ -21,9 +19,10 @@ from datapulse.ingestion.hashing import bytes_hash, canonical_json, set_hash
 from datapulse.ingestion.load import BatchOutcome, WatermarkUpdate, process_batch, read_watermark
 from datapulse.ingestion.rest import ProductsClient
 from datapulse.observability.runs import RunRecorder
-from datapulse.validation.contracts import CUSTOMERS, PRODUCTS, flatten_product
-from datapulse.validation.orders import parse_ts, validate_orders
-from datapulse.validation.report import RuleResult, Severity, ValidationReport
+from datapulse.validation.contracts import PRODUCTS, flatten_product
+from datapulse.validation.files import validate_customers_csv, validate_orders_json
+from datapulse.validation.orders import parse_ts
+from datapulse.validation.report import RuleResult, Severity
 from datapulse.validation.tabular import validate_tabular
 
 logger = logging.getLogger(__name__)
@@ -44,17 +43,6 @@ class IngestionSettings(BaseSettings):
     max_error_rate: float = 0.2
 
 
-def _parse_failure(source: str, message: str) -> ValidationReport:
-    report = ValidationReport(source=source, rows_read=0)
-    report.rejected_reason = message
-    report.results.append(
-        RuleResult(
-            "parse:file", Severity.ERROR, 0, 0, passed=False, details={"error": message[:500]}
-        )
-    )
-    return report
-
-
 def _record(recorder: RunRecorder, outcome: BatchOutcome) -> BatchOutcome:
     recorder.add(
         read=outcome.rows_read,
@@ -70,13 +58,7 @@ def ingest_customers_file(
 ) -> BatchOutcome:
     with recorder.task(f"ingest:{path.name}", attempt=attempt) as task:
         data = path.read_bytes()
-        try:
-            data.decode("utf-8")  # estricto: Polars aceptaría bytes inválidos sin avisar
-            frame = pl.read_csv(io.BytesIO(data), infer_schema=False, encoding="utf8")
-        except (pl.exceptions.PolarsError, UnicodeDecodeError) as exc:
-            report = _parse_failure(CUSTOMERS.source, f"CSV ilegible: {exc}")
-        else:
-            report = validate_tabular(CUSTOMERS, frame)
+        report = validate_customers_csv(data)
         outcome = process_batch(engine, recorder.run_id, path.name, bytes_hash(data), report)
         task.rows_in, task.rows_out = outcome.rows_read, outcome.rows_loaded
     return _record(recorder, outcome)
@@ -87,12 +69,7 @@ def ingest_orders_file(
 ) -> BatchOutcome:
     with recorder.task(f"ingest:{path.name}", attempt=attempt) as task:
         data = path.read_bytes()
-        try:
-            document = json.loads(data.decode("utf-8"))
-        except (json.JSONDecodeError, UnicodeDecodeError) as exc:
-            report = _parse_failure("orders_json", f"JSON ilegible: {exc}")
-        else:
-            report = validate_orders(document)
+        report = validate_orders_json(data)
         outcome = process_batch(engine, recorder.run_id, path.name, bytes_hash(data), report)
         task.rows_in, task.rows_out = outcome.rows_read, outcome.rows_loaded
     return _record(recorder, outcome)

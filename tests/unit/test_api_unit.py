@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import json
 import secrets
 import uuid
 from collections.abc import Iterator
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -12,7 +14,7 @@ from fastapi.testclient import TestClient
 from pydantic import SecretStr, ValidationError
 from sqlalchemy import create_engine
 
-from datapulse.api.app import create_app
+from datapulse.api.app import MAX_UPLOAD_BYTES, create_app
 from datapulse.api.security import KeyChecker
 from datapulse.api.settings import ApiSettings
 
@@ -229,3 +231,68 @@ def test_example_keys_are_rejected_in_prod(
     get_settings.cache_clear()
     with pytest.raises(ValidationError, match=r"\.env\.example"):
         ApiSettings(_env_file=None, **overrides)
+
+
+# ------------------------------------------------------------------ validador en vivo
+SAMPLES = Path(__file__).resolve().parents[2] / "data" / "samples"
+
+
+def _manifest_keys(file: str, kinds: set[str]) -> set[str]:
+    manifest = json.loads((SAMPLES / "manifest.json").read_text(encoding="utf-8"))
+    return {d["key"] for d in manifest["defects"] if d["file"] == file and d["kind"] in kinds}
+
+
+def _validate(client: TestClient, source: str, body: bytes, key: str = READ_KEY) -> Any:
+    return client.post(f"/v1/contracts/{source}/validate", content=body, headers={"X-API-Key": key})
+
+
+ROW_DEFECTS = {"invalid_format", "invalid_type", "missing_required", "out_of_range"}
+
+
+def test_preview_quarantines_exactly_the_annotated_customer_defects(client: TestClient) -> None:
+    # El cliente de prueba usa una base caída: el validador no la necesita.
+    file = "customers/customers_2026-01-01.csv"
+    response = _validate(client, "customers", (SAMPLES / file).read_bytes())
+    assert response.status_code == 200
+    body = response.json()
+    assert {q["record_key"] for q in body["quarantined"]} == _manifest_keys(file, ROW_DEFECTS)
+    assert body["duplicates_dropped"] == len(_manifest_keys(file, {"duplicate_in_file"}))
+    assert body["rejected_reason"] is None
+    email = next(q for q in body["quarantined"] if q["record_key"] == "C00009")
+    assert [e["field"] for e in email["errors"]] == ["email"]
+
+
+def test_preview_quarantines_the_annotated_order_defects(client: TestClient) -> None:
+    file = "orders/orders_batch_002.json"
+    body = _validate(client, "orders", (SAMPLES / file).read_bytes()).json()
+    assert {q["record_key"] for q in body["quarantined"]} == _manifest_keys(file, ROW_DEFECTS)
+    assert body["rows_valid"] + body["rows_quarantined"] <= body["rows_read"]
+
+
+def test_preview_requires_a_read_key(client: TestClient) -> None:
+    assert _validate(client, "customers", b"a,b\n1,2\n", key=WRONG_KEY).status_code == 401
+
+
+def test_preview_rejects_oversized_and_empty_files(client: TestClient) -> None:
+    big = _validate(client, "customers", b"x" * (MAX_UPLOAD_BYTES + 1))
+    assert big.status_code == 413
+    assert _validate(client, "customers", b"  \n").status_code == 400
+    assert _validate(client, "products", b"a\n1\n").status_code == 422
+
+
+@pytest.mark.parametrize(
+    ("source", "body", "reason"),
+    [
+        ("customers", b"\xff\xfe\x00garbage", "CSV ilegible"),
+        ("orders", b"{not json", "JSON ilegible"),
+        ("orders", b"[" * 100_000, "JSON ilegible"),  # anidamiento extremo: sin error 500
+        ("customers", b"name\nAna\n", "faltan columnas obligatorias"),
+    ],
+    ids=["bad-utf8", "bad-json", "deep-json", "no-required-columns"],
+)
+def test_preview_reports_unreadable_files_as_rejected(
+    client: TestClient, source: str, body: bytes, reason: str
+) -> None:
+    response = _validate(client, source, body)
+    assert response.status_code == 200
+    assert reason in response.json()["rejected_reason"]

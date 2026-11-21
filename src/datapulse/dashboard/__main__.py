@@ -27,6 +27,8 @@ def main() -> None:
         "false",
         "--server.enableXsrfProtection",
         "true",
+        "--server.maxUploadSize",
+        "1",
         "--theme.base",
         "dark",
         "--theme.primaryColor",

@@ -63,7 +63,12 @@ class ApiClient:
         return self._request("GET", path, params, self._headers)
 
     def _request(
-        self, method: str, path: str, params: dict[str, Any] | None, headers: dict[str, str]
+        self,
+        method: str,
+        path: str,
+        params: dict[str, Any] | None,
+        headers: dict[str, str],
+        content: bytes | None = None,
     ) -> Any:
         clean = {
             k: v.isoformat() if isinstance(v, date) else v
@@ -71,7 +76,9 @@ class ApiClient:
             if v is not None
         }
         try:
-            response = self._http.request(method, path, params=clean, headers=headers)
+            response = self._http.request(
+                method, path, params=clean, headers=headers, content=content
+            )
         except httpx.TransportError as exc:
             raise ApiError(
                 "No se puede conectar con la API de DataPulse. ¿Está levantada?"
@@ -162,6 +169,13 @@ class ApiClient:
             raise ApiError("El panel no tiene clave de administración: es de solo lectura.")
         result: dict[str, Any] = self._request(
             "POST", f"/v1/admin/pipelines/{name}/runs", None, self._admin_headers
+        )
+        return result
+
+    def validate_file(self, source: str, data: bytes) -> dict[str, Any]:
+        """Prueba un archivo contra los contratos; la API no guarda nada."""
+        result: dict[str, Any] = self._request(
+            "POST", f"/v1/contracts/{source}/validate", None, self._headers, content=data
         )
         return result
 

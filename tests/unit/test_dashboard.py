@@ -12,6 +12,7 @@ import pytest
 from pydantic import SecretStr
 from streamlit.testing.v1 import AppTest
 
+from datapulse.api.app import VALIDATORS, _preview
 from datapulse.dashboard import charts, pipeline_map, theme
 from datapulse.dashboard.client import ApiClient, ApiError, DashboardSettings
 from datapulse.dashboard.formatting import money_compact as _money_compact
@@ -129,6 +130,10 @@ class FakeClient:
     def run_detail(self, run_id: str) -> dict[str, Any]:
         return RUNS[0] | {"tasks": [], "quality_failures": 2, "params": {"trigger": "api"}}
 
+    def validate_file(self, source: str, data: bytes) -> dict[str, Any]:
+        # Las mismas funciones que usa la API, sin HTTP: el veredicto es el real.
+        return _preview(VALIDATORS[source](data)).model_dump()
+
 
 def _page(fake: FakeClient) -> AppTest:
     at = AppTest.from_file(APP, default_timeout=30)
@@ -137,10 +142,15 @@ def _page(fake: FakeClient) -> AppTest:
 
 
 # ------------------------------------------------------------------ página
-def test_page_renders_three_tabs_with_metrics() -> None:
+def test_page_renders_its_tabs_with_metrics() -> None:
     at = _page(FakeClient())
     assert not at.exception
-    assert [t.label for t in at.tabs] == ["Negocio", "Calidad de datos", "Pipelines"]
+    assert [t.label for t in at.tabs] == [
+        "Negocio",
+        "Calidad de datos",
+        "Pipelines",
+        "Probar contratos",
+    ]
     metrics = {m.label: m.value for m in at.metric}
     assert metrics["Ingresos"] == "$ 1.04 k"
     assert metrics["Pedidos"] == "6"
@@ -156,7 +166,8 @@ def test_page_renders_three_tabs_with_metrics() -> None:
     assert lotes[0].iloc[0]["referencia"] == "customers_2026-01-01.csv"
     assert lotes[0].iloc[0]["estado"] == "éxito"
     assert any("dp-map" in m.value for m in at.markdown)  # el mapa se dibuja
-    assert not at.button  # sin clave de administración no hay disparo
+    # Sin clave de administración no hay disparo.
+    assert not [b for b in at.button if str(b.key).startswith("trigger_")]
 
 
 def test_no_emojis_in_labels() -> None:
@@ -180,7 +191,7 @@ def test_filters_reach_the_api() -> None:
 def test_trigger_needs_admin_key_and_starts_the_live_refresh() -> None:
     fake = FakeClient(admin=True)
     at = _page(fake)
-    assert [b.label for b in at.button] == [
+    assert [b.label for b in at.button if str(b.key).startswith("trigger_")] == [
         "Ejecutar flujo diario",
         "Ejecutar ingesta de productos",
     ]
@@ -517,3 +528,40 @@ def test_entrypoint_builds_hardened_streamlit_command(monkeypatch: pytest.Monkey
     assert json.loads(args["--server.headless"]) is True
     assert args["--client.toolbarMode"] == "minimal"
     assert args["--theme.base"] == "dark"
+
+
+# ------------------------------------------------------------------ validador en vivo
+def test_contract_example_shows_which_rows_go_to_quarantine_and_why() -> None:
+    at = _page(FakeClient())
+    assert any("Sube un archivo" in i.value for i in at.info)
+    at.button(key="contract_example_customers").click().run()
+    assert not at.exception
+    table = next(d.value for d in at.dataframe if "motivo" in d.value.columns)
+    assert set(table["clave"]) == {"C00009", "C00014", "C00062"}
+    assert set(table["campo"]) == {"email", "signup_date"}
+    metrics = {m.label: m.value for m in at.metric}
+    assert metrics["A cuarentena"] == "3"
+    assert any("3 filas irían a cuarentena" in w.value for w in at.warning)
+
+
+def test_contract_example_for_orders() -> None:
+    at = _page(FakeClient())
+    at.radio(key="contract_source").set_value("orders").run()
+    at.button(key="contract_example_orders").click().run()
+    table = next(d.value for d in at.dataframe if "motivo" in d.value.columns)
+    assert set(table["clave"]) == {"O000170", "O000231"}
+
+
+def test_contract_examples_are_exact_copies_of_sample_rows() -> None:
+    examples = ROOT / "src/datapulse/dashboard/examples"
+    sample = (ROOT / "data/samples/customers/customers_2026-01-01.csv").read_text(encoding="utf-8")
+    sample_lines = set(sample.splitlines())
+    assert (
+        set((examples / "clientes_con_defectos.csv").read_text(encoding="utf-8").splitlines())
+        <= sample_lines
+    )
+    batch = json.loads(
+        (ROOT / "data/samples/orders/orders_batch_002.json").read_text(encoding="utf-8")
+    )
+    example = json.loads((examples / "pedidos_con_defectos.json").read_text(encoding="utf-8"))
+    assert all(order in batch["orders"] for order in example["orders"])

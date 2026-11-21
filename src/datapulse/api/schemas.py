@@ -156,3 +156,36 @@ class TriggerResponse(BaseModel):
     deployment: str
     flow_run_id: uuid.UUID
     state: str
+
+
+class RowIssue(BaseModel):
+    rule: str
+    field: str | None
+    message: str
+
+
+class QuarantinePreviewRow(BaseModel):
+    row_number: int
+    record_key: str | None
+    errors: list[RowIssue]
+
+
+class RuleOutcome(BaseModel):
+    rule: str
+    severity: str
+    rows_evaluated: int
+    rows_failed: int
+
+
+class ValidationPreview(BaseModel):
+    """Veredicto de los contratos sobre un archivo enviado; no se guarda nada."""
+
+    source: str
+    rows_read: int
+    rows_valid: int
+    rows_quarantined: int
+    duplicates_dropped: int
+    error_rate: float
+    rejected_reason: str | None
+    quarantined: list[QuarantinePreviewRow]
+    failed_rules: list[RuleOutcome]

@@ -11,6 +11,7 @@ from __future__ import annotations
 import time
 from collections.abc import Callable
 from datetime import UTC, date, datetime, timedelta
+from pathlib import Path
 from typing import Any
 
 import streamlit as st
@@ -33,6 +34,13 @@ REFRESH_S = 5
 # Una ejecución «en curso» más vieja que esto es una fila huérfana (el worker murió): no debe
 # mantener el refresco encendido para siempre.
 RUNNING_MAX_AGE = timedelta(minutes=15)
+# Validador en vivo: fuente → (etiqueta, extensión, ejemplo con defectos reales de data/samples).
+CONTRACT_SOURCES = {
+    "customers": ("Clientes (CSV)", "csv", "clientes_con_defectos.csv"),
+    "orders": ("Pedidos (JSON)", "json", "pedidos_con_defectos.json"),
+}
+EXAMPLES = Path(__file__).with_name("examples")
+MAX_UPLOAD_BYTES = 1_000_000  # el mismo tope que aplica la API
 
 
 def _client() -> Any:
@@ -246,6 +254,74 @@ def _pipelines(client: Any, days: int) -> None:
     )
 
 
+def _contracts(client: Any) -> None:
+    st.caption(
+        "Sube un archivo y mira qué haría la ingesta con él: las mismas reglas que el pipeline, "
+        "sin guardar nada."
+    )
+    source = st.radio(
+        "Fuente",
+        list(CONTRACT_SOURCES),
+        format_func=lambda s: CONTRACT_SOURCES[s][0],
+        horizontal=True,
+        key="contract_source",
+    )
+    _, ext, example = CONTRACT_SOURCES[source]
+    upload = st.file_uploader(
+        f"Archivo .{ext} (máximo 1 MB)", type=[ext], key=f"contract_upload_{source}"
+    )
+    if st.button("Cargar ejemplo con defectos", key=f"contract_example_{source}"):
+        st.session_state["_contract_example"] = source
+    if upload is not None:
+        data, name = upload.getvalue(), upload.name
+    elif st.session_state.get("_contract_example") == source:
+        data, name = (EXAMPLES / example).read_bytes(), example
+    else:
+        st.info("Sube un archivo o carga el ejemplo: son filas reales de las muestras.")
+        return
+    if len(data) > MAX_UPLOAD_BYTES:
+        st.error("El archivo supera 1 MB.")
+        return
+    _contract_result(client.validate_file(source, data), name)
+
+
+def _contract_result(result: dict[str, Any], name: str) -> None:
+    cols = st.columns(4)
+    cols[0].metric("Filas leídas", f"{result['rows_read']:,}", border=True)
+    cols[1].metric("Se cargarían", f"{result['rows_valid']:,}", border=True)
+    cols[2].metric("A cuarentena", f"{result['rows_quarantined']:,}", border=True)
+    cols[3].metric("Duplicadas descartadas", f"{result['duplicates_dropped']:,}", border=True)
+    if result["rejected_reason"]:
+        st.error(f"{name}: el lote se rechazaría entero. {result['rejected_reason']}.")
+    elif result["rows_quarantined"]:
+        st.warning(
+            f"{name}: {result['rows_quarantined']} filas irían a cuarentena con su motivo "
+            f"(tasa de error {result['error_rate']:.1%}); el resto se cargaría."
+        )
+    else:
+        st.success(f"{name}: todas las filas cumplen el contrato.")
+    if result["quarantined"]:
+        st.subheader("Filas que irían a cuarentena")
+        st.dataframe(
+            [
+                {
+                    "fila": q["row_number"],
+                    "clave": q["record_key"],
+                    "campo": e["field"],
+                    "motivo": e["message"],
+                    "regla": e["rule"],
+                }
+                for q in result["quarantined"]
+                for e in q["errors"]
+            ],
+            hide_index=True,
+            width="stretch",
+        )
+    if result["failed_rules"]:
+        with st.expander("Reglas que fallaron"):
+            st.dataframe(result["failed_rules"], hide_index=True, width="stretch")
+
+
 # El intervalo se decide con lo visto en la pasada anterior: Streamlit lo fija al decorar.
 @st.fragment(run_every=REFRESH_S if st.session_state.get("_live") else None)
 def _overview(client: Any) -> None:
@@ -306,13 +382,17 @@ def main() -> None:
         st.error("La fecha «Desde» no puede ser posterior a «Hasta».")
         return
 
-    business, quality, pipelines = st.tabs(["Negocio", "Calidad de datos", "Pipelines"])
+    business, quality, pipelines, contracts = st.tabs(
+        ["Negocio", "Calidad de datos", "Pipelines", "Probar contratos"]
+    )
     with business:
         _guarded(_business, client, date_from, date_to)
     with quality:
         _guarded(_quality, client)
     with pipelines:
         _guarded(_pipelines, client, int(days))
+    with contracts:
+        _guarded(_contracts, client)
 
 
 def _guarded(render: Callable[..., None], *args: Any) -> None:
