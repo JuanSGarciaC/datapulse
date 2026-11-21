@@ -27,9 +27,7 @@ texto y color.
 - Al pasar el puntero (o el foco del teclado) por un nodo se ve su detalle y se encienden sus
   aristas.
 
-![Mapa del pipeline en movimiento](img/dashboard-demo.gif)
-
-![Mapa del pipeline](img/dashboard-mapa.png)
+![Mapa del pipeline, con las insignias de frescura y los botones de disparo y de caos](img/panel-frescura.png)
 
 ### Frescura por fuente
 
@@ -78,16 +76,22 @@ simulada, nunca una fuente real, y `scripts/demo.ps1` lo activa.
 | **Linaje** | ¿De dónde sale este número? Se escribe un pedido (por defecto O000065, que llegó dos veces) y se sigue su rastro en cuatro pasos: líneas del hecho y si cuentan como ingreso → versiones recibidas (vigente y superada) → lote con su sha256 completo, archivo y fila → ejecución que lo cargó. Si el pedido fue a cuarentena, se muestra el motivo | `/v1/lineage/orders/{id}` |
 | **Pipelines** | ¿Funcionan los pipelines? Ejecuciones (con filtro de estado), fallos, filas cargadas/rechazadas por día, duración por flujo; detalle de cada ejecución (tareas, disparo, fallos de calidad, parámetros, error) y lotes de ingesta con su huella | `/v1/pipeline-runs`, `/v1/metrics/volumes`, `/v1/ingestion/batches` |
 
+![Del validador al linaje, en movimiento](img/panel-demo.gif)
+
 ![Negocio](img/dashboard-negocio.png)
 ![Calidad de datos](img/dashboard-calidad.png)
 ![Pipelines](img/dashboard-pipelines.png)
-![Ejecuciones, detalle y lotes de ingesta](img/dashboard-lotes.png)
+![Lotes de ingesta](img/dashboard-lotes.png)
+![Probar contratos](img/panel-validador.png)
+![Bandeja de cuarentena](img/panel-cuarentena.png)
+![Linaje de O000065](img/panel-linaje.png)
+![Caos en un clic: los dos intentos](img/panel-caos.png)
 
-*Capturas con los datos sintéticos de `data/samples` tras dos ejecuciones del flujo diario.
-La ejecución con fallo es real: la primera vez la fuente de productos no era alcanzable, los
-reintentos se agotaron (por eso `ingest_products` tiene la duración media más alta) y el error
-quedó registrado con su causa; la segunda ejecución omitió los archivos ya cargados (0 filas
-nuevas de clientes y pedidos) y cargó los productos.*
+*Capturas del 2026-11-21 con los datos sintéticos de `data/samples`, tras una ejecución del
+flujo diario y otra del caos en un clic. En esta última la fuente de productos devolvió seis
+503 seguidos: el primer intento de `ingest:products_api` agotó sus reintentos y el segundo
+entró. Por eso `ingest_products` tiene la segunda duración media más alta, por detrás de
+`transform` (dbt).*
 
 ## Cómo leer los números de calidad
 

@@ -4,7 +4,7 @@ Requiere el stack levantado (scripts/demo.ps1). Usa el Edge o Chrome ya instalad
 
     uv run --with playwright python scripts/screenshots.py
 
-Además de las capturas graba docs/img/dashboard-demo.gif: el puntero recorre el mapa y, si el
+Además de las capturas graba docs/img/panel-mapa.gif: el puntero recorre el mapa y, si el
 panel tiene la clave de administración, dispara el flujo diario.
 
 Falla si el mapa no se dibuja, si el CSS no llega a las tarjetas o si el brillo no sigue al
@@ -23,7 +23,7 @@ from playwright.sync_api import Page, sync_playwright
 URL = os.environ.get("DATAPULSE_E2E_DASHBOARD_URL", "http://127.0.0.1:8501")
 OTHERS = {
     "prefect-runs": os.environ.get("DATAPULSE_E2E_PREFECT_URL", "http://127.0.0.1:4200") + "/runs",
-    "api-swagger": os.environ.get("DATAPULSE_E2E_API_URL", "http://127.0.0.1:8000") + "/docs",
+    "api-guia": os.environ.get("DATAPULSE_E2E_API_URL", "http://127.0.0.1:8000") + "/docs",
 }
 GIF_WIDTH = 800
 OUT = Path(__file__).resolve().parents[1] / "docs" / "img"
@@ -82,7 +82,7 @@ def record_demo(page: Page) -> None:
         for f in frames
     ]
     reduced[0].save(
-        OUT / "dashboard-demo.gif",
+        OUT / "panel-mapa.gif",
         save_all=True,
         append_images=reduced[1:],
         duration=350,
@@ -99,7 +99,7 @@ def main() -> None:
         page.wait_for_selector("svg.dp-map")
         page.wait_for_selector(CARD)
         verify(page)
-        page.locator(".st-key-dp-map").screenshot(path=OUT / "dashboard-mapa.png")
+        page.locator(".st-key-dp-map").screenshot(path=OUT / "panel-frescura.png")
         for tab, name in TABS.items():
             page.get_by_role("tab", name=tab).click()
             page.wait_for_timeout(2500)  # los gráficos de Vega terminan de dibujarse

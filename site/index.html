@@ -180,13 +180,13 @@
     <section id="numeros" class="band reveal" aria-labelledby="numeros-t">
       <h2 id="numeros-t">En números</h2>
       <ul class="stats stagger">
-        <li><span class="num" data-count="304">304</span><span class="lbl">pruebas Python: unitarias, de integración contra PostgreSQL, de contrato y E2E</span></li>
+        <li><span class="num" data-count="345">345</span><span class="lbl">pruebas Python: unitarias, de integración contra PostgreSQL, de contrato y E2E</span></li>
         <li><span class="num" data-count="39">39</span><span class="lbl">pruebas de dbt, con 5 conciliaciones</span></li>
         <li><span class="num" data-count="91" data-suffix=" %">91 %</span><span class="lbl">de cobertura de líneas y ramas (el CI exige ≥ 90 %)</span></li>
         <li><span class="num" data-count="37">37</span><span class="lbl">defectos sintéticos que el pipeline debe detectar, ni uno más ni uno menos</span></li>
         <li><span class="num" data-count="9">9</span><span class="lbl">ADRs con sus alternativas descartadas</span></li>
       </ul>
-      <p class="source">Medido en el CI del 2026-11-10 (ubuntu-24.04, Python 3.13, PostgreSQL en contenedor).</p>
+      <p class="source">Pruebas contadas el 2026-11-21; cobertura medida en el CI del 2026-11-10 (ubuntu-24.04, Python 3.13, PostgreSQL en contenedor).</p>
     </section>
 
     <!-- Qué demuestra · A2 stagger -->
@@ -206,8 +206,8 @@
     <section id="capturas" class="band" aria-labelledby="capturas-t">
       <h2 id="capturas-t" class="reveal">Capturas del panel</h2>
       <figure class="shot wide reveal">
-        <img src="../docs/img/dashboard-demo.gif" alt="Grabación del panel: se pulsa «Ejecutar flujo diario» y el mapa del pipeline se actualiza sin recargar" loading="lazy" width="1280" height="800">
-        <figcaption>Grabación real: se pulsa «Ejecutar flujo diario» y el mapa se actualiza sin recargar la página.</figcaption>
+        <img src="../docs/img/panel-demo.gif" alt="Grabación del panel: se carga el ejemplo con defectos en «Probar contratos» y se sigue el pedido O000065 en «Linaje»" loading="lazy" width="960" height="608">
+        <figcaption>Grabación real: el validador aparta tres filas con su motivo y el linaje lleva O000065 hasta su archivo.</figcaption>
       </figure>
       <div class="shots stagger">
         <figure class="shot reveal"><img src="../docs/img/dashboard-negocio.png" alt="Vista de negocio del panel" loading="lazy"><figcaption>Indicadores de negocio</figcaption></figure>
