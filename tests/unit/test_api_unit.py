@@ -327,3 +327,26 @@ def test_openapi_guides_a_first_time_visitor(client: TestClient) -> None:
     assert lineage["schema"]["examples"] == ["O000065"]
     body = spec["paths"]["/v1/contracts/{source}/validate"]["post"]["requestBody"]
     assert "C00009" in body["content"]["text/csv"]["example"]
+
+
+# ------------------------------------------------------------------ CORS para la landing
+def test_local_pages_can_check_health_but_others_cannot(client: TestClient) -> None:
+    local = client.get("/health", headers={"Origin": "http://127.0.0.1:8791"})
+    assert local.headers["access-control-allow-origin"] == "http://127.0.0.1:8791"
+    foreign = client.get("/health", headers={"Origin": "https://ejemplo.com"})
+    assert "access-control-allow-origin" not in foreign.headers
+    lookalike = client.get("/health", headers={"Origin": "http://localhost.ejemplo.com"})
+    assert "access-control-allow-origin" not in lookalike.headers
+
+
+def test_browsers_cannot_send_the_api_key_cross_origin(client: TestClient) -> None:
+    preflight = client.options(
+        "/v1/kpis/summary",
+        headers={
+            "Origin": "http://127.0.0.1:8791",
+            "Access-Control-Request-Method": "GET",
+            "Access-Control-Request-Headers": "x-api-key",
+        },
+    )
+    assert preflight.status_code == 400
+    assert "x-api-key" not in preflight.headers.get("access-control-allow-headers", "").lower()

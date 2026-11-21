@@ -17,6 +17,7 @@ from typing import Annotated, Any, Final, Literal, cast
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Path, Query, Request, Response
 from fastapi.concurrency import run_in_threadpool
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import Engine, text
 from sqlalchemy.exc import OperationalError, SQLAlchemyError
@@ -548,6 +549,15 @@ def create_app(
     app.state.admin_keys = KeyChecker([settings.admin_key] if settings.admin_key else [])
     app.state.trigger = trigger or prefect_trigger
     _install_middleware_and_handlers(app)
+    # La landing comprueba si la demo está en marcha en este equipo con GET /health. Solo
+    # orígenes locales, solo GET y ninguna cabecera propia: un navegador no puede enviar
+    # X-API-Key desde otro origen, así que /v1 sigue cerrado a otras páginas.
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d{1,5})?$",
+        allow_methods=["GET"],
+        allow_headers=[],
+    )
 
     read_auth = [Depends(require_key("read_keys"))]
     routers = (

@@ -79,6 +79,39 @@
     onVisible([term], () => { run(); }, 0.5);
   }
 
+  // ── Demo en vivo: ¿está DataPulse en marcha en este equipo? ──────────────────
+  // Puertos por defecto de Docker Compose. Para otro stack local: ?api=8107&panel=8108
+  // (solo números de puerto: los enlaces nunca salen del propio equipo).
+  const live = document.querySelector('[data-live]');
+  if (live) {
+    const q = new URLSearchParams(location.search);
+    const port = (name, fallback) => {
+      const v = q.get(name);
+      return v && /^\d{4,5}$/.test(v) && +v >= 1024 && +v <= 65535 ? v : fallback;
+    };
+    const host = q.has('api') || q.has('panel') ? '127.0.0.1' : 'localhost';
+    const api = `http://${host}:${port('api', '8000')}`;
+    const panel = `http://${host}:${port('panel', '8501')}`;
+    document.querySelectorAll('[data-href]').forEach((a) => {
+      a.href = a.dataset.href === 'panel' ? panel : `${api}/docs`;
+    });
+    const text = live.querySelector('.live-text');
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 2500);
+    fetch(`${api}/health`, { signal: ctrl.signal, cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then((d) => {
+        if (d.status !== 'ok') throw new Error('no ok');
+        live.classList.add('on');
+        text.textContent = 'DataPulse está en marcha en este equipo: los enlaces abren tu panel y tu API.';
+      })
+      .catch(() => {
+        live.classList.add('off');
+        text.textContent = 'La demo no está en marcha en este equipo: lánzala con el comando de arriba y recarga.';
+      })
+      .finally(() => clearTimeout(timer));
+  }
+
   // ── C3 + C13: recorrido atado al scroll ──────────────────────────────────────
   const wrap = document.querySelector('.scrub-wrap');
   if (!wrap || reduced) return;

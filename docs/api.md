@@ -58,6 +58,11 @@ flotante. Así el cliente no pierde precisión en dinero.
 
 ## Decisiones de seguridad
 
+- **CORS solo para comprobar la salud desde la landing.** La landing (`site/`) pregunta a
+  `GET /health` si la demo está en marcha en el propio equipo. Se admiten orígenes
+  `localhost` y `127.0.0.1`, solo `GET` y ninguna cabecera propia: un navegador no puede
+  enviar `X-API-Key` desde otro origen, así que `/v1` sigue cerrado a cualquier página.
+
 | Medida | Por qué |
 |--------|---------|
 | Conexión con `datapulse_api` (rol `dp_reader`) | Aunque hubiera un fallo en la API, la BD no permite escribir ni leer `raw` (correos en claro). Probado con el rol real. |

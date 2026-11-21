@@ -217,11 +217,11 @@
       </div>
     </section>
 
-    <!-- Pruébalo · H3 terminal -->
+    <!-- Pruébalo · H3 terminal + enlaces a la demo en marcha -->
     <section id="pruebalo" class="band reveal" aria-labelledby="pruebalo-t">
-      <h2 id="pruebalo-t">Pruébalo en un comando</h2>
-      <p>Requisitos: Windows con Docker Desktop abierto y Git. El script crea <code>.env</code> con secretos
-        aleatorios, levanta el stack, ejecuta el flujo diario y deja el panel listo.</p>
+      <h2 id="pruebalo-t">Pruébalo en tu equipo</h2>
+      <p>Requisitos: Windows con Docker Desktop abierto y Git. Un comando crea <code>.env</code> con
+        secretos aleatorios, levanta el stack, ejecuta el flujo diario y deja el panel listo.</p>
       <div class="term" role="img" aria-label="Terminal de PowerShell ejecutando scripts/demo.ps1">
         <div class="term-bar" aria-hidden="true"><i></i><i></i><i></i><span>PowerShell</span></div>
 <pre class="term-body"><span class="cmd">git clone https://github.com/JuanSGarciaC/datapulse.git</span>
@@ -234,11 +234,42 @@
 <span class="out"> </span>
 <span class="out good">DataPulse está listo:</span>
 <span class="out">  Dashboard   http://localhost:8501</span>
-<span class="out">  API (docs)  http://localhost:8000/docs   (clave en .env: DATAPULSE_API_KEYS)</span>
+<span class="out">  API (docs)  http://localhost:8000/docs</span>
+<span class="out">              Authorize con la clave de lectura: ‹clave aleatoria›</span>
 <span class="out">  Prefect     http://localhost:4200</span>
 <span class="out">Para apagarlo: docker compose down</span></pre>
       </div>
-      <p class="source">Las líneas sin <code>#</code> son las que imprime <code>scripts/demo.ps1</code>; lo comentado resume la salida de Docker y del flujo.</p>
+      <p class="source">Las líneas sin <code>#</code> son las que imprime <code>scripts/demo.ps1</code>
+        (la clave cambia en cada equipo); lo comentado resume la salida de Docker y del flujo.</p>
+
+      <h3 class="try-title">Y después, tres cosas que tocar</h3>
+      <p class="live" data-live aria-live="polite"><span class="live-dot" aria-hidden="true"></span><span class="live-text">Con
+        la demo en marcha, estos enlaces abren tu panel y tu API.</span></p>
+      <ul class="try stagger">
+        <li>
+          <h4>Prueba los contratos</h4>
+          <p>Sube un CSV de clientes o un JSON de pedidos, o carga el ejemplo con filas reales
+            defectuosas: verás qué filas irían a cuarentena y por qué. No se guarda nada.</p>
+          <p class="where">Panel → <b>Probar contratos</b></p>
+          <a class="btn ghost" data-href="panel" href="http://localhost:8501">Abrir el panel</a>
+        </li>
+        <li>
+          <h4>Mira la cuarentena</h4>
+          <p>Lo que los contratos apartaron de verdad, con su motivo, el valor que falló, el archivo y
+            el lote. El email llega enmascarado.</p>
+          <p class="where">Panel → <b>Calidad de datos</b></p>
+          <a class="btn ghost" data-href="panel" href="http://localhost:8501">Abrir el panel</a>
+        </li>
+        <li>
+          <h4>Sigue un pedido hasta su archivo</h4>
+          <p>O000065 llegó dos veces: la versión vigente, la superada, el sha256 de su lote, el
+            archivo y la ejecución que lo cargó.</p>
+          <p class="where">Panel → <b>Linaje</b> · API → <code>/v1/lineage/orders/O000065</code></p>
+          <a class="btn ghost" data-href="docs" href="http://localhost:8000/docs">Abrir la API</a>
+        </li>
+      </ul>
+      <p class="source">Para comprobar si la demo está en marcha, la página solo consulta
+        <code>/health</code> en tu propio equipo. No envía nada a ningún otro sitio.</p>
     </section>
   </main>
 
