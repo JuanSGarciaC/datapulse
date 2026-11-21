@@ -155,7 +155,7 @@ h2 { font-size: clamp(1.7rem, 3.2vw, 2.4rem); margin: 0 0 1.2rem; }
 }
 .scrub-wrap.scrub .notes > li.on { opacity: 1; transform: none; }
 
-.scrub-wrap.scrub .board { grid-area: board; position: relative; display: block; margin: 0; min-height: 0; }
+.scrub-wrap.scrub .board { grid-area: board; align-self: start; position: relative; display: block; margin: 0; min-height: 0; }
 .scrub-wrap.scrub .lanes { display: grid; grid-template-columns: repeat(5, 1fr); position: absolute; inset: 0; }
 .lane { border-left: 1px dashed rgba(255, 255, 255, .12); padding: 0 .5rem; display: flex; justify-content: space-between; align-items: baseline; font: .7rem var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--faint); transition: color .3s; }
 .lane:last-child { border-right: 1px dashed rgba(255, 255, 255, .12); }
@@ -165,17 +165,27 @@ h2 { font-size: clamp(1.7rem, 3.2vw, 2.4rem); margin: 0 0 1.2rem; }
 
 .scrub-wrap.scrub .tk {
   position: absolute; left: 0; top: 0; width: var(--tw); height: var(--th); overflow: hidden;
-  will-change: transform; transition: opacity .35s;
+  will-change: transform; transition: opacity .35s; z-index: 1;
+  grid-auto-rows: max-content; /* sin esto, las líneas con overflow:hidden se aplastan */
+  padding: .4rem .6rem .35rem; line-height: 1.35;
 }
+/* Fantasma: el registro ya pasó por esta capa (raw solo añade filas: sigue ahí). */
+.scrub-wrap.scrub .tk.ghost {
+  z-index: 0; opacity: 0; background: transparent; border-style: dashed; border-left-style: solid;
+}
+.scrub-wrap.scrub .tk.ghost.on { opacity: .3; }
+.scrub-wrap.scrub .tk.ghost .stamp { display: none; }
 .scrub-wrap.scrub [data-steps] { opacity: 0; }
 .scrub-wrap.scrub [data-steps].on { opacity: 1; }
 .scrub-wrap.scrub .tk .meta > span { grid-area: 1 / 1; transition: opacity .3s; }
 .scrub-wrap.scrub .tk .meta { display: grid; }
+/* Los sellos tienen su propia fila, bajo el título: nunca tapan texto. */
 .scrub-wrap.scrub .stamp {
-  position: absolute; right: .45rem; bottom: .4rem; margin: 0; background: #0e121b;
-  transform: rotate(-8deg) scale(1.5); transition: opacity .2s, transform .3s cubic-bezier(.3, 1.6, .5, 1);
+  grid-row: 2; grid-column: 1; justify-self: start; margin: 0 0 .1rem; padding: 0 .35rem;
+  font-size: 9px; line-height: 1.45;
+  transform: rotate(-4deg) scale(1.5); transition: opacity .2s, transform .3s cubic-bezier(.3, 1.6, .5, 1);
 }
-.scrub-wrap.scrub .stamp.on { opacity: .92; transform: rotate(-8deg) scale(1); }
+.scrub-wrap.scrub .stamp.on { opacity: .92; transform: rotate(-4deg) scale(1); }
 .scrub-wrap.scrub .tk .strike { text-decoration-color: transparent; color: inherit; transition: color .3s, text-decoration-color .3s; }
 .scrub-wrap.scrub .tk .strike.on { opacity: 1; text-decoration-color: var(--red); color: var(--faint); }
 .scrub-wrap.scrub .tk .strike[data-steps] { opacity: 1; }
@@ -194,16 +204,16 @@ h2 { font-size: clamp(1.7rem, 3.2vw, 2.4rem); margin: 0 0 1.2rem; }
   .notes h3 { font-size: 1.1rem; }
   .notes p { font-size: .9rem; }
   .log { font-size: 10.5px; }
-  .scrub-wrap.scrub .lanes { grid-template-columns: 1fr; grid-template-rows: repeat(5, 1fr); }
+  .scrub-wrap.scrub .lanes { grid-template-columns: 1fr; grid-template-rows: 2fr repeat(4, 1fr); }
   .lane { border-left: 0; border-top: 1px dashed rgba(255, 255, 255, .12); padding: .15rem 0 0; font-size: .6rem; }
   .lane:last-child { border-right: 0; }
   .lane b { font-size: .75rem; }
   .scrub-wrap.scrub .tk { padding: .25rem .4rem; }
-  .scrub-wrap.scrub .tk p { display: none; }
+  .scrub-wrap.scrub .tk p, .scrub-wrap.scrub .tk .meta { display: none; }
   .scrub-wrap.scrub .tk header { display: block; }
-  .scrub-wrap.scrub .tk header b { font-size: 11px; display: block; }
-  .scrub-wrap.scrub .tk .kind { font-size: 9px; }
-  .scrub-wrap.scrub .stamp { font-size: 7.5px; letter-spacing: .08em; padding: 0 .25rem; border-width: 1.5px; right: .2rem; bottom: .2rem; }
+  .scrub-wrap.scrub .tk header b { font-size: 12px; display: block; }
+  .scrub-wrap.scrub .tk .kind { font-size: 10px; display: block; }
+  .scrub-wrap.scrub .stamp { font-size: 8px; letter-spacing: .06em; padding: 0 .25rem; border-width: 1.5px; margin: .1rem 0 0; }
 }
 
 /* Bandas */
@@ -263,7 +273,7 @@ h2 { font-size: clamp(1.7rem, 3.2vw, 2.4rem); margin: 0 0 1.2rem; }
 
 /* Pruébalo: estado de la demo en este equipo y tres cosas que tocar */
 .try-title { font-size: 1.35rem; margin: 2.6rem 0 .6rem; }
-.live { display: flex; align-items: center; gap: .55rem; margin: 0 0 1.2rem; color: var(--muted); font-size: .95rem; }
+.live { display: flex; flex-wrap: wrap; align-items: center; gap: .55rem; margin: 0 0 1.2rem; color: var(--muted); font-size: .95rem; }
 .live-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--faint); flex: none; }
 .live.on { color: var(--text); }
 .live.on .live-dot { background: var(--teal); box-shadow: 0 0 0 4px rgba(47, 212, 160, .18); }
@@ -275,3 +285,4 @@ h2 { font-size: clamp(1.7rem, 3.2vw, 2.4rem); margin: 0 0 1.2rem; }
 .try .where { color: var(--faint); font-size: .85rem; }
 .try .where b { color: var(--text); font-weight: 600; }
 .try .btn { margin-top: auto; align-self: flex-start; }
+.live-check { padding: .35rem .8rem; font-size: .85rem; }
