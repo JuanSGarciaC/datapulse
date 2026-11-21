@@ -9,13 +9,16 @@ from typing import Any
 
 import httpx2 as httpx
 import pytest
+from fastapi.testclient import TestClient
 from pydantic import SecretStr
 from streamlit.testing.v1 import AppTest
 
 from datapulse.api.app import VALIDATORS, _preview
 from datapulse.dashboard import charts, pipeline_map, theme
-from datapulse.dashboard.client import ApiClient, ApiError, DashboardSettings
+from datapulse.dashboard.client import ApiClient, ApiError, DashboardSettings, SourceChaos
 from datapulse.dashboard.formatting import money_compact as _money_compact
+from datapulse.mock_source.app import MockSettings
+from datapulse.mock_source.app import create_app as create_mock
 from tests.conftest import ROOT
 
 APP = str(ROOT / "src/datapulse/dashboard/app.py")
@@ -182,9 +185,22 @@ class FakeClient:
         return _preview(VALIDATORS[source](data)).model_dump()
 
 
-def _page(fake: FakeClient) -> AppTest:
+class FakeChaos:
+    def __init__(self, *, available: bool = True) -> None:
+        self.available = available
+        self.calls: list[str] = []
+
+    def break_source(self) -> None:
+        self.calls.append("break")
+
+    def restore(self) -> None:
+        self.calls.append("restore")
+
+
+def _page(fake: FakeClient, chaos: FakeChaos | None = None) -> AppTest:
     at = AppTest.from_file(APP, default_timeout=30)
     at.session_state["_client"] = fake
+    at.session_state["_chaos"] = chaos or FakeChaos(available=False)
     return at.run()
 
 
@@ -675,3 +691,62 @@ def test_lineage_validates_the_id_and_handles_unknown_orders() -> None:
     assert any("O seguida de 6 dígitos" in e.value for e in at.error)
     at.text_input(key="lineage_id").input("o999999").run()
     assert any("No hay rastro de O999999" in i.value for i in at.info)
+
+
+# ------------------------------------------------------------------ caos en un clic
+class _ProductsOk(FakeClient):
+    def trigger(self, name: str) -> dict[str, Any]:
+        self.triggered.append(name)
+        return {"deployment": name, "flow_run_id": RUN_ID, "state": "SCHEDULED"}
+
+
+def test_chaos_buttons_only_with_admin_key_and_mock_configured() -> None:
+    keys = {str(b.key) for b in _page(FakeClient(admin=True)).button}
+    assert "chaos_break" not in keys  # sin configuración de la demo
+    keys = {str(b.key) for b in _page(FakeClient(), FakeChaos()).button}
+    assert "chaos_break" not in keys  # sin clave de administración
+
+
+def test_chaos_breaks_the_source_then_runs_products() -> None:
+    fake, chaos = _ProductsOk(admin=True), FakeChaos()
+    at = _page(fake, chaos)
+    at.button(key="chaos_break").click().run()
+    assert not at.exception
+    assert chaos.calls == ["break"]
+    assert fake.triggered == ["products"]
+    assert at.session_state["_watch_until"] > 0  # el mapa se refresca solo
+    assert any("fallará 6 veces" in i.value for i in at.info)
+    at.button(key="chaos_restore").click().run()
+    assert chaos.calls == ["break", "restore"]
+    assert not any("fallará 6 veces" in i.value for i in at.info)
+
+
+def test_source_chaos_against_the_real_mock() -> None:
+    token = secrets.token_urlsafe(24)
+    mock = create_mock(
+        MockSettings(
+            _env_file=None,
+            admin_token=SecretStr(token),
+            catalog_path=ROOT / "data/samples/products/products_catalog.json",
+        )
+    )
+    with TestClient(mock) as http:
+        chaos = SourceChaos("http://testserver", SecretStr(token), http=http)
+        assert chaos.available
+        chaos.break_source()
+        codes = [http.get("/products", params={"skip": 0}).status_code for _ in range(7)]
+        assert codes == [503] * SourceChaos.FAILURES + [200]
+        chaos.break_source()  # se puede repetir: el contador vuelve a empezar
+        assert http.get("/products", params={"skip": 0}).status_code == 503
+        chaos.restore()
+        assert http.get("/products", params={"skip": 0}).status_code == 200
+        wrong = SourceChaos("http://testserver", SecretStr("x" * 24), http=http)
+        with pytest.raises(ApiError, match="401"):
+            wrong.break_source()
+
+
+def test_source_chaos_is_off_without_url_or_token() -> None:
+    assert not SourceChaos(None, SecretStr("x" * 24)).available
+    assert not SourceChaos("http://127.0.0.1:8106", None).available
+    with pytest.raises(ApiError, match="no está configurada"):
+        SourceChaos(None, None).break_source()

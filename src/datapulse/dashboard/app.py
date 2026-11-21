@@ -18,7 +18,7 @@ from typing import Any
 import streamlit as st
 
 from datapulse.dashboard import charts, pipeline_map, theme
-from datapulse.dashboard.client import ApiClient, ApiError
+from datapulse.dashboard.client import ApiClient, ApiError, SourceChaos
 from datapulse.dashboard.formatting import STATUS_LABEL
 from datapulse.dashboard.formatting import money as _money
 from datapulse.dashboard.formatting import money_compact as _money_compact
@@ -481,9 +481,13 @@ def _overview(client: Any) -> None:
     with st.container(key="dp-map"):
         st.subheader("Mapa del pipeline")
         if client.can_trigger:
-            for col, (name, label) in zip(st.columns([1, 1, 3]), TRIGGERS.items(), strict=False):
+            chaos = _chaos()
+            cols = st.columns([1, 1, 1, 1] if chaos.available else [1, 1, 2])
+            for col, (name, label) in zip(cols, TRIGGERS.items(), strict=False):
                 if col.button(label, key=f"trigger_{name}", width="stretch"):
                     _trigger(client, name)
+            if chaos.available:
+                _chaos_buttons(client, chaos, cols[2], cols[3])
         try:
             runs = client.pipeline_runs(100)
             svg = pipeline_map.render(runs, client.quality_summary(), client.batches(100))
@@ -501,6 +505,44 @@ def _overview(client: Any) -> None:
         # Rehace la página entera: activa o apaga el refresco y actualiza las pestañas.
         st.session_state["_live"] = live
         st.rerun()
+
+
+def _chaos() -> Any:
+    if "_chaos" not in st.session_state:
+        st.session_state["_chaos"] = SourceChaos.from_settings()
+    return st.session_state["_chaos"]
+
+
+def _chaos_buttons(client: Any, chaos: Any, break_col: Any, restore_col: Any) -> None:
+    """Demo de resiliencia: la fuente falla y el pipeline se recupera solo."""
+    if break_col.button(
+        "Provocar fallos y ejecutar productos",
+        key="chaos_break",
+        width="stretch",
+        help=f"La fuente simulada devolverá {SourceChaos.FAILURES} errores 503 seguidos.",
+    ):
+        try:
+            chaos.break_source()
+        except ApiError as exc:
+            st.error(str(exc))
+        else:
+            # Se guarda en la sesión: al disparar, la página se rehace para el refresco en vivo.
+            st.session_state["_chaos_note"] = True
+            _trigger(client, "products")
+    if restore_col.button("Restaurar fuente", key="chaos_restore", width="stretch"):
+        try:
+            chaos.restore()
+        except ApiError as exc:
+            st.error(str(exc))
+        else:
+            st.session_state["_chaos_note"] = False
+            st.toast("La fuente simulada vuelve a responder sin fallos.")
+    if st.session_state.get("_chaos_note"):
+        st.info(
+            f"La fuente fallará {SourceChaos.FAILURES} veces seguidas. El cliente reintenta con "
+            "espera creciente; al agotarse, Prefect reintenta la tarea y la segunda vez entra. "
+            "Míralo en Pipelines → Detalle de una ejecución (columna attempt)."
+        )
 
 
 def _trigger(client: Any, name: str) -> None:

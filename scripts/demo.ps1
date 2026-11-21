@@ -50,6 +50,8 @@ else {
     $text = [regex]::Replace($text, 'change-me-[A-Za-z0-9-]+', $evaluator)
     # La demo activa el disparo de pipelines desde el panel (viene comentado en .env.example).
     $text = $text.Replace('# DATAPULSE_DASHBOARD_ADMIN_KEY=', 'DATAPULSE_DASHBOARD_ADMIN_KEY=')
+    # Y la demo de resiliencia (botón «Provocar fallos y ejecutar productos»).
+    $text = $text.Replace('# DATAPULSE_DASHBOARD_MOCK_ADMIN_TOKEN=', 'DATAPULSE_DASHBOARD_MOCK_ADMIN_TOKEN=')
     [System.IO.File]::WriteAllText((Join-Path (Get-Location) '.env'), $text, (New-Object System.Text.UTF8Encoding $false))
     Write-Host '.env creado con secretos aleatorios (no se versiona).'
 }

@@ -42,6 +42,23 @@ Sin esa variable los botones no existen y el panel es de solo lectura. `scripts/
 activa; `.env.example` la trae comentada. El motivo y los límites están en
 [ADR-0009](adr/0009-dashboard-visual-system-and-trigger.md).
 
+### Caos en un clic (opcional, solo demo)
+
+Con la clave de administración y además `DATAPULSE_DASHBOARD_MOCK_ADMIN_TOKEN` (el token de la
+fuente simulada), el mapa suma **Provocar fallos y ejecutar productos** y **Restaurar fuente**.
+El primero pide a la fuente simulada seis errores 503 seguidos en la primera página y dispara
+la ingesta de productos. Lo que se ve:
+
+1. El cliente HTTP reintenta cinco veces con espera creciente y se rinde («reintentos
+   agotados… HTTP 503»).
+2. Prefect considera el fallo transitorio y reintenta la tarea; la segunda vez la fuente ya
+   responde y la carga termina bien.
+3. En **Pipelines → Detalle de una ejecución**, la tarea `ingest:products_api` aparece dos
+   veces: `attempt` 1 fallido con su error y `attempt` 2 con éxito.
+
+Sin el token los botones no existen. El panel solo toca `/_mock/faults` de la fuente
+simulada, nunca una fuente real, y `scripts/demo.ps1` lo activa.
+
 ## Vistas
 
 | Pestaña | Qué responde | Fuente (API) |
