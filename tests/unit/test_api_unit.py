@@ -313,3 +313,17 @@ def test_freshness_status_against_the_sla(age_h: float | None, expected: str) ->
     assert result["status"] == expected
     assert "checked_at" not in result
     assert result["age_hours"] == (None if age_h is None else round(age_h, 1))
+
+
+# ------------------------------------------------------------------ API lista para probar
+def test_openapi_guides_a_first_time_visitor(client: TestClient) -> None:
+    spec = client.get("/openapi.json").json()
+    assert "Cómo probarla en un minuto" in spec["info"]["description"]
+    assert "O000065" in spec["info"]["description"]
+    described = {t["name"] for t in spec["tags"] if t.get("description")}
+    used = {tag for path in spec["paths"].values() for op in path.values() for tag in op["tags"]}
+    assert used <= described  # cada grupo de endpoints explica qué es
+    lineage = spec["paths"]["/v1/lineage/orders/{order_id}"]["get"]["parameters"][0]
+    assert lineage["schema"]["examples"] == ["O000065"]
+    body = spec["paths"]["/v1/contracts/{source}/validate"]["post"]["requestBody"]
+    assert "C00009" in body["content"]["text/csv"]["example"]

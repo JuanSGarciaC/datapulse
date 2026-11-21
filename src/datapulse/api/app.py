@@ -93,8 +93,12 @@ def get_engine(request: Request) -> Engine:
 
 
 Db = Annotated[Engine, Depends(get_engine)]
-DateFrom = Annotated[date | None, Query(description="Desde (incluido), AAAA-MM-DD")]
-DateTo = Annotated[date | None, Query(description="Hasta (incluido), AAAA-MM-DD")]
+DateFrom = Annotated[
+    date | None, Query(description="Desde (incluido), AAAA-MM-DD", examples=["2026-01-01"])
+]
+DateTo = Annotated[
+    date | None, Query(description="Hasta (incluido), AAAA-MM-DD", examples=["2026-01-03"])
+]
 ShortText = Annotated[str | None, Query(max_length=200)]
 
 
@@ -121,13 +125,19 @@ def _page(items: list[dict[str, Any]], total: int, page: tuple[int, int]) -> dic
 def business_router() -> APIRouter:
     router = APIRouter(tags=["indicadores"])
 
-    @router.get("/kpis/summary", response_model=KpiSummary)
+    @router.get(
+        "/kpis/summary",
+        summary="Resumen de ventas: ingresos, pedidos, ticket medio",
+        response_model=KpiSummary,
+    )
     def kpis(db: Db, date_from: DateFrom = None, date_to: DateTo = None) -> dict[str, Any]:
         _check_range(date_from, date_to)
         with db.connect() as conn:
             return repo.kpi_summary(conn, date_from, date_to)
 
-    @router.get("/sales/by-category", response_model=list[CategorySales])
+    @router.get(
+        "/sales/by-category", summary="Ventas por categoría", response_model=list[CategorySales]
+    )
     def by_category(
         db: Db, date_from: DateFrom = None, date_to: DateTo = None
     ) -> list[dict[str, Any]]:
@@ -135,7 +145,7 @@ def business_router() -> APIRouter:
         with db.connect() as conn:
             return repo.sales_by_category(conn, date_from, date_to)
 
-    @router.get("/products/top", response_model=list[TopProduct])
+    @router.get("/products/top", summary="Productos más vendidos", response_model=list[TopProduct])
     def top(
         db: Db,
         metric: Literal["revenue", "units"] = "revenue",
@@ -156,7 +166,12 @@ def paged_router(paging: Callable[..., tuple[int, int]]) -> APIRouter:
     router = APIRouter()
     Paging = Annotated[tuple[int, int], Depends(paging)]  # noqa: N806
 
-    @router.get("/sales/daily", response_model=Page[DailySales], tags=["indicadores"])
+    @router.get(
+        "/sales/daily",
+        summary="Ventas por día y categoría",
+        response_model=Page[DailySales],
+        tags=["indicadores"],
+    )
     def daily(
         db: Db,
         page: Paging,
@@ -172,7 +187,12 @@ def paged_router(paging: Callable[..., tuple[int, int]]) -> APIRouter:
             )  # fmt: skip
         return _page(items, total, page)
 
-    @router.get("/pipeline-runs", response_model=Page[PipelineRun], tags=["pipelines"])
+    @router.get(
+        "/pipeline-runs",
+        summary="Ejecuciones de los pipelines",
+        response_model=Page[PipelineRun],
+        tags=["pipelines"],
+    )
     def runs(
         db: Db, page: Paging, status: RunStatus | None = None, flow_name: ShortText = None
     ) -> dict[str, Any]:
@@ -182,7 +202,12 @@ def paged_router(paging: Callable[..., tuple[int, int]]) -> APIRouter:
             )
         return _page(items, total, page)
 
-    @router.get("/ingestion/batches", response_model=Page[Batch], tags=["pipelines"])
+    @router.get(
+        "/ingestion/batches",
+        summary="Lotes ingeridos con su sha256",
+        response_model=Page[Batch],
+        tags=["pipelines"],
+    )
     def batches(
         db: Db, page: Paging, source: ShortText = None, status: BatchStatus | None = None
     ) -> dict[str, Any]:
@@ -192,7 +217,12 @@ def paged_router(paging: Callable[..., tuple[int, int]]) -> APIRouter:
             )
         return _page(items, total, page)
 
-    @router.get("/quality/results", response_model=Page[QualityResult], tags=["calidad"])
+    @router.get(
+        "/quality/results",
+        summary="Resultados de cada regla de calidad",
+        response_model=Page[QualityResult],
+        tags=["calidad"],
+    )
     def quality_results(
         db: Db, page: Paging, table_name: ShortText = None, passed: bool | None = None
     ) -> dict[str, Any]:
@@ -202,7 +232,12 @@ def paged_router(paging: Callable[..., tuple[int, int]]) -> APIRouter:
             )
         return _page(items, total, page)
 
-    @router.get("/quality/quarantine", response_model=Page[QuarantinedRecord], tags=["calidad"])
+    @router.get(
+        "/quality/quarantine",
+        summary="Filas en cuarentena, con motivo y archivo",
+        response_model=Page[QuarantinedRecord],
+        tags=["calidad"],
+    )
     def quarantine(
         db: Db,
         page: Paging,
@@ -236,14 +271,24 @@ def _freshness(row: dict[str, Any], sla_hours: float) -> dict[str, Any]:
 def ops_router(settings: ApiSettings) -> APIRouter:
     router = APIRouter()
 
-    @router.get("/quality/freshness", response_model=list[SourceFreshness], tags=["calidad"])
+    @router.get(
+        "/quality/freshness",
+        summary="Frescura de cada fuente frente al SLA",
+        response_model=list[SourceFreshness],
+        tags=["calidad"],
+    )
     def freshness(db: Db) -> list[dict[str, Any]]:
         """Por fuente: última carga buena, su antigüedad y si cumple el SLA de frescura."""
         with db.connect() as conn:
             rows = repo.freshness(conn)
         return [_freshness(r, settings.freshness_sla_hours) for r in rows]
 
-    @router.get("/pipeline-runs/{run_id}", response_model=PipelineRunDetail, tags=["pipelines"])
+    @router.get(
+        "/pipeline-runs/{run_id}",
+        summary="Detalle de una ejecución: tareas e intentos",
+        response_model=PipelineRunDetail,
+        tags=["pipelines"],
+    )
     def run_detail(db: Db, run_id: uuid.UUID) -> dict[str, Any]:
         with db.connect() as conn:
             run = repo.pipeline_run(conn, run_id)
@@ -251,7 +296,12 @@ def ops_router(settings: ApiSettings) -> APIRouter:
             raise HTTPException(status_code=404, detail="ejecución no encontrada")
         return run
 
-    @router.get("/lineage/orders/{order_id}", response_model=OrderLineage, tags=["linaje"])
+    @router.get(
+        "/lineage/orders/{order_id}",
+        summary="Linaje de un pedido, del indicador al archivo",
+        response_model=OrderLineage,
+        tags=["linaje"],
+    )
     def order_lineage(
         db: Db,
         order_id: Annotated[str, Path(pattern=r"^O\d{6}$", examples=["O000065"])],
@@ -264,12 +314,22 @@ def ops_router(settings: ApiSettings) -> APIRouter:
             raise HTTPException(status_code=404, detail="pedido no encontrado")
         return lineage
 
-    @router.get("/metrics/volumes", response_model=list[DailyVolume], tags=["pipelines"])
+    @router.get(
+        "/metrics/volumes",
+        summary="Volúmenes y duraciones por día",
+        response_model=list[DailyVolume],
+        tags=["pipelines"],
+    )
     def volumes(db: Db, days: Annotated[int, Query(ge=1, le=366)] = 30) -> list[dict[str, Any]]:
         with db.connect() as conn:
             return repo.daily_volumes(conn, days)
 
-    @router.get("/quality/summary", response_model=list[QualitySummary], tags=["calidad"])
+    @router.get(
+        "/quality/summary",
+        summary="Resumen por regla de calidad",
+        response_model=list[QualitySummary],
+        tags=["calidad"],
+    )
     def quality_summary(
         db: Db, since: datetime | None = None, layer: Layer | None = None
     ) -> list[dict[str, Any]]:
@@ -366,7 +426,12 @@ def admin_router() -> APIRouter:
         dependencies=[Depends(require_key("admin_keys", hide_when_unconfigured=True))],
     )
 
-    @router.post("/pipelines/{name}/runs", response_model=TriggerResponse, status_code=202)
+    @router.post(
+        "/pipelines/{name}/runs",
+        summary="Dispara un flujo en Prefect",
+        response_model=TriggerResponse,
+        status_code=202,
+    )
     def trigger_pipeline(
         request: Request, name: Literal["daily", "products"], body: TriggerRequest | None = None
     ) -> TriggerResponse:
@@ -410,11 +475,16 @@ def _install_middleware_and_handlers(app: FastAPI) -> None:
         logger.error("database_error", extra={"error": type(exc).__name__})
         return JSONResponse(status_code=500, content={"detail": "error interno"})
 
-    @app.get("/health", response_model=Health, tags=["salud"])
+    @app.get("/health", summary="Vida del proceso", response_model=Health, tags=["salud"])
     def health() -> Health:
         return Health(status="ok")
 
-    @app.get("/health/ready", response_model=Health, tags=["salud"])
+    @app.get(
+        "/health/ready",
+        summary="Disponibilidad de la base de datos",
+        response_model=Health,
+        tags=["salud"],
+    )
     def ready(request: Request) -> JSONResponse:
         try:
             with request.app.state.engine.connect() as conn:
@@ -422,6 +492,32 @@ def _install_middleware_and_handlers(app: FastAPI) -> None:
         except SQLAlchemyError:
             return JSONResponse(status_code=503, content={"status": "degraded", "database": "down"})
         return JSONResponse(content={"status": "ok", "database": "up"})
+
+
+DESCRIPTION: Final = """
+Indicadores de ventas, ejecuciones de pipelines, calidad de datos y linaje.
+
+**Cómo probarla en un minuto**
+
+1. Pulsa **Authorize** y pega una clave de lectura. Con `scripts/demo.ps1` se imprime al
+   final; si no, es la primera de `DATAPULSE_API_KEYS` en tu `.env`.
+2. `GET /v1/lineage/orders/{order_id}` con `O000065`: un pedido que llegó dos veces, con la
+   versión vigente, su lote (sha256), el archivo y la ejecución que lo cargó.
+3. `POST /v1/contracts/customers/validate` con el ejemplo del cuerpo: dice qué filas irían a
+   cuarentena y por qué, sin guardar nada.
+4. `GET /v1/quality/quarantine?field=email`: lo que los contratos apartaron de verdad.
+
+Todo es de solo lectura: el usuario de base de datos de la API no puede escribir.
+"""
+TAGS: Final = [
+    {"name": "indicadores", "description": "Ventas desde el modelo estrella (`marts`)."},
+    {"name": "calidad", "description": "Reglas, cuarentena y frescura de cada fuente."},
+    {"name": "linaje", "description": "De un indicador a su archivo de origen."},
+    {"name": "contratos", "description": "Prueba un archivo contra los contratos, sin cargarlo."},
+    {"name": "pipelines", "description": "Ejecuciones, tareas, lotes y volúmenes."},
+    {"name": "salud", "description": "Vida y disponibilidad (sin clave)."},
+    {"name": "administración", "description": "Disparo de flujos (clave de administración)."},
+]
 
 
 def create_app(
@@ -441,7 +537,8 @@ def create_app(
     app = FastAPI(
         title="DataPulse API",
         version="1.0.0",
-        description="Indicadores de ventas, ejecuciones de pipelines y calidad de datos.",
+        description=DESCRIPTION,
+        openapi_tags=TAGS,
         lifespan=lifespan,
         docs_url="/docs" if settings.docs_enabled else None,
         redoc_url=None,

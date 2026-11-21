@@ -26,6 +26,10 @@ curl -H "X-API-Key: $key" "http://localhost:8000/v1/kpis/summary"
 
 ## Endpoints
 
+`/docs` (Swagger) abre con una guía de un minuto: dónde está la clave de lectura (la imprime
+`scripts/demo.ps1` al terminar), qué probar primero (linaje de `O000065`, el validador con su
+ejemplo y la bandeja de cuarentena) y una descripción por grupo de endpoints.
+
 | Método y ruta | Descripción | Parámetros |
 |---------------|-------------|------------|
 | `GET /health` | Vida del proceso (sin auth, sin BD) | — |
