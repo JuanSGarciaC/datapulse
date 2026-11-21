@@ -34,101 +34,143 @@
       </p>
     </section>
 
-    <!-- Recorrido · C3 scrub (efecto estrella) + C13 color por capa -->
+    <!-- Recorrido · C3 scrub (efecto estrella) + C13 color por paso -->
     <section id="recorrido" class="scrub-wrap" aria-labelledby="recorrido-t">
       <div class="scrub-sticky">
         <div class="bgs" aria-hidden="true">
-          <div class="bg bg-0" data-show="-1 .2"></div>
-          <div class="bg bg-1" data-show=".2 .4"></div>
-          <div class="bg bg-2" data-show=".4 .6"></div>
-          <div class="bg bg-3" data-show=".6 .8"></div>
-          <div class="bg bg-4" data-show=".8"></div>
+          <div class="bg bg-0" data-steps="0"></div>
+          <div class="bg bg-1" data-steps="1"></div>
+          <div class="bg bg-2" data-steps="2"></div>
+          <div class="bg bg-3" data-steps="3"></div>
+          <div class="bg bg-4" data-steps="4"></div>
+          <div class="bg bg-5" data-steps="5"></div>
+          <div class="bg bg-6" data-steps="6"></div>
         </div>
 
         <div class="scrub-inner">
-          <div class="scrub-head">
+          <header class="scrub-head">
             <h2 id="recorrido-t">Seis registros reales cruzan las capas</h2>
-            <p class="hint">Desliza: la animación avanza y retrocede con el scroll. Los registros salen de
-              <code>data/samples</code> y sus defectos están anotados en <code>manifest.json</code>.</p>
-          </div>
+            <div class="meter" aria-hidden="true">
+              <span>Paso <b class="step-n">1</b> / 7</span>
+              <span class="meter-bar"><i></i></span>
+            </div>
+            <p class="hint">Los registros salen de <code>data/samples</code> y sus defectos están anotados en
+              <code>manifest.json</code>. Este es su estado final; con JavaScript, el recorrido avanza y retrocede con el scroll.</p>
+            <ul class="legend">
+              <li class="lg-q">cuarentena</li>
+              <li class="lg-o">omitido</li>
+              <li class="lg-v">versión</li>
+              <li class="lg-m">en marts</li>
+              <li class="lg-n">nº = registros que llegaron a la capa</li>
+            </ul>
+          </header>
 
-          <ol class="rail" aria-hidden="true">
-            <li data-stage="0">Fuentes</li>
-            <li data-stage="1">Validación</li>
-            <li data-stage="2">raw</li>
-            <li data-stage="3">staging</li>
-            <li data-stage="4">marts</li>
+          <ol class="notes">
+            <li data-steps="0">
+              <h3><small>1/7</small>Fuentes</h3>
+              <p>Llegan seis registros de cinco archivos, todavía sin tipos: texto de CSV y JSON.</p>
+              <ul class="log"><li>2 clientes · CSV</li><li>3 pedidos · JSON</li><li>1 archivo reenviado · CSV</li></ul>
+            </li>
+            <li data-steps="1">
+              <h3><small>2/7</small>Validación</h3>
+              <p>Los contratos de Polars revisan cada fila. Lo inválido no se pierde: se aparta con su motivo.</p>
+              <ul class="log"><li class="q">C00009 → cuarentena: email sin @</li><li class="q">O000231 → cuarentena: items.quantity = 0</li></ul>
+            </li>
+            <li data-steps="2">
+              <h3><small>3/7</small>raw</h3>
+              <p>Lo válido se carga tal como llega y solo se añaden filas. Cada fila guarda la huella de su lote.</p>
+              <ul class="log"><li>C00003 → lote 2ca922fd…</li><li>O000065 v1 → lote eeca346e…</li><li>O000065 v2 → lote 97dbbfca…</li></ul>
+            </li>
+            <li data-steps="3">
+              <h3><small>4/7</small>Idempotencia</h3>
+              <p>Un archivo reenviado con otro nombre pero el mismo contenido no crea un lote nuevo.</p>
+              <ul class="log"><li class="o">customers_2026-01-02_resend.csv → omitido</li><li class="o">sha256 2ff346bc… ya estaba cargado</li></ul>
+            </li>
+            <li data-steps="4">
+              <h3><small>5/7</small>staging</h3>
+              <p>dbt tipa y normaliza. O000065 llegó dos veces: gana la versión más reciente y la vieja se queda en raw.</p>
+              <ul class="log"><li class="v">O000065 v1 · paid · 01-01 15:56 ✗</li><li class="v">O000065 v2 · cancelled · 01-03 19:53 ✓</li></ul>
+            </li>
+            <li data-steps="5">
+              <h3><small>6/7</small>marts</h3>
+              <p>El modelo estrella: dimensiones con historial SCD2 y hechos por línea de pedido.</p>
+              <ul class="log"><li class="m">C00003 → dim_customer</li><li class="m">O000065 → fct_order_items (is_revenue = false)</li><li class="m">fct_daily_sales ⇄ fct_order_items (prueba dbt)</li></ul>
+            </li>
+            <li data-steps="6">
+              <h3><small>7/7</small>Antes y después</h3>
+              <dl class="ba">
+                <dt>Antes</dt><dd>6 registros de 5 archivos, sin tipos</dd>
+                <dt>Después</dt><dd>2 en marts y 1 agregado conciliado<br>2 en cuarentena, con su motivo<br>1 lote omitido<br>1 versión superada (sigue en raw)</dd>
+              </dl>
+              <p>En las muestras completas hay 37 defectos anotados, y una prueba exige que el pipeline detecte exactamente esos.</p>
+            </li>
           </ol>
 
-          <ol class="steps">
-            <li data-show="-1 .2"><strong>1 · Fuentes.</strong> Llegan sin tipos y en dos formatos: líneas de CSV de
-              clientes y pedidos en JSON. Un mismo pedido puede llegar en dos lotes.</li>
-            <li data-show=".2 .4"><strong>2 · Validación.</strong> Los contratos de Polars revisan cada fila. Las
-              inválidas no se pierden: van a cuarentena con el campo y el motivo.</li>
-            <li data-show=".4 .6"><strong>3 · raw.</strong> Lo válido se carga sin modificar (solo se añaden filas), cada
-              fila con la huella SHA-256 de su lote. Un archivo reenviado con otro nombre pero el mismo contenido no
-              crea un lote nuevo.</li>
-            <li data-show=".6 .8"><strong>4 · staging.</strong> dbt tipa y normaliza. Si un pedido llega dos veces,
-              gana la versión más reciente: O000065 pasa de <em>paid</em> a <em>cancelled</em>.</li>
-            <li data-show=".8"><strong>5 · marts.</strong> El modelo estrella: dimensiones con historial SCD2 y hechos
-              por línea de pedido. Las ventas diarias se concilian con los hechos en una prueba de dbt.</li>
-          </ol>
-
-          <div class="stage" aria-label="Registros de ejemplo y su estado final">
-            <p class="zone zone-out" data-show=".2">Fuera del flujo</p>
-
-            <div class="row" data-row="c3">
-              <span class="src">customers_2026-01-01.csv</span>
-              <span class="vals">
-                <code class="v v-src" data-show="-1 .62">C00003,Sebastián,Rodríguez,sebastian.rodriguez.3@example.com,Medellín,CO,retail,2024-11-13</code>
-                <code class="v v-typed" data-show=".62">customer_id C00003 · city Medellín · segment retail · signup 2024-11-13</code>
-              </span>
-              <span class="note ok" data-show=".26 .42">✓ contrato cumplido</span>
-              <span class="note lote" data-show=".44 .82">lote sha256 2ca922fd…</span>
-              <span class="note mart" data-show=".84">→ dim_customer (versión vigente, SCD2)</span>
+          <div class="board">
+            <div class="lanes" aria-hidden="true">
+              <div class="lane" data-lane="0">Fuentes <b>0</b></div>
+              <div class="lane" data-lane="1">Validación <b>0</b></div>
+              <div class="lane" data-lane="2">raw <b>0</b></div>
+              <div class="lane" data-lane="3">staging <b>0</b></div>
+              <div class="lane" data-lane="4">marts <b>0</b></div>
             </div>
 
-            <div class="row bad" data-row="c9">
-              <span class="src">customers_2026-01-01.csv</span>
-              <span class="vals"><code class="v">C00009,Natalia,Peña,natalia.pena.9.at.example.com,Guadalajara,MX,…</code></span>
-              <span class="note err" data-show=".25">cuarentena · email: «email sin @»</span>
-            </div>
+            <article class="tk t-c" data-tk="c3">
+              <header><b>C00003</b><span class="kind">cliente</span></header>
+              <p>Sebastián Rodríguez · Medellín, CO</p>
+              <p>segment retail · alta 2024-11-13</p>
+              <p class="meta"><span class="m-src" data-steps="0-1">customers_2026-01-01.csv</span> <span class="m-lote" data-steps="2-6">lote 2ca922fd…</span></p>
+              <span class="stamp m" data-steps="5-6">dim_customer</span>
+            </article>
 
-            <div class="row bad" data-row="o231">
-              <span class="src">orders_batch_002.json</span>
-              <span class="vals"><code class="v">{"order_id":"O000231","items":[{"product_id":162,"quantity":0,…}]}</code></span>
-              <span class="note err" data-show=".27">cuarentena · items.quantity fuera de rango: 0</span>
-            </div>
+            <article class="tk t-c" data-tk="c9">
+              <header><b>C00009</b><span class="kind">cliente</span></header>
+              <p>Natalia Peña · Guadalajara, MX</p>
+              <p class="bad">email natalia.pena.9.at.example.com</p>
+              <p class="meta"><span class="m-src">customers_2026-01-01.csv</span></p>
+              <span class="stamp q" data-steps="1-6">Cuarentena</span>
+            </article>
 
-            <div class="row" data-row="o65a">
-              <span class="src">orders_batch_001.json</span>
-              <span class="vals"><code class="v">{"order_id":"O000065","status":"paid","updated_at":"2026-01-01T15:56:00Z",…}</code></span>
-              <span class="note lote" data-show=".44 .64">lote sha256 eeca346e…</span>
-              <span class="note old" data-show=".63">versión anterior: se descarta</span>
-            </div>
+            <article class="tk t-o" data-tk="o231">
+              <header><b>O000231</b><span class="kind">pedido</span></header>
+              <p>cliente C00180 · producto 162</p>
+              <p class="bad">quantity 0</p>
+              <p class="meta"><span class="m-src">orders_batch_002.json</span></p>
+              <span class="stamp q" data-steps="1-6">Cuarentena</span>
+            </article>
 
-            <div class="row" data-row="o65b">
-              <span class="src">orders_batch_003.json</span>
-              <span class="vals">
-                <code class="v v-src" data-show="-1 .62">{"order_id":"O000065","status":"cancelled","updated_at":"2026-01-03T19:53:00Z",…}</code>
-                <code class="v v-typed" data-show=".62">order_id O000065 · status cancelled · updated_at 2026-01-03 19:53 UTC</code>
-              </span>
-              <span class="note lote" data-show=".44 .64">lote sha256 97dbbfca…</span>
-              <span class="note ok" data-show=".66 .82">✓ versión más reciente</span>
-              <span class="note mart" data-show=".84">→ fct_order_items</span>
-            </div>
+            <article class="tk t-o" data-tk="o65a">
+              <header><b>O000065</b><span class="kind">pedido</span></header>
+              <p>cliente C00102</p>
+              <p class="strike" data-steps="4-6">status paid · 01-01 15:56</p>
+              <p class="meta"><span class="m-src" data-steps="0-1">orders_batch_001.json</span> <span class="m-lote" data-steps="2-6">lote eeca346e…</span></p>
+              <span class="stamp old" data-steps="4-6">Versión 1</span>
+            </article>
 
-            <div class="row skip" data-row="rs">
-              <span class="src">customers_2026-01-02_resend.csv</span>
-              <span class="vals"><code class="v">35 filas · sha256 2ff346bc…</code></span>
-              <span class="note warn" data-show=".46">lote omitido: mismo contenido que customers_2026-01-02.csv</span>
-            </div>
+            <article class="tk t-o" data-tk="o65b">
+              <header><b>O000065</b><span class="kind">pedido</span></header>
+              <p>cliente C00102</p>
+              <p>status cancelled · 01-03 19:53</p>
+              <p class="meta"><span class="m-src" data-steps="0-1">orders_batch_003.json</span> <span class="m-lote" data-steps="2-6">lote 97dbbfca…</span></p>
+              <span class="stamp v" data-steps="4">Versión 2</span>
+              <span class="stamp m" data-steps="5-6">fct_order_items</span>
+            </article>
 
-            <div class="row mart-card" data-row="daily" data-show=".84">
-              <span class="src">marts</span>
-              <span class="vals"><code class="v">fct_daily_sales</code></span>
-              <span class="note mart">se concilia con fct_order_items (prueba dbt)</span>
-            </div>
+            <article class="tk t-f" data-tk="rs">
+              <header><b>reenvío</b><span class="kind">archivo</span></header>
+              <p>customers_2026-01-02_resend.csv</p>
+              <p>35 filas · sha256 2ff346bc…</p>
+              <p class="meta"><span class="m-src">= customers_2026-01-02.csv</span></p>
+              <span class="stamp o" data-steps="3-6">Omitido</span>
+            </article>
+
+            <article class="tk t-m" data-tk="daily" data-steps="5-6">
+              <header><b>fct_daily_sales</b><span class="kind">agregado</span></header>
+              <p>ventas por día</p>
+              <p>⇄ fct_order_items</p>
+              <p class="meta"><span>prueba dbt de conciliación</span></p>
+              <span class="stamp m" data-steps="5-6">Concilia ✓</span>
+            </article>
           </div>
         </div>
       </div>

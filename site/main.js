@@ -83,71 +83,87 @@
   const wrap = document.querySelector('.scrub-wrap');
   if (!wrap || reduced) return;
 
-  // Fotogramas por fila: [progreso, x, y, escala, opacidad]; x e y en fracción de la caja.
-  // Etapas: 0–.2 fuentes · .2–.4 validación · .4–.6 raw · .6–.8 staging · .8–1 marts.
-  const Q = 0.78; // escala de lo que sale del flujo (columna derecha)
-  const K = {
-    c3:   [[0, .02, .02, 1, 1], [.22, .02, .04, 1, 1], [.30, 0, .06, 1, 1], [.82, 0, .06, 1, 1], [.90, 0, .04, 1, 1]],
-    c9:   [[0, .14, .17, 1, 1], [.22, .14, .17, 1, 1], [.32, .58, .08, Q, 1]],
-    o231: [[0, .05, .33, 1, 1], [.24, .05, .33, 1, 1], [.34, .58, .26, Q, 1]],
-    o65a: [[0, .16, .49, 1, 1], [.22, .16, .49, 1, 1], [.30, 0, .24, 1, 1], [.64, 0, .24, 1, 1], [.72, 0, .42, 1, 0]],
-    o65b: [[0, .07, .65, 1, 1], [.22, .07, .65, 1, 1], [.30, 0, .42, 1, 1], [.64, 0, .42, 1, 1], [.72, 0, .26, 1, 1], [.90, 0, .30, 1, 1]],
-    rs:   [[0, .18, .81, 1, 1], [.22, .18, .81, 1, 1], [.30, 0, .60, 1, 1], [.42, 0, .60, 1, 1], [.52, .58, .44, Q, .7]],
-    daily:[[0, 0, .58, 1, 1], [.84, .04, .58, 1, 1], [.92, 0, .56, 1, 1]],
+  // Carril y hueco de cada ficha en cada uno de los 7 pasos.
+  // Carriles: 0 fuentes · 1 validación · 2 raw · 3 staging · 4 marts.
+  const P = {
+    c3:    [[0, 0], [0, 0], [2, 0], [2, 0], [3, 0], [4, 0], [4, 0]],
+    c9:    [[0, 1], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0]],
+    o231:  [[0, 2], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1]],
+    o65a:  [[0, 3], [0, 1], [2, 1], [2, 1], [2, 1], [2, 1], [2, 1]],
+    o65b:  [[0, 4], [0, 2], [2, 2], [2, 2], [3, 1], [4, 1], [4, 1]],
+    rs:    [[0, 5], [0, 3], [0, 0], [1, 2], [1, 2], [1, 2], [1, 2]],
+    daily: [[4, 2], [4, 2], [4, 2], [4, 2], [4, 2], [4, 2], [4, 2]],
   };
-  const sample = (frames, p) => {
-    if (p <= frames[0][0]) return frames[0];
-    for (let i = 1; i < frames.length; i++) {
-      const a = frames[i - 1], b = frames[i];
-      if (p <= b[0]) {
-        const t = smooth((p - a[0]) / (b[0] - a[0]));
-        return a.map((v, j) => v + (b[j] - v) * t);
-      }
-    }
-    return frames[frames.length - 1];
-  };
+  const N = 7;
 
-  // data-show="a [b]": aparece entre a y a+F, desaparece entre b y b+F.
-  const F = 0.05;
-  const shows = [...wrap.querySelectorAll('[data-show]')].map((el) => {
-    const [a, b] = el.dataset.show.split(/\s+/).map(Number);
+  // data-steps="a" o "a-b": visible en esos pasos.
+  const stepped = [...wrap.querySelectorAll('[data-steps]')].map((el) => {
+    const [a, b = a] = el.dataset.steps.split('-').map(Number);
     return { el, a, b };
   });
-  const showOpacity = ({ a, b }, p) =>
-    clamp((p - a) / F) * (Number.isFinite(b) ? 1 - clamp((p - b) / F) : 1);
+  const visibleAt = (el, i) => {
+    const s = el.dataset.steps;
+    if (!s) return true;
+    const [a, b = a] = s.split('-').map(Number);
+    return i >= a && i <= b;
+  };
 
-  const rows = [...wrap.querySelectorAll('.row[data-row]')].map((el) => ({ el, k: K[el.dataset.row] }));
-  const rail = [...wrap.querySelectorAll('.rail li')];
-  const stage = wrap.querySelector('.stage');
-  let W = 0, H = 0, ticking = false, lastStage = -1;
+  const tickets = [...wrap.querySelectorAll('.tk[data-tk]')].map((el) => ({ el, path: P[el.dataset.tk] }));
+  const lanes = [...wrap.querySelectorAll('.lane')];
+  // Contador acumulado: registros que han llegado a cada capa hasta el paso i (raw solo añade).
+  const counts = Array.from({ length: N }, (_, i) => lanes.map((_, l) =>
+    tickets.filter(({ el, path }) => path.some(([lane], j) => j <= i && lane === l && visibleAt(el, j))).length));
 
-  wrap.classList.add('scrub');
+  const board = wrap.querySelector('.board');
+  const stepN = wrap.querySelector('.step-n');
+  const bar = wrap.querySelector('.meter-bar i');
+  let W = 0, H = 0, compact = false, tw = 0, th = 0, ticking = false, last = -1;
+  const GAP = 8;
 
-  const measure = () => { W = stage.clientWidth; H = stage.clientHeight; };
+  const measure = () => {
+    W = board.clientWidth; H = board.clientHeight; compact = W < 560;
+    if (compact) {
+      tw = (W - 2 * GAP) / 3;
+      th = Math.max(30, (H / 5 - 20 - GAP) / 2);
+    } else {
+      tw = W / 5 - 12;
+      th = Math.min(100, (H - 30) / 6 - GAP);
+    }
+    board.style.setProperty('--tw', `${tw.toFixed(1)}px`);
+    board.style.setProperty('--th', `${th.toFixed(1)}px`);
+  };
+  const place = ([l, s]) => compact
+    ? [(s % 3) * (tw + GAP), l * (H / 5) + 20 + Math.floor(s / 3) * (th + GAP)]
+    : [l * (W / 5) + 6, 30 + s * (th + GAP)];
+
+  const setStep = (i) => {
+    for (const { el, a, b } of stepped) el.classList.toggle('on', i >= a && i <= b);
+    lanes.forEach((lane, l) => {
+      lane.querySelector('b').textContent = String(counts[i][l]);
+      lane.classList.toggle('on', tickets.some(({ path }) => path[i][0] === l && path[Math.max(0, i - 1)][0] !== l));
+    });
+    stepN.textContent = String(i + 1);
+  };
+
   const render = () => {
     ticking = false;
     const r = wrap.getBoundingClientRect();
     const p = clamp(-r.top / Math.max(1, r.height - window.innerHeight));
-
-    for (const s of shows) {
-      if (s.el.classList.contains('row')) continue; // la opacidad de las filas la decide su fotograma
-      s.el.style.opacity = String(showOpacity(s, p));
-    }
-    for (const { el, k } of rows) {
-      if (!k) continue;
-      const [, x, y, sc, o] = sample(k, p);
-      const extra = el.dataset.show ? showOpacity(shows.find((s) => s.el === el), p) : 1;
-      el.style.transform = `translate3d(${(x * W).toFixed(1)}px, ${(y * H).toFixed(1)}px, 0) scale(${sc.toFixed(3)})`;
-      el.style.opacity = String(o * extra);
-    }
-    const st = Math.min(4, Math.floor(p * 5));
-    if (st !== lastStage) {
-      rail.forEach((li, i) => li.classList.toggle('on', i === st));
-      lastStage = st;
+    const local = p * N;
+    const i = Math.min(N - 1, Math.floor(local));
+    // La ficha viaja en la primera mitad del paso y reposa en la segunda.
+    const k = smooth(clamp((local - i) / 0.5));
+    if (i !== last) { setStep(i); last = i; }
+    bar.style.transform = `scaleX(${p.toFixed(4)})`;
+    for (const { el, path } of tickets) {
+      const [x0, y0] = place(path[Math.max(0, i - 1)]);
+      const [x1, y1] = place(path[i]);
+      el.style.transform = `translate3d(${(x0 + (x1 - x0) * k).toFixed(1)}px, ${(y0 + (y1 - y0) * k).toFixed(1)}px, 0)`;
     }
   };
   const request = () => { if (!ticking) { ticking = true; requestAnimationFrame(render); } };
 
+  wrap.classList.add('scrub');
   measure();
   render();
   window.addEventListener('scroll', request, { passive: true });

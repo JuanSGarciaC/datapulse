@@ -1,7 +1,7 @@
 """La landing estática (``site/``) no debe romperse ni desfasarse del repo.
 
 Comprueba que sus enlaces locales existen, que las cifras coinciden con el README y que cada
-fila del recorrido tiene fotogramas en ``main.js``.
+ficha del recorrido tiene un carril en cada paso en ``main.js``.
 """
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ class _Collector(HTMLParser):
         super().__init__()
         self.refs: list[str] = []
         self.counts: list[str] = []
-        self.rows: list[str] = []
+        self.tickets: list[str] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         a = dict(attrs)
@@ -29,8 +29,8 @@ class _Collector(HTMLParser):
                 self.refs.append(value)
         if a.get("data-count"):
             self.counts.append(a["data-count"] or "")
-        if a.get("data-row"):
-            self.rows.append(a["data-row"] or "")
+        if a.get("data-tk"):
+            self.tickets.append(a["data-tk"] or "")
 
 
 def _parse() -> _Collector:
@@ -53,7 +53,9 @@ def test_figures_match_readme() -> None:
         assert re.search(rf"\b{n}\b", section), f"la cifra {n} no aparece en «En números»"
 
 
-def test_every_row_has_keyframes() -> None:
+def test_every_ticket_has_a_path_of_seven_steps() -> None:
     js = (SITE / "main.js").read_text(encoding="utf-8")
-    keys = set(re.findall(r"^\s{4}(\w+):\s*\[\[", js, flags=re.MULTILINE))
-    assert set(_parse().rows) == keys
+    paths = dict(re.findall(r"^\s{4}(\w+):\s*(\[\[.*\]\]),$", js, flags=re.MULTILINE))
+    assert set(_parse().tickets) == set(paths)
+    for name, path in paths.items():
+        assert path.count("[") - 1 == 7, f"{name} no tiene 7 pasos"
