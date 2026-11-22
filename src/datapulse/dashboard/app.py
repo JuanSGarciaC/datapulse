@@ -8,15 +8,17 @@ errores y lotes de ingesta). Todo llega por la API; el dashboard no toca la base
 
 from __future__ import annotations
 
+import re
 import time
 from collections.abc import Callable
 from datetime import UTC, date, datetime, timedelta
+from pathlib import Path
 from typing import Any
 
 import streamlit as st
 
 from datapulse.dashboard import charts, pipeline_map, theme
-from datapulse.dashboard.client import ApiClient, ApiError
+from datapulse.dashboard.client import ApiClient, ApiError, SourceChaos
 from datapulse.dashboard.formatting import STATUS_LABEL
 from datapulse.dashboard.formatting import money as _money
 from datapulse.dashboard.formatting import money_compact as _money_compact
@@ -33,6 +35,14 @@ REFRESH_S = 5
 # Una ejecución «en curso» más vieja que esto es una fila huérfana (el worker murió): no debe
 # mantener el refresco encendido para siempre.
 RUNNING_MAX_AGE = timedelta(minutes=15)
+# Validador en vivo: fuente → (etiqueta, extensión, ejemplo con defectos reales de data/samples).
+CONTRACT_SOURCES = {
+    "customers": ("Clientes (CSV)", "csv", "clientes_con_defectos.csv"),
+    "orders": ("Pedidos (JSON)", "json", "pedidos_con_defectos.json"),
+}
+EXAMPLES = Path(__file__).with_name("examples")
+MAX_UPLOAD_BYTES = 1_000_000  # el mismo tope que aplica la API
+ORDER_ID = re.compile(r"O\d{6}")
 
 
 def _client() -> Any:
@@ -121,6 +131,17 @@ def _quality(client: Any) -> None:
     cols[1].metric("Filas con error (cuarentena)", f"{errors:,}", border=True)
     cols[2].metric("Filas con aviso", f"{warns:,}", border=True)
 
+    st.subheader("Cuarentena por ejecución")
+    st.caption(
+        "Porcentaje de filas apartadas en cada ingesta. Si un lote supera el presupuesto "
+        "(línea roja), se rechaza entero: el problema es del archivo, no de filas sueltas."
+    )
+    trend = [r for r in client.pipeline_runs(100) if r["source_name"] and r["rows_read"]]
+    if trend:
+        st.altair_chart(charts.quarantine_rate_by_run(trend), width="stretch", theme=None)
+    else:
+        st.info("Aún no hay ingestas con filas leídas.")
+
     st.subheader("Reglas con fallos")
     if failing:
         st.altair_chart(charts.quality_failures(summary), width="stretch", theme=None)
@@ -147,6 +168,62 @@ def _quality(client: Any) -> None:
             "details",
         ),
     )
+    _quarantine_tray(client)
+
+
+def _quarantine_tray(client: Any) -> None:
+    st.subheader("Bandeja de cuarentena")
+    st.caption(
+        "Cada fila apartada antes de cargarse, con su motivo y el archivo del que vino. Los "
+        "nombres no salen de la base de datos y el email llega enmascarado."
+    )
+    rows = [
+        {
+            "clave": q["record_key"],
+            "campo": e["field"],
+            "motivo": e["message"],
+            # Valor que falló, si es un campo de primer nivel (ya enmascarado si es el email).
+            "valor": _shown(q["payload_masked"], e["field"]),
+            "archivo": q["source_ref"],
+            "fila": q["row_number"],
+            "fuente": q["source_name"],
+            "regla": e["rule"],
+            "lote": q["content_sha256"][:12],
+            "recibida": q["quarantined_at"][:16].replace("T", " "),
+        }
+        for q in client.quarantine()
+        for e in q["errors"]
+    ]
+    if not rows:
+        st.success("No hay filas en cuarentena.")
+        return
+    c1, c2, c3 = st.columns([1, 1, 1])
+    source = c1.selectbox(
+        "Fuente", [None, *sorted({r["fuente"] for r in rows})],
+        format_func=lambda v: v or "Todas", key="q_source",
+    )  # fmt: skip
+    field = c2.selectbox(
+        "Campo", [None, *sorted({r["campo"] or "" for r in rows})],
+        format_func=lambda v: v or "Todos", key="q_field",
+    )  # fmt: skip
+    key = c3.text_input("Buscar clave", key="q_key", max_chars=40).strip()
+    shown = [
+        r
+        for r in rows
+        if source in {None, r["fuente"]}
+        and field in {None, r["campo"] or ""}
+        and (not key or key.lower() in str(r["clave"] or "").lower())
+    ]
+    files = len({r["archivo"] for r in rows})
+    st.caption(f"{len(shown)} de {len(rows)} errores, en {files} archivos.")
+    st.dataframe(shown, hide_index=True, width="stretch")
+
+
+def _shown(payload: dict[str, Any], field: str | None) -> str:
+    value = payload.get(field) if field else None
+    if field and field in payload:
+        return "(vacío)" if value is None else str(value)[:80]
+    return "—"
 
 
 def _pipelines(client: Any, days: int) -> None:
@@ -246,6 +323,168 @@ def _pipelines(client: Any, days: int) -> None:
     )
 
 
+def _contracts(client: Any) -> None:
+    st.caption(
+        "Sube un archivo y mira qué haría la ingesta con él: las mismas reglas que el pipeline, "
+        "sin guardar nada."
+    )
+    source = st.radio(
+        "Fuente",
+        list(CONTRACT_SOURCES),
+        format_func=lambda s: CONTRACT_SOURCES[s][0],
+        horizontal=True,
+        key="contract_source",
+    )
+    _, ext, example = CONTRACT_SOURCES[source]
+    upload = st.file_uploader(
+        f"Archivo .{ext} (máximo 1 MB)", type=[ext], key=f"contract_upload_{source}"
+    )
+    if st.button("Cargar ejemplo con defectos", key=f"contract_example_{source}"):
+        st.session_state["_contract_example"] = source
+    if upload is not None:
+        data, name = upload.getvalue(), upload.name
+    elif st.session_state.get("_contract_example") == source:
+        data, name = (EXAMPLES / example).read_bytes(), example
+    else:
+        st.info("Sube un archivo o carga el ejemplo: son filas reales de las muestras.")
+        return
+    if len(data) > MAX_UPLOAD_BYTES:
+        st.error("El archivo supera 1 MB.")
+        return
+    _contract_result(client.validate_file(source, data), name)
+
+
+def _contract_result(result: dict[str, Any], name: str) -> None:
+    cols = st.columns(4)
+    cols[0].metric("Filas leídas", f"{result['rows_read']:,}", border=True)
+    cols[1].metric("Se cargarían", f"{result['rows_valid']:,}", border=True)
+    cols[2].metric("A cuarentena", f"{result['rows_quarantined']:,}", border=True)
+    cols[3].metric("Duplicadas descartadas", f"{result['duplicates_dropped']:,}", border=True)
+    if result["rejected_reason"]:
+        st.error(f"{name}: el lote se rechazaría entero. {result['rejected_reason']}.")
+    elif result["rows_quarantined"]:
+        st.warning(
+            f"{name}: {result['rows_quarantined']} filas irían a cuarentena con su motivo "
+            f"(tasa de error {result['error_rate']:.1%}); el resto se cargaría."
+        )
+    else:
+        st.success(f"{name}: todas las filas cumplen el contrato.")
+    if result["quarantined"]:
+        st.subheader("Filas que irían a cuarentena")
+        st.dataframe(
+            [
+                {
+                    "fila": q["row_number"],
+                    "clave": q["record_key"],
+                    "campo": e["field"],
+                    "motivo": e["message"],
+                    "regla": e["rule"],
+                }
+                for q in result["quarantined"]
+                for e in q["errors"]
+            ],
+            hide_index=True,
+            width="stretch",
+        )
+    if result["failed_rules"]:
+        with st.expander("Reglas que fallaron"):
+            st.dataframe(result["failed_rules"], hide_index=True, width="stretch")
+
+
+def _lineage(client: Any) -> None:
+    st.caption(
+        "Escribe un pedido y sigue su rastro: del indicador a cada versión recibida, su lote "
+        "con huella SHA-256, el archivo y la ejecución que lo cargó."
+    )
+    left, right = st.columns([1, 2])
+    order_id = left.text_input("Pedido", value="O000065", max_chars=7, key="lineage_id")
+    order_id = order_id.strip().upper()
+    right.caption(
+        "Para probar: O000065 llegó dos veces · O000231 fue a cuarentena · O000001 es un "
+        "pedido normal."
+    )
+    if not ORDER_ID.fullmatch(order_id):
+        st.error("Escribe una O seguida de 6 dígitos, por ejemplo O000065.")
+        return
+    try:
+        lineage = client.order_lineage(order_id)
+    except ApiError as exc:
+        if "404" not in str(exc):
+            raise
+        st.info(f"No hay rastro de {order_id}: no llegó en ningún archivo.")
+        return
+    _lineage_facts(lineage)
+    _lineage_versions(lineage)
+    if lineage["quarantined"]:
+        with st.container(border=True):
+            st.markdown("**En cuarentena** · no se cargó")
+            for q in lineage["quarantined"]:
+                reasons = "; ".join(f"{e['field']}: {e['message']}" for e in q["errors"])
+                st.markdown(
+                    f"`{q['source_ref']}`, fila {q['row_number']} · lote "
+                    f"`{q['content_sha256'][:12]}` · {reasons}"
+                )
+
+
+def _lineage_facts(lineage: dict[str, Any]) -> None:
+    lines = lineage["fact_lines"]
+    with st.container(border=True):
+        st.markdown("**1 · En el indicador** · `marts.fct_order_items`")
+        if not lines:
+            st.markdown("No llegó a marts.")
+            return
+        amount = sum(float(line["line_amount"]) for line in lines)
+        counts = lines[0]["is_revenue"]
+        verdict = (
+            "cuenta como ingreso" if counts else f"no cuenta como ingreso ({lines[0]['status']})"
+        )
+        st.markdown(f"{len(lines)} líneas · importe {_money(amount)} · {verdict}")
+        st.dataframe(lines, hide_index=True, width="stretch")
+
+
+def _lineage_versions(lineage: dict[str, Any]) -> None:
+    versions = lineage["versions"]
+    if not versions:
+        return
+    st.caption("↑ viene de")
+    with st.container(border=True):
+        st.markdown(
+            f"**2 · Versiones recibidas** · `raw.orders` · {len(versions)} "
+            + ("versión" if len(versions) == 1 else "versiones: gana la más reciente")
+        )
+        st.dataframe(
+            [
+                {
+                    "versión": "vigente" if v["is_current"] else "superada",
+                    "status": v["status"],
+                    "actualizado": v["updated_at"][:16].replace("T", " "),
+                    "archivo": v["source_ref"],
+                    "fila": v["row_number"],
+                    "lote (sha256)": v["content_sha256"][:12],
+                }
+                for v in versions
+            ],
+            hide_index=True,
+            width="stretch",
+        )
+    current = next(v for v in versions if v["is_current"])
+    st.caption("↑ viene de")
+    with st.container(border=True):
+        st.markdown("**3 · Lote y archivo** de la versión vigente")
+        st.markdown(
+            f"`{current['source_ref']}`, fila {current['row_number']} · "
+            f"sha256 `{current['content_sha256']}`"
+        )
+    st.caption("↑ lo cargó")
+    with st.container(border=True):
+        st.markdown("**4 · Ejecución**")
+        started = (current["run_started_at"] or "")[:16].replace("T", " ")
+        st.markdown(
+            f"flujo `{current['flow_name']}` · disparo {current['trigger']} · {started} · "
+            f"run_id `{current['run_id']}`"
+        )
+
+
 # El intervalo se decide con lo visto en la pasada anterior: Streamlit lo fija al decorar.
 @st.fragment(run_every=REFRESH_S if st.session_state.get("_live") else None)
 def _overview(client: Any) -> None:
@@ -253,12 +492,18 @@ def _overview(client: Any) -> None:
     with st.container(key="dp-map"):
         st.subheader("Mapa del pipeline")
         if client.can_trigger:
-            for col, (name, label) in zip(st.columns([1, 1, 3]), TRIGGERS.items(), strict=False):
+            chaos = _chaos()
+            cols = st.columns([1, 1, 1, 1] if chaos.available else [1, 1, 2])
+            for col, (name, label) in zip(cols, TRIGGERS.items(), strict=False):
                 if col.button(label, key=f"trigger_{name}", width="stretch"):
                     _trigger(client, name)
+            if chaos.available:
+                _chaos_buttons(client, chaos, cols[2], cols[3])
         try:
             runs = client.pipeline_runs(100)
-            svg = pipeline_map.render(runs, client.quality_summary(), client.batches(100))
+            svg = pipeline_map.render(
+                runs, client.quality_summary(), client.batches(100), client.freshness()
+            )
             # st.html descarta el SVG (su saneador solo admite HTML); st.markdown lo conserva.
             st.markdown(svg, unsafe_allow_html=True)
         except ApiError as exc:
@@ -273,6 +518,44 @@ def _overview(client: Any) -> None:
         # Rehace la página entera: activa o apaga el refresco y actualiza las pestañas.
         st.session_state["_live"] = live
         st.rerun()
+
+
+def _chaos() -> Any:
+    if "_chaos" not in st.session_state:
+        st.session_state["_chaos"] = SourceChaos.from_settings()
+    return st.session_state["_chaos"]
+
+
+def _chaos_buttons(client: Any, chaos: Any, break_col: Any, restore_col: Any) -> None:
+    """Demo de resiliencia: la fuente falla y el pipeline se recupera solo."""
+    if break_col.button(
+        "Provocar fallos y ejecutar productos",
+        key="chaos_break",
+        width="stretch",
+        help=f"La fuente simulada devolverá {SourceChaos.FAILURES} errores 503 seguidos.",
+    ):
+        try:
+            chaos.break_source()
+        except ApiError as exc:
+            st.error(str(exc))
+        else:
+            # Se guarda en la sesión: al disparar, la página se rehace para el refresco en vivo.
+            st.session_state["_chaos_note"] = True
+            _trigger(client, "products")
+    if restore_col.button("Restaurar fuente", key="chaos_restore", width="stretch"):
+        try:
+            chaos.restore()
+        except ApiError as exc:
+            st.error(str(exc))
+        else:
+            st.session_state["_chaos_note"] = False
+            st.toast("La fuente simulada vuelve a responder sin fallos.")
+    if st.session_state.get("_chaos_note"):
+        st.info(
+            f"La fuente fallará {SourceChaos.FAILURES} veces seguidas. El cliente reintenta con "
+            "espera creciente; al agotarse, Prefect reintenta la tarea y la segunda vez entra. "
+            "Míralo en Pipelines → Detalle de una ejecución (columna attempt)."
+        )
 
 
 def _trigger(client: Any, name: str) -> None:
@@ -306,13 +589,19 @@ def main() -> None:
         st.error("La fecha «Desde» no puede ser posterior a «Hasta».")
         return
 
-    business, quality, pipelines = st.tabs(["Negocio", "Calidad de datos", "Pipelines"])
+    business, quality, pipelines, contracts, lineage = st.tabs(
+        ["Negocio", "Calidad de datos", "Pipelines", "Probar contratos", "Linaje"]
+    )
     with business:
         _guarded(_business, client, date_from, date_to)
     with quality:
         _guarded(_quality, client)
     with pipelines:
         _guarded(_pipelines, client, int(days))
+    with contracts:
+        _guarded(_contracts, client)
+    with lineage:
+        _guarded(_lineage, client)
 
 
 def _guarded(render: Callable[..., None], *args: Any) -> None:

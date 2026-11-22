@@ -1,0 +1,22 @@
+customer_id,first_name,last_name,email,city,country,segment,signup_date,updated_at
+C00001,Natalia,Muñoz,natalia.munoz.1@example.com,Lima,PE,retail,2024-08-04,2026-01-01T04:19:00Z
+C00002,Mateo,Morales,mateo.morales.2@example.com,Guadalajara,MX,retail,2024-01-27,2026-01-01T04:49:00Z
+C00003,Sebastián,Rodríguez,sebastian.rodriguez.3@example.com,Medellín,CO,retail,2024-11-13,2026-01-01T09:49:00Z
+C00004,David,Pérez,david.perez.4@example.com,Quito,EC,smb,2023-12-03,2026-01-01T05:26:00Z
+C00005,Tomás,Pérez,tomas.perez.5@example.com,Barranquilla,CO,retail,2023-10-13,2026-01-01T02:55:00Z
+C00006,Pedro,Sánchez,pedro.sanchez.6@example.com,Guadalajara,MX,enterprise,2024-08-27,2026-01-01T02:42:00Z
+C00007,Natalia,Rivera,natalia.rivera.7@example.com,Medellín,CO,enterprise,2025-03-10,2026-01-01T00:10:00Z
+C00008,Juliana,Vargas,juliana.vargas.8@example.com,Buenos Aires,AR,enterprise,2023-10-13,2026-01-01T02:00:00Z
+C00009,Natalia,Peña,natalia.pena.9.at.example.com,Guadalajara,MX,enterprise,2024-07-22,2026-01-01T09:18:00Z
+C00010,Lucía,González,lucia.gonzalez.10@example.com,Madrid,ES,enterprise,2023-08-25,2026-01-01T07:07:00Z
+C00011,Sofía,Rivera,sofia.rivera.11@example.com,Lima,PE,enterprise,2025-02-13,2026-01-01T03:42:00Z
+C00012,Hugo,Gómez,hugo.gomez.12@example.com,Medellín,CO,retail,2024-09-05,2026-01-01T06:59:00Z
+C00013,Sofía,Rojas,sofia.rojas.13@example.com,Santiago,CL,retail,2024-08-12,2026-01-01T00:47:00Z
+C00014,Sebastián,Ortiz,,Bogotá,CO,retail,2024-12-17,2026-01-01T00:17:00Z
+C00015,Elena,Rivera,elena.rivera.15@example.com,Ciudad de México,MX,enterprise,2024-12-07,2026-01-01T09:08:00Z
+C00016,Sofía,Martínez,sofia.martinez.16@example.com,Santiago,CL,enterprise,2024-09-25,2026-01-01T04:34:00Z
+C00017,Tomás,Pérez,tomas.perez.17@example.com,Lima,PE,retail,2024-02-02,2026-01-01T04:29:00Z
+C00018,Martín,Muñoz,martin.munoz.18@example.com,Guadalajara,MX,retail,2025-05-22,2026-01-01T06:33:00Z
+C00019,Felipe,Aguilar,felipe.aguilar.19@example.com,Bogotá,CO,smb,2024-07-26,2026-01-01T08:31:00Z
+C00020,Laura,Flores,laura.flores.20@example.com,Lima,PE,retail,2024-03-21,2026-01-01T04:17:00Z
+C00062,Gabriela,Jiménez,gabriela.jimenez.62@example.com,Medellín,CO,retail,31/02/2026,2026-01-01T02:01:00Z

@@ -13,6 +13,10 @@ REST paginada en información **confiable, trazable e idempotente** para anális
 Ingesta validada con cuarentena, orquestación con Prefect, modelo estrella con dbt, API de
 indicadores y dashboard, todo levantable con un solo comando.
 
+**Se puede tocar, no solo leer:** prueba un archivo contra los contratos, mira lo que quedó en
+cuarentena, sigue un pedido desde el indicador hasta su archivo y rompe la fuente para ver al
+pipeline recuperarse. Detalle en [Qué puedes probar](#qué-puedes-probar).
+
 ![Dashboard de negocio](docs/img/dashboard-negocio.png)
 
 **Todo lo que se describe aquí está implementado y se verifica en CI en cada push**, incluida una
@@ -21,49 +25,118 @@ verificar está en [Limitaciones conocidas](#limitaciones-conocidas).
 
 ## Contenido
 
+[Qué puedes probar](#qué-puedes-probar) · [La landing](#la-landing) ·
 [Capturas](#capturas) · [Arquitectura](#arquitectura) · [Stack](#stack-tecnológico) ·
 [En números](#en-números) · [Qué demuestra](#qué-demuestra) · [Inicio rápido](#inicio-rápido) ·
 [Desarrollo local](#desarrollo-local-windows-powershell) · [Pruebas](#pruebas) ·
 [Decisiones técnicas](#decisiones-técnicas) · [Documentación](#documentación) ·
 [Seguridad](#seguridad) · [Limitaciones](#limitaciones-conocidas)
 
+## Qué puedes probar
+
+Con la demo en marcha (`.\scripts\demo.ps1`), estas son las funciones que se tocan, no solo
+se leen. Todas usan los datos sintéticos de `data/samples`: nada personal ni real.
+
+**Guion de 60 segundos**
+
+1. **0–10 s · Mapa del pipeline:** tres fuentes, validación, raw, dbt y marts, cada una con su
+   último estado y si está al día.
+2. **10–25 s · Probar contratos:** «Cargar ejemplo con defectos» → tres filas a cuarentena,
+   cada una con su campo y su motivo (C00009: email sin @). No se guarda nada.
+3. **25–35 s · Bandeja de cuarentena:** lo que esas mismas reglas apartaron de verdad,
+   filtrado por el campo `email`.
+4. **35–55 s · Linaje de O000065:** el pedido llegó dos veces; se ve la versión superada, la
+   vigente, el sha256 de su lote, el archivo y la ejecución que lo cargó.
+5. **55–60 s:** cada número del panel se puede seguir hasta su archivo.
+
+![Del validador al linaje, en el panel](docs/img/panel-demo.gif)
+
+| Función | Qué ves | Dónde |
+|---------|---------|-------|
+| **Validador en vivo** | Subes un CSV o JSON (o el ejemplo) y ves qué filas irían a cuarentena y por qué, con las mismas reglas que la ingesta | Panel → *Probar contratos* · `POST /v1/contracts/{fuente}/validate` |
+| **Bandeja de cuarentena** | Cada fila apartada con su motivo, el valor que falló, el archivo y el lote; el email llega enmascarado | Panel → *Calidad de datos* · `GET /v1/quality/quarantine` |
+| **Linaje** | De las líneas del hecho a cada versión recibida, su lote (sha256), archivo y ejecución | Panel → *Linaje* · `GET /v1/lineage/orders/{id}` |
+| **Caos en un clic** | La fuente devuelve seis 503 seguidos; el cliente reintenta, Prefect reintenta la tarea y la segunda vez entra | Mapa → *Provocar fallos y ejecutar productos* |
+| **Frescura** | Cada fuente dice si está al día frente a su SLA (26 h) | Mapa · `GET /v1/quality/freshness` |
+| **Tendencia de calidad** | Porcentaje de filas apartadas por ejecución, con la línea del presupuesto de errores | Panel → *Calidad de datos* |
+| **API lista para probar** | Swagger abre con una guía de un minuto; `demo.ps1` imprime la clave de lectura | `/docs` |
+| **Landing en vivo** | La página dice si la demo está en marcha en tu equipo y enlaza a cada función | `site/` → *Pruébalo* |
+
+| Validador en vivo | Bandeja de cuarentena |
+|:---:|:---:|
+| ![Validador en vivo](docs/img/panel-validador.png) | ![Bandeja de cuarentena](docs/img/panel-cuarentena.png) |
+| El ejemplo con filas reales defectuosas: tres a cuarentena, cada una con su motivo | Lo que los contratos apartaron de verdad, filtrable por fuente, campo y clave |
+
+| Linaje de O000065 | Caos en un clic |
+|:---:|:---:|
+| ![Linaje](docs/img/panel-linaje.png) | ![Dos intentos](docs/img/panel-caos.png) |
+| Versión superada y vigente, sha256 completo del lote, archivo, fila y ejecución | Intento 1 fallido tras seis 503 seguidos; intento 2 con éxito |
+
+| Frescura por fuente | Tendencia de calidad |
+|:---:|:---:|
+| ![Frescura](docs/img/panel-frescura.png) | ![Tendencia](docs/img/panel-tendencia.png) |
+| Insignia «al día» en cada fuente, con su SLA en el detalle | Filas apartadas por ejecución frente al presupuesto del 20 % |
+
+| API con guía (Swagger) | Landing: «Pruébalo» |
+|:---:|:---:|
+| ![Swagger](docs/img/api-guia.png) | ![Pruébalo](docs/img/landing-pruebalo.png) |
+| Clave, primer endpoint y validador en un minuto | Tres cosas que tocar, con su enlace |
+
+## La landing
+
+Una página estática en [`site/`](site/) (HTML, CSS y JS puros, sin dependencias) que cuenta el
+proyecto. Se prueba abriéndola desde la raíz del repo:
+`python -m http.server 8791 --bind 127.0.0.1` → <http://127.0.0.1:8791/site/>.
+
+![El recorrido de los datos en 7 pasos](docs/img/landing-recorrido.gif)
+
+*Grabación a ritmo real: el scroll hace avanzar y retroceder seis registros reales de
+`data/samples` por las capas fuentes → validación → raw → staging → marts.*
+
+| Efecto | Técnica | Para qué |
+|--------|---------|----------|
+| Recorrido atado al scroll (efecto principal) | C3 *scrub* sobre una sección fija; cada ficha viaja entre carriles con `transform` | Explicar el pipeline con datos que se mueven, no con un diagrama |
+| Color por capa | C13: un fondo por paso, fundido por opacidad | Saber en qué capa estás sin leer |
+| Sellos y fantasmas | Sellos de tampón (cuarentena, omitido, versión), tachado de la versión vieja y copia atenuada en cada capa por la que pasó la ficha | Que el contador de cada carril cuadre con lo que se ve (raw solo añade filas) |
+| Titular | B1: entra palabra a palabra | Entrada sin ruido |
+| Cifras | A7: cuentan hasta su valor | Las cifras de este README |
+| Terminal | H3: teclea `demo.ps1` con su salida real | Cómo se lanza, en un vistazo |
+
+Con `prefers-reduced-motion` o sin JavaScript se ve el estado final en una lista legible. Solo
+se animan `transform` y `opacity`, y en móvil (390 px) los carriles pasan a filas.
+
+| Paso 6 de 7 (escritorio) | Móvil (390 px) |
+|:---:|:---:|
+| ![Recorrido en escritorio](docs/img/landing-recorrido.png) | ![Recorrido en móvil](docs/img/landing-recorrido-movil.png) |
+
 ## Capturas
 
-![Mapa del pipeline en movimiento](docs/img/dashboard-demo.gif)
-
-*Grabación real del panel: el puntero recorre el mapa y se pulsa «Ejecutar flujo diario». Las
-tres fuentes terminan y dbt queda «en curso» sin recargar la página. Cada flujo muestra el
-estado de su última ejecución; la validación y los lotes, su acumulado. Una arista fluye solo
-si su etapa de origen tiene datos.*
-
-| Mapa del pipeline | Ejecuciones, detalle y lotes de ingesta |
+| Negocio | Pipelines |
 |:---:|:---:|
-| ![Mapa del pipeline](docs/img/dashboard-mapa.png) | ![Lotes de ingesta](docs/img/dashboard-lotes.png) |
-| Al señalar un nodo se ve su detalle y se encienden sus aristas | Cada lote con su huella SHA-256: un reenvío idéntico no crea lote |
+| ![Negocio](docs/img/dashboard-negocio.png) | ![Pipelines](docs/img/dashboard-pipelines.png) |
+| Ingresos, pedidos, ticket medio y ventas por día y categoría | Ejecuciones, filas cargadas y rechazadas, duración por flujo |
 
-| Calidad de datos | Pipelines |
+| Calidad de datos | Lotes de ingesta |
 |:---:|:---:|
-| ![Calidad de datos](docs/img/dashboard-calidad.png) | ![Pipelines](docs/img/dashboard-pipelines.png) |
-| Reglas evaluadas, filas en cuarentena y avisos por regla | Ejecuciones, filas cargadas y rechazadas, duración por flujo |
+| ![Calidad de datos](docs/img/dashboard-calidad.png) | ![Lotes de ingesta](docs/img/dashboard-lotes.png) |
+| Reglas evaluadas, cuarentena por ejecución y reglas con fallos | Cada lote con su huella SHA-256: un reenvío idéntico no crea lote |
 
-| Orquestación (Prefect) | API de indicadores (Swagger) |
-|:---:|:---:|
-| ![Prefect](docs/img/prefect-runs.png) | ![API](docs/img/api-swagger.png) |
-| Ejecuciones de los flujos `ingest-*` y `transform` | Endpoints de solo lectura con clave por consumidor |
+| Orquestación (Prefect) |
+|:---:|
+| ![Prefect](docs/img/prefect-runs.png) |
+| Ejecuciones de los flujos `ingest-*` y `transform` |
 
-### Evidencias del rediseño del panel (2026-11-10)
-
-Todas las imágenes de esta sección salen de `scripts/screenshots.py` contra el stack levantado
-con `scripts/demo.ps1`; el script falla si el acabado visual no llega al navegador.
+### Evidencias de esta versión (2026-11-21)
 
 | Comprobación | Resultado |
 |--------------|-----------|
-| [CI del PR #11](https://github.com/JuanSGarciaC/datapulse/pull/11) (lint y tipos, pruebas, seguridad, contrato, Docker) | 5 de 5 en verde |
-| Pruebas unitarias y de integración en CI | 286 pasan; cobertura 91 % (umbral 90 %) |
-| E2E contra el stack en Docker (Windows 11) | 5 de 5 |
-| Navegador real (Edge): mapa con 7 nodos, borde animado, brillo que sigue al puntero, detalle al señalar, movimiento reducido | Pasa |
-| Disparo desde el panel: botón → API → Prefect → worker → mapa | El mapa se actualiza solo, sin recargar |
-| Revisión de código independiente | Sin hallazgos graves ni de seguridad; los de gravedad media, corregidos |
+| Pruebas en local (Python 3.13, PostgreSQL 16) | Las 327 de un `pytest` sin marcas pasan; ruff, mypy `strict` y bandit, en verde |
+| Stack nativo, sin Docker | Flujo diario, validador, bandeja, linaje, frescura, tendencia y caos en un clic (botón → API → Prefect → worker, con los dos intentos) |
+| Navegador (Edge headless) | Escritorio, 390 px, movimiento reducido y sin JavaScript: sin errores de consola ni imágenes rotas |
+| Capturas y GIF | Edge headless a 1440 px con escala 2, recortadas; los GIF se grabaron a ritmo real con el screencast del navegador |
+| Rediseño anterior del panel ([PR #11](https://github.com/JuanSGarciaC/datapulse/pull/11), 2026-11-10) | CI 5 de 5, E2E 5 de 5 contra Docker |
+
+Lo que falta por verificar con Docker está en [Limitaciones conocidas](#limitaciones-conocidas).
 
 ## Arquitectura
 
@@ -97,11 +170,14 @@ Detalle de capas y componentes en [architecture.md](docs/architecture.md).
 
 ## En números
 
-Medido en el [CI del 2026-11-10](https://github.com/JuanSGarciaC/datapulse/actions/runs/42906717769) (ubuntu-24.04, Python 3.13, PostgreSQL en contenedor).
+Pruebas contadas el 2026-11-21 en local (Python 3.13, PostgreSQL 16): las 327 de un `pytest`
+sin marcas pasan. La cobertura y el resto de cifras son del
+[CI del 2026-11-10](https://github.com/JuanSGarciaC/datapulse/actions/runs/42906717769)
+(ubuntu-24.04, Python 3.13, PostgreSQL en contenedor); esta versión aún no ha pasado por CI.
 
 | | |
 |---|---|
-| Pruebas Python | **304**: 223 unitarias, 50 de integración contra PostgreSQL real, 26 de contrato (13 contra DummyJSON real), 5 E2E contra el stack |
+| Pruebas Python | **345**: 257 unitarias, 57 de integración contra PostgreSQL real, 26 de contrato (13 contra DummyJSON real), 5 E2E contra el stack. Un `pytest` sin marcas ejecuta 327; las 18 restantes (DummyJSON real y E2E) tienen su propio job |
 | Pruebas de dbt | **39** (unicidad, relaciones, valores aceptados y 5 conciliaciones singulares) |
 | Cobertura | 91 % de líneas y ramas (el CI exige ≥ 90 %); la página del panel se prueba con `AppTest`, que la herramienta de cobertura no mide |
 | Defectos sintéticos | **37** documentados en `manifest.json`; una prueba exige que el pipeline los detecte **exactamente** |
@@ -112,12 +188,12 @@ Medido en el [CI del 2026-11-10](https://github.com/JuanSGarciaC/datapulse/actio
 
 | Tema | Cómo | Dónde |
 |------|------|-------|
-| Calidad de datos | Contratos por fuente, cuarentena con motivo, presupuesto de errores por lote, cambios de esquema a `_extra` | [ADR-0007](docs/adr/0007-validation-design.md), [caso de estudio](docs/QA_CASE_STUDY.md) |
+| Calidad de datos | Contratos por fuente, cuarentena con motivo (y su bandeja, sin datos personales), presupuesto de errores por lote, cambios de esquema a `_extra`, validador en vivo con las mismas reglas | [ADR-0007](docs/adr/0007-validation-design.md), [caso de estudio](docs/QA_CASE_STUDY.md) |
 | Idempotencia | Hash de contenido por lote (un reenvío con otro nombre no se recarga), hash por registro, marcas de agua con solapamiento | [ADR-0004](docs/adr/0004-idempotency-strategy.md) |
 | Resiliencia | Reintentos con `Retry-After` y *backoff* con *jitter*; carga atómica por lote; bloqueo por fuente; la marca de agua solo avanza si la carga confirma | [pipeline.md](docs/pipeline.md) |
 | Orquestación real | Prefect: despliegues programados, reintentos de tarea solo ante fallos transitorios, disparo por API enlazado con `ops.pipeline_runs` | [ADR-0001](docs/adr/0001-orchestration-prefect.md) |
 | Modelado analítico | Estrella con SCD2 *point-in-time*, versiones tardías, incremental probado igual a *full refresh*, índices medidos | [data-model.md](docs/data-model.md) |
-| Trazabilidad | De cada línea de hecho al lote, al archivo o página de origen (sha256) y a la ejecución que lo cargó | [data-model.md](docs/data-model.md#trazabilidad-de-un-indicador) |
+| Trazabilidad | De cada línea de hecho al lote, al archivo o página de origen (sha256) y a la ejecución que lo cargó; navegable en el panel (*Linaje*) y por API | [data-model.md](docs/data-model.md#trazabilidad-de-un-indicador) |
 | Mínimo privilegio | Un rol por componente; `raw` append-only; la API solo lee `marts`/`ops`; el dashboard no tiene credenciales de BD | [ADR-0005](docs/adr/0005-least-privilege-roles.md) |
 | Pruebas de contrato | La misma suite contra la API simulada y contra DummyJSON real (cada push y cada semana) | [ADR-0006](docs/adr/0006-public-api-and-mock-contract.md) |
 | Datos reproducibles | Generador determinista (mismos bytes en cada ejecución; LF forzado al escribir y por `.gitattributes`) con respuesta conocida | [sources.md](docs/sources.md) |
@@ -209,8 +285,8 @@ mismos nombres. Si PowerShell bloquea el script:
 
 | Tipo | Qué cubre | Requiere |
 |------|-----------|----------|
-| Unitarias | Configuración y secretos, validación de cada fuente, cliente REST (reintentos, `Retry-After`), generador, API simulada, API (auth, validación, errores), dashboard (cliente, gráficos, mapa del pipeline, filtros, disparo y página con `AppTest`) | Nada |
-| Integración | Migraciones (ida y vuelta, deriva), matriz de permisos, **respuesta conocida contra el manifiesto**, idempotencia, incremental, atomicidad ante fallos, bloqueo concurrente, Prefect real, dbt real (SCD2, versiones tardías, incremental = *full refresh*), cada KPI frente a un cálculo SQL independiente, dashboard contra la API real | PostgreSQL |
+| Unitarias | Configuración y secretos, validación de cada fuente, cliente REST (reintentos, `Retry-After`), generador, API simulada, API (auth, validación, errores), dashboard (cliente, gráficos, mapa del pipeline, filtros, disparo y página con `AppTest`), validador en vivo (veredicto idéntico al manifiesto, topes de tamaño, JSON anidado a propósito), CORS solo para `/health`, caos contra la fuente simulada real, frescura y la landing (enlaces, cifras y fichas) | Nada |
+| Integración | Migraciones (ida y vuelta, deriva), matriz de permisos, **respuesta conocida contra el manifiesto**, idempotencia, incremental, atomicidad ante fallos, bloqueo concurrente, Prefect real, dbt real (SCD2, versiones tardías, incremental = *full refresh*), cada KPI frente a un cálculo SQL independiente, dashboard contra la API real, cuarentena = defectos del manifiesto sin datos personales, linaje igual a la versión que eligió dbt, permisos de las vistas nuevas | PostgreSQL |
 | Contrato | Una suite contra la API simulada y, con `-m live`, contra DummyJSON real | Internet para `live` |
 | E2E | Caja negra contra el stack: disparo por la API admin → Prefect → worker → fuente con 503 y 429 → API; trazabilidad `flow_run_id` ↔ `ops`; defectos conocidos visibles por HTTP | Stack levantado (`-m e2e`) |
 
@@ -224,6 +300,12 @@ el panel (el mapa se actualizó solo a los 14 s), las 5 pruebas E2E, `dev.ps1 ch
 completo (lint, tipos, 286 pruebas, seguridad y muestras) y la idempotencia: una segunda
 ejecución del flujo `daily` no carga filas nuevas. Las 2 advertencias de dbt son los huérfanos
 sembrados a propósito en los datos de ejemplo.
+
+**Funciones nuevas (2026-11-21), verificadas sin Docker:** con PostgreSQL 16, el servidor de
+Prefect y su worker, la API y el panel corriendo de forma nativa en Windows 11. Se ejecutaron
+el flujo diario (ingesta + dbt), el validador, la bandeja, el linaje, la frescura, la tendencia
+y el caos en un clic: botón → API → Prefect → worker, con el intento 1 fallido y el 2 con
+éxito en `ops.task_runs`. Todo se revisó en Edge (escritorio, 390 px y movimiento reducido).
 
 ## Decisiones técnicas
 
@@ -295,6 +377,11 @@ scripts/           demo.ps1 (demo en un comando), dev.ps1 (comandos para Windows
 ## Limitaciones conocidas
 
 Lo que el proyecto **no** hace o no se pudo verificar:
+
+- **Lo nuevo de Docker Compose y `demo.ps1` (2026-11-21) no se ejecutó con Docker:** las
+  variables de la demo de caos en el panel, la clave que imprime `demo.ps1` y que la imagen
+  incluya los ejemplos del validador. Las funciones sí se verificaron con el stack nativo
+  (ver [Pruebas](#pruebas)). Para cerrarlo: `.\scripts\demo.ps1` y `uv run pytest -m e2e`.
 
 - **`scripts/dev.ps1`:** en Windows 11 se ejecutaron `setup`, `createtestdb`, `migrate` y `check`.
   Los comandos que arrancan procesos de larga duración (`mock`, `api`, `dashboard`, `pipeline`)

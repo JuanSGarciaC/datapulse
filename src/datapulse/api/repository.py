@@ -129,6 +129,46 @@ _BATCHES: Final = text("""
     LIMIT :limit OFFSET :offset
 """)
 
+_QUARANTINE: Final = text("""
+    SELECT quarantine_id, source_name, source_ref, batch_id, content_sha256, run_id,
+           row_number, record_key, errors, payload_masked, quarantined_at,
+           count(*) OVER () AS _total
+    FROM ops.v_quarantine
+    WHERE (CAST(:source AS text) IS NULL OR source_name = CAST(:source AS text))
+      AND (CAST(:rule AS text) IS NULL
+           OR errors @> jsonb_build_array(jsonb_build_object('rule', CAST(:rule AS text))))
+      AND (CAST(:field AS text) IS NULL
+           OR errors @> jsonb_build_array(jsonb_build_object('field', CAST(:field AS text))))
+      AND (CAST(:record_key AS text) IS NULL OR record_key = CAST(:record_key AS text))
+    ORDER BY quarantined_at DESC, quarantine_id DESC
+    LIMIT :limit OFFSET :offset
+""")
+_ORDER_VERSIONS: Final = text("""
+    SELECT version_rank, version_rank = 1 AS is_current, status, customer_id, order_ts,
+           updated_at, ingested_at, item_count, batch_id, source_ref, row_number,
+           content_sha256, run_id, flow_name, trigger, run_started_at
+    FROM ops.v_order_lineage
+    WHERE order_id = :order_id
+    ORDER BY updated_at, ingested_at
+""")
+_ORDER_FACTS: Final = text("""
+    SELECT line_no, product_id, quantity, unit_price, line_amount, status, is_revenue,
+           order_date, _batch_id AS batch_id
+    FROM marts.fct_order_items
+    WHERE order_id = :order_id
+    ORDER BY line_no
+""")
+_FRESHNESS: Final = text("""
+    SELECT source_name,
+           max(finished_at) FILTER (WHERE status IN ('success', 'partial')) AS last_success_at,
+           max(started_at) AS last_attempt_at,
+           (array_agg(status ORDER BY started_at DESC))[1] AS last_status,
+           now() AS checked_at
+    FROM ops.pipeline_runs
+    WHERE source_name IS NOT NULL
+    GROUP BY source_name
+    ORDER BY source_name
+""")
 _VOLUMES: Final = text("""
     SELECT (started_at AT TIME ZONE 'UTC')::date AS day, flow_name,
            count(*)::int AS runs,
@@ -239,3 +279,35 @@ def batches(
 
 def daily_volumes(conn: Connection, days: int) -> list[dict[str, Any]]:
     return _rows(conn, _VOLUMES, {"days": days})
+
+
+def quarantine(
+    conn: Connection,
+    *,
+    source: str | None,
+    rule: str | None,
+    field: str | None,
+    record_key: str | None,
+    limit: int,
+    offset: int,
+) -> tuple[list[dict[str, Any]], int]:
+    params = {"source": source, "rule": rule, "field": field, "record_key": record_key}
+    return _page(conn, _QUARANTINE, params | {"limit": limit, "offset": offset})
+
+
+def order_lineage(conn: Connection, order_id: str) -> dict[str, Any] | None:
+    versions = _rows(conn, _ORDER_VERSIONS, {"order_id": order_id})
+    facts = _rows(conn, _ORDER_FACTS, {"order_id": order_id})
+    rejected, _ = quarantine(
+        conn, source="orders_json", rule=None, field=None, record_key=order_id,
+        limit=50, offset=0,
+    )  # fmt: skip
+    if not (versions or facts or rejected):
+        return None
+    return {
+        "order_id": order_id, "versions": versions, "fact_lines": facts, "quarantined": rejected,
+    }  # fmt: skip
+
+
+def freshness(conn: Connection) -> list[dict[str, Any]]:
+    return _rows(conn, _FRESHNESS, {})

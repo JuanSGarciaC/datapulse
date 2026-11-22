@@ -50,6 +50,8 @@ else {
     $text = [regex]::Replace($text, 'change-me-[A-Za-z0-9-]+', $evaluator)
     # La demo activa el disparo de pipelines desde el panel (viene comentado en .env.example).
     $text = $text.Replace('# DATAPULSE_DASHBOARD_ADMIN_KEY=', 'DATAPULSE_DASHBOARD_ADMIN_KEY=')
+    # Y la demo de resiliencia (botón «Provocar fallos y ejecutar productos»).
+    $text = $text.Replace('# DATAPULSE_DASHBOARD_MOCK_ADMIN_TOKEN=', 'DATAPULSE_DASHBOARD_MOCK_ADMIN_TOKEN=')
     [System.IO.File]::WriteAllText((Join-Path (Get-Location) '.env'), $text, (New-Object System.Text.UTF8Encoding $false))
     Write-Host '.env creado con secretos aleatorios (no se versiona).'
 }
@@ -86,7 +88,10 @@ if (-not $ready) { throw 'El dashboard no respondió. Revisa: docker compose log
 Write-Host ''
 Write-Host 'DataPulse está listo:' -ForegroundColor Green
 Write-Host '  Dashboard   http://localhost:8501'
-Write-Host '  API (docs)  http://localhost:8000/docs   (clave en .env: DATAPULSE_API_KEYS)'
+# Primera clave de lectura de .env: la API es de solo lectura con ella y la demo es local.
+$readKey = (Select-String -Path .env -Pattern '^DATAPULSE_API_KEYS=').Line.Split('=', 2)[1].Split(',')[0].Trim()
+Write-Host '  API (docs)  http://localhost:8000/docs'
+Write-Host "              Authorize con la clave de lectura: $readKey"
 Write-Host '  Prefect     http://localhost:4200'
 Write-Host 'Para apagarlo: docker compose down'
 Start-Process 'http://localhost:8501'

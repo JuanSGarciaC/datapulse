@@ -25,6 +25,9 @@ class DashboardSettings(BaseSettings):
     api_key: SecretStr | None = None
     # Opcional: sin ella el panel es de solo lectura y no ofrece disparar pipelines.
     admin_key: SecretStr | None = None
+    # Solo para la demo: con las dos, el panel puede provocar fallos en la fuente simulada.
+    mock_url: str | None = None
+    mock_admin_token: SecretStr | None = None
     timeout_s: float = 10.0
     cache_ttl_s: int = 60
 
@@ -63,7 +66,12 @@ class ApiClient:
         return self._request("GET", path, params, self._headers)
 
     def _request(
-        self, method: str, path: str, params: dict[str, Any] | None, headers: dict[str, str]
+        self,
+        method: str,
+        path: str,
+        params: dict[str, Any] | None,
+        headers: dict[str, str],
+        content: bytes | None = None,
     ) -> Any:
         clean = {
             k: v.isoformat() if isinstance(v, date) else v
@@ -71,7 +79,9 @@ class ApiClient:
             if v is not None
         }
         try:
-            response = self._http.request(method, path, params=clean, headers=headers)
+            response = self._http.request(
+                method, path, params=clean, headers=headers, content=content
+            )
         except httpx.TransportError as exc:
             raise ApiError(
                 "No se puede conectar con la API de DataPulse. ¿Está levantada?"
@@ -165,6 +175,25 @@ class ApiClient:
         )
         return result
 
+    def freshness(self) -> list[dict[str, Any]]:
+        result: list[dict[str, Any]] = self._get("/v1/quality/freshness")
+        return result
+
+    def order_lineage(self, order_id: str) -> dict[str, Any]:
+        result: dict[str, Any] = self._get(f"/v1/lineage/orders/{order_id}")
+        return result
+
+    def quarantine(self) -> list[dict[str, Any]]:
+        """Filas en cuarentena (la API ya quita nombres y enmascara el email)."""
+        return self._all_pages("/v1/quality/quarantine", {}, max_items=2000)
+
+    def validate_file(self, source: str, data: bytes) -> dict[str, Any]:
+        """Prueba un archivo contra los contratos; la API no guarda nada."""
+        result: dict[str, Any] = self._request(
+            "POST", f"/v1/contracts/{source}/validate", None, self._headers, content=data
+        )
+        return result
+
     def run_detail(self, run_id: str) -> dict[str, Any]:
         result: dict[str, Any] = self._get(f"/v1/pipeline-runs/{run_id}")
         return result
@@ -182,3 +211,51 @@ class ApiClient:
     def volumes(self, days: int = 30) -> list[dict[str, Any]]:
         result: list[dict[str, Any]] = self._get("/v1/metrics/volumes", {"days": days})
         return result
+
+
+class SourceChaos:
+    """Provoca fallos en la fuente simulada (``/_mock/faults``) para ver la resiliencia.
+
+    Solo existe en la demo: sin URL o sin token de la fuente simulada, ``available`` es
+    falso y el panel no muestra los botones.
+    """
+
+    # Seis 503 seguidos en la primera página: agotan los 5 reintentos HTTP del cliente
+    # (RetryPolicy.max_retries); Prefect reintenta la tarea y la segunda vez entra.
+    FAILURES = 6
+
+    def __init__(
+        self,
+        base_url: str | None,
+        token: SecretStr | None,
+        *,
+        http: httpx.Client | None = None,
+        timeout_s: float = 10.0,
+    ) -> None:
+        secret = token.get_secret_value() if token else ""
+        self.available = bool(base_url and secret)
+        self._headers = {"X-Mock-Admin-Token": secret}
+        self._http = http or (
+            httpx.Client(base_url=base_url, timeout=timeout_s) if base_url and secret else None
+        )
+
+    @classmethod
+    def from_settings(cls, settings: DashboardSettings | None = None) -> SourceChaos:
+        cfg = settings or DashboardSettings()
+        return cls(cfg.mock_url, cfg.mock_admin_token, timeout_s=cfg.timeout_s)
+
+    def _put(self, config: dict[str, Any]) -> None:
+        if not self.available or self._http is None:
+            raise ApiError("La demo de fallos no está configurada.")
+        try:
+            response = self._http.put("/_mock/faults", json=config, headers=self._headers)
+        except httpx.TransportError as exc:
+            raise ApiError("No se puede conectar con la fuente simulada.") from exc
+        if response.status_code >= 400:  # noqa: PLR2004
+            raise ApiError(f"La fuente simulada respondió {response.status_code}.")
+
+    def break_source(self) -> None:
+        self._put({"fail_offsets": {"0": self.FAILURES}})
+
+    def restore(self) -> None:
+        self._put({})

@@ -9,12 +9,16 @@ from typing import Any
 
 import httpx2 as httpx
 import pytest
+from fastapi.testclient import TestClient
 from pydantic import SecretStr
 from streamlit.testing.v1 import AppTest
 
+from datapulse.api.app import VALIDATORS, _preview
 from datapulse.dashboard import charts, pipeline_map, theme
-from datapulse.dashboard.client import ApiClient, ApiError, DashboardSettings
+from datapulse.dashboard.client import ApiClient, ApiError, DashboardSettings, SourceChaos
 from datapulse.dashboard.formatting import money_compact as _money_compact
+from datapulse.mock_source.app import MockSettings
+from datapulse.mock_source.app import create_app as create_mock
 from tests.conftest import ROOT
 
 APP = str(ROOT / "src/datapulse/dashboard/app.py")
@@ -64,6 +68,57 @@ BATCHES = [
      "source_ref": "customers_2026-01-01.csv", "content_sha256": "ab" * 32, "status": "success",
      "row_count": 80, "rejected_count": 3, "run_id": RUN_ID,
      "created_at": "2026-01-03T06:00:01Z", "updated_at": "2026-01-03T06:00:02Z"},
+]  # fmt: skip
+
+QUARANTINE = [
+    {"quarantine_id": 2, "source_name": "customers_csv", "source_ref": "customers_2026-01-01.csv",
+     "batch_id": "0b0d3c1e-0000-4000-8000-000000000001", "content_sha256": "2ca922fd" + "0" * 56,
+     "run_id": RUN_ID, "row_number": 9, "record_key": "C00009",
+     "errors": [{"rule": "format:email", "field": "email", "message": "no cumple el patrón"}],
+     "payload_masked": {"customer_id": "C00009", "email": "na***"},
+     "quarantined_at": "2026-01-03T06:00:01Z"},
+    {"quarantine_id": 1, "source_name": "orders_json", "source_ref": "orders_batch_002.json",
+     "batch_id": "0b0d3c1e-0000-4000-8000-000000000002", "content_sha256": "20bddfbb" + "0" * 56,
+     "run_id": RUN_ID, "row_number": 81, "record_key": "O000231",
+     "errors": [{"rule": "range:items.quantity", "field": "items.quantity",
+                 "message": "debe ser > 0, llegó 0"}],
+     "payload_masked": {"order_id": "O000231"}, "quarantined_at": "2026-01-03T06:00:02Z"},
+]  # fmt: skip
+
+
+def _version(rank: int, status: str, updated: str, ref: str, sha: str) -> dict[str, Any]:
+    return {"version_rank": rank, "is_current": rank == 1, "status": status,
+            "customer_id": "C00102", "order_ts": "2026-01-01T10:00:00Z", "updated_at": updated,
+            "ingested_at": "2026-01-03T06:00:01Z", "item_count": 2, "batch_id": RUN_ID,
+            "source_ref": ref, "row_number": 65, "content_sha256": sha, "run_id": RUN_ID,
+            "flow_name": "ingest_orders", "trigger": "schedule",
+            "run_started_at": "2026-01-03T06:00:00Z"}  # fmt: skip
+
+
+LINEAGE = {
+    "order_id": "O000065",
+    "versions": [
+        _version(2, "paid", "2026-01-01T15:56:00Z", "orders_batch_001.json", "eeca346e" * 8),
+        _version(1, "cancelled", "2026-01-03T19:53:00Z", "orders_batch_003.json", "97dbbfca" * 8),
+    ],
+    "fact_lines": [
+        {"line_no": 1, "product_id": 8, "quantity": 4, "unit_price": "1300.10",
+         "line_amount": "5200.40", "status": "cancelled", "is_revenue": False,
+         "order_date": "2026-01-01", "batch_id": RUN_ID},
+    ],
+    "quarantined": [],
+}  # fmt: skip
+
+FRESHNESS: list[dict[str, Any]] = [
+    {"source_name": "customers_csv", "last_success_at": "2026-01-03T06:00:05Z",
+     "last_attempt_at": "2026-01-03T06:00:00Z", "last_status": "partial", "age_hours": 3.2,
+     "sla_hours": 26.0, "status": "fresh"},
+    {"source_name": "products_api", "last_success_at": "2026-01-01T06:00:05Z",
+     "last_attempt_at": "2026-01-03T06:00:00Z", "last_status": "failed", "age_hours": 51.4,
+     "sla_hours": 26.0, "status": "stale"},
+    {"source_name": "orders_json", "last_success_at": None,
+     "last_attempt_at": "2026-01-03T06:00:00Z", "last_status": "failed", "age_hours": None,
+     "sla_hours": 26.0, "status": "never"},
 ]  # fmt: skip
 
 
@@ -129,18 +184,52 @@ class FakeClient:
     def run_detail(self, run_id: str) -> dict[str, Any]:
         return RUNS[0] | {"tasks": [], "quality_failures": 2, "params": {"trigger": "api"}}
 
+    def quarantine(self) -> list[dict[str, Any]]:
+        return [] if self.empty else QUARANTINE
 
-def _page(fake: FakeClient) -> AppTest:
+    def freshness(self) -> list[dict[str, Any]]:
+        return FRESHNESS
+
+    def order_lineage(self, order_id: str) -> dict[str, Any]:
+        if order_id != "O000065":
+            raise ApiError("La API respondió 404. pedido no encontrado")
+        return LINEAGE
+
+    def validate_file(self, source: str, data: bytes) -> dict[str, Any]:
+        # Las mismas funciones que usa la API, sin HTTP: el veredicto es el real.
+        return _preview(VALIDATORS[source](data)).model_dump()
+
+
+class FakeChaos:
+    def __init__(self, *, available: bool = True) -> None:
+        self.available = available
+        self.calls: list[str] = []
+
+    def break_source(self) -> None:
+        self.calls.append("break")
+
+    def restore(self) -> None:
+        self.calls.append("restore")
+
+
+def _page(fake: FakeClient, chaos: FakeChaos | None = None) -> AppTest:
     at = AppTest.from_file(APP, default_timeout=30)
     at.session_state["_client"] = fake
+    at.session_state["_chaos"] = chaos or FakeChaos(available=False)
     return at.run()
 
 
 # ------------------------------------------------------------------ página
-def test_page_renders_three_tabs_with_metrics() -> None:
+def test_page_renders_its_tabs_with_metrics() -> None:
     at = _page(FakeClient())
     assert not at.exception
-    assert [t.label for t in at.tabs] == ["Negocio", "Calidad de datos", "Pipelines"]
+    assert [t.label for t in at.tabs] == [
+        "Negocio",
+        "Calidad de datos",
+        "Pipelines",
+        "Probar contratos",
+        "Linaje",
+    ]
     metrics = {m.label: m.value for m in at.metric}
     assert metrics["Ingresos"] == "$ 1.04 k"
     assert metrics["Pedidos"] == "6"
@@ -156,7 +245,8 @@ def test_page_renders_three_tabs_with_metrics() -> None:
     assert lotes[0].iloc[0]["referencia"] == "customers_2026-01-01.csv"
     assert lotes[0].iloc[0]["estado"] == "éxito"
     assert any("dp-map" in m.value for m in at.markdown)  # el mapa se dibuja
-    assert not at.button  # sin clave de administración no hay disparo
+    # Sin clave de administración no hay disparo.
+    assert not [b for b in at.button if str(b.key).startswith("trigger_")]
 
 
 def test_no_emojis_in_labels() -> None:
@@ -180,7 +270,7 @@ def test_filters_reach_the_api() -> None:
 def test_trigger_needs_admin_key_and_starts_the_live_refresh() -> None:
     fake = FakeClient(admin=True)
     at = _page(fake)
-    assert [b.label for b in at.button] == [
+    assert [b.label for b in at.button if str(b.key).startswith("trigger_")] == [
         "Ejecutar flujo diario",
         "Ejecutar ingesta de productos",
     ]
@@ -517,3 +607,237 @@ def test_entrypoint_builds_hardened_streamlit_command(monkeypatch: pytest.Monkey
     assert json.loads(args["--server.headless"]) is True
     assert args["--client.toolbarMode"] == "minimal"
     assert args["--theme.base"] == "dark"
+
+
+# ------------------------------------------------------------------ validador en vivo
+def test_contract_example_shows_which_rows_go_to_quarantine_and_why() -> None:
+    at = _page(FakeClient())
+    assert any("Sube un archivo" in i.value for i in at.info)
+    at.button(key="contract_example_customers").click().run()
+    assert not at.exception
+    table = next(
+        d.value
+        for d in at.dataframe
+        if "motivo" in d.value.columns and "lote" not in d.value.columns
+    )
+    assert set(table["clave"]) == {"C00009", "C00014", "C00062"}
+    assert set(table["campo"]) == {"email", "signup_date"}
+    metrics = {m.label: m.value for m in at.metric}
+    assert metrics["A cuarentena"] == "3"
+    assert any("3 filas irían a cuarentena" in w.value for w in at.warning)
+
+
+def test_contract_example_for_orders() -> None:
+    at = _page(FakeClient())
+    at.radio(key="contract_source").set_value("orders").run()
+    at.button(key="contract_example_orders").click().run()
+    table = next(
+        d.value
+        for d in at.dataframe
+        if "motivo" in d.value.columns and "lote" not in d.value.columns
+    )
+    assert set(table["clave"]) == {"O000170", "O000231"}
+
+
+def test_contract_examples_are_exact_copies_of_sample_rows() -> None:
+    examples = ROOT / "src/datapulse/dashboard/examples"
+    sample = (ROOT / "data/samples/customers/customers_2026-01-01.csv").read_text(encoding="utf-8")
+    sample_lines = set(sample.splitlines())
+    assert (
+        set((examples / "clientes_con_defectos.csv").read_text(encoding="utf-8").splitlines())
+        <= sample_lines
+    )
+    batch = json.loads(
+        (ROOT / "data/samples/orders/orders_batch_002.json").read_text(encoding="utf-8")
+    )
+    example = json.loads((examples / "pedidos_con_defectos.json").read_text(encoding="utf-8"))
+    assert all(order in batch["orders"] for order in example["orders"])
+
+
+# ------------------------------------------------------------------ bandeja de cuarentena
+def _tray(at: AppTest) -> Any:
+    return next(d.value for d in at.dataframe if "lote" in d.value.columns)
+
+
+def test_quarantine_tray_lists_reason_file_and_masked_value() -> None:
+    at = _page(FakeClient())
+    tray = _tray(at)
+    assert list(tray["clave"]) == ["C00009", "O000231"]
+    assert tray.iloc[0]["valor"] == "na***"  # el email llega enmascarado desde la API
+    assert tray.iloc[1]["valor"] == "—"  # campo anidado: no se inventa un valor
+    assert tray.iloc[0]["archivo"] == "customers_2026-01-01.csv"
+
+
+def test_quarantine_tray_filters_by_field_and_key() -> None:
+    at = _page(FakeClient())
+    at.selectbox(key="q_field").set_value("email").run()
+    assert list(_tray(at)["clave"]) == ["C00009"]
+    at.selectbox(key="q_field").set_value(None).run()
+    at.text_input(key="q_key").input("o000231").run()
+    assert list(_tray(at)["clave"]) == ["O000231"]
+
+
+def test_empty_quarantine_says_so() -> None:
+    at = _page(FakeClient(empty=True))
+    assert any("No hay filas en cuarentena" in s.value for s in at.success)
+
+
+# ------------------------------------------------------------------ linaje
+def _markdown(at: AppTest) -> str:
+    return " ".join(m.value for m in at.markdown)
+
+
+def test_lineage_follows_an_order_from_the_fact_to_its_file_and_run() -> None:
+    at = _page(FakeClient())
+    assert not at.exception
+    text = _markdown(at)
+    assert "no cuenta como ingreso (cancelled)" in text
+    assert "orders_batch_003.json" in text  # archivo de la versión vigente
+    assert "97dbbfca" * 8 in text  # huella completa del lote
+    assert "ingest_orders" in text
+    versions = next(d.value for d in at.dataframe if "versión" in d.value.columns)
+    assert list(versions["versión"]) == ["superada", "vigente"]
+    assert list(versions["status"]) == ["paid", "cancelled"]
+
+
+def test_lineage_validates_the_id_and_handles_unknown_orders() -> None:
+    at = _page(FakeClient())
+    at.text_input(key="lineage_id").input("hola").run()
+    assert any("O seguida de 6 dígitos" in e.value for e in at.error)
+    at.text_input(key="lineage_id").input("o999999").run()
+    assert any("No hay rastro de O999999" in i.value for i in at.info)
+
+
+# ------------------------------------------------------------------ caos en un clic
+class _ProductsOk(FakeClient):
+    def trigger(self, name: str) -> dict[str, Any]:
+        self.triggered.append(name)
+        return {"deployment": name, "flow_run_id": RUN_ID, "state": "SCHEDULED"}
+
+
+def test_chaos_buttons_only_with_admin_key_and_mock_configured() -> None:
+    keys = {str(b.key) for b in _page(FakeClient(admin=True)).button}
+    assert "chaos_break" not in keys  # sin configuración de la demo
+    keys = {str(b.key) for b in _page(FakeClient(), FakeChaos()).button}
+    assert "chaos_break" not in keys  # sin clave de administración
+
+
+def test_chaos_breaks_the_source_then_runs_products() -> None:
+    fake, chaos = _ProductsOk(admin=True), FakeChaos()
+    at = _page(fake, chaos)
+    at.button(key="chaos_break").click().run()
+    assert not at.exception
+    assert chaos.calls == ["break"]
+    assert fake.triggered == ["products"]
+    assert at.session_state["_watch_until"] > 0  # el mapa se refresca solo
+    assert any("fallará 6 veces" in i.value for i in at.info)
+    at.button(key="chaos_restore").click().run()
+    assert chaos.calls == ["break", "restore"]
+    assert not any("fallará 6 veces" in i.value for i in at.info)
+
+
+def test_source_chaos_against_the_real_mock() -> None:
+    token = secrets.token_urlsafe(24)
+    mock = create_mock(
+        MockSettings(
+            _env_file=None,
+            admin_token=SecretStr(token),
+            catalog_path=ROOT / "data/samples/products/products_catalog.json",
+        )
+    )
+    with TestClient(mock) as http:
+        chaos = SourceChaos("http://testserver", SecretStr(token), http=http)
+        assert chaos.available
+        chaos.break_source()
+        codes = [http.get("/products", params={"skip": 0}).status_code for _ in range(7)]
+        assert codes == [503] * SourceChaos.FAILURES + [200]
+        chaos.break_source()  # se puede repetir: el contador vuelve a empezar
+        assert http.get("/products", params={"skip": 0}).status_code == 503
+        chaos.restore()
+        assert http.get("/products", params={"skip": 0}).status_code == 200
+        wrong = SourceChaos("http://testserver", SecretStr("x" * 24), http=http)
+        with pytest.raises(ApiError, match="401"):
+            wrong.break_source()
+
+
+def test_source_chaos_is_off_without_url_or_token() -> None:
+    assert not SourceChaos(None, SecretStr("x" * 24)).available
+    assert not SourceChaos("http://127.0.0.1:8106", None).available
+    with pytest.raises(ApiError, match="no está configurada"):
+        SourceChaos(None, None).break_source()
+
+
+# ------------------------------------------------------------------ frescura
+def test_map_shows_freshness_badges_per_source() -> None:
+    svg = pipeline_map.render(RUNS, QUALITY, BATCHES, FRESHNESS)
+    assert '<text class="fresh f-fresh"' in svg
+    assert ">al día<" in svg
+    assert ">atrasada 51 h<" in svg
+    assert ">sin cargas<" in svg
+    assert "última carga buena hace 51 h (SLA 26 h)" in svg  # en el detalle accesible
+    assert svg.count('class="fresh ') == 3  # solo los nodos de fuente
+
+
+def test_map_without_freshness_has_no_badges() -> None:
+    assert 'class="fresh ' not in pipeline_map.render(RUNS, QUALITY, BATCHES)
+
+
+# ------------------------------------------------------------------ tendencia de calidad
+def _ingest(source: str | None, when: str, read: int, rejected: int) -> dict[str, Any]:
+    return RUNS[0] | {"source_name": source, "started_at": when, "rows_read": read,
+                      "rows_rejected": rejected, "status": "partial"}  # fmt: skip
+
+
+def test_quarantine_trend_is_rate_per_ingest_run_with_the_budget_line() -> None:
+    runs = [
+        _ingest("orders_json", "2026-01-02T06:00:00Z", 155, 4),
+        _ingest("customers_csv", "2026-01-01T06:00:00Z", 200, 7),
+        _ingest(None, "2026-01-02T06:05:00Z", 10, 0),  # transform: no es una ingesta
+        _ingest("products_api", "2026-01-03T06:00:00Z", 0, 0),  # sin filas: sin punto
+    ]
+    spec = _spec(charts.quarantine_rate_by_run(runs))
+    values = _values(spec)
+    assert [(v["source"], round(v["rate"], 3)) for v in values] == [
+        ("customers_csv", 0.035),  # ordenadas por inicio
+        ("orders_json", 0.026),
+    ]
+    color = spec["layer"][0]["encoding"]["color"]["scale"]
+    assert color["domain"] == list(charts.SOURCES)  # colores fijos por fuente
+    assert spec["layer"][1]["data"]["values"] == [{"budget": charts.ERROR_BUDGET}]
+    assert spec["layer"][1]["mark"]["color"] == charts.STATUS["error"]
+
+
+def test_quality_tab_shows_the_trend_or_says_there_is_none() -> None:
+    class WithIngests(FakeClient):
+        def pipeline_runs(self, *args: Any) -> list[dict[str, Any]]:
+            return [*RUNS, _ingest("orders_json", "2026-01-02T06:00:00Z", 155, 4)]
+
+    at = _page(WithIngests())
+    assert any("presupuesto" in c.value for c in at.caption)
+    assert not any("Aún no hay ingestas" in i.value for i in at.info)
+    assert any("Aún no hay ingestas" in i.value for i in _page(FakeClient()).info)
+
+
+def test_client_calls_for_the_new_features() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path == "/v1/quality/quarantine":
+            return httpx.Response(200, json={"items": [{"record_key": "C00009"}], "total": 1})
+        if request.url.path == "/v1/quality/freshness":
+            return httpx.Response(200, json=[{"source_name": "orders_json", "status": "fresh"}])
+        if request.url.path == "/v1/lineage/orders/O999999":
+            return httpx.Response(404, json={"detail": "pedido no encontrado"})
+        return httpx.Response(200, json={"ok": request.url.path})
+
+    client, seen = _client(handler)
+    assert client.validate_file("customers", b"a,b\n1,2\n") == {
+        "ok": "/v1/contracts/customers/validate"
+    }
+    post = seen[-1]
+    assert post.method == "POST"
+    assert post.content == b"a,b\n1,2\n"
+    assert post.headers["X-API-Key"] == KEY
+    assert client.quarantine() == [{"record_key": "C00009"}]
+    assert client.freshness() == [{"source_name": "orders_json", "status": "fresh"}]
+    assert client.order_lineage("O000065") == {"ok": "/v1/lineage/orders/O000065"}
+    with pytest.raises(ApiError, match="404"):
+        client.order_lineage("O999999")

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DataPulse · De archivos sueltos a indicadores confiables</title>
+  <meta name="description" content="Plataforma de ingeniería de datos de punta a punta: ingesta validada con cuarentena, Prefect, dbt con modelo estrella y SCD2, API de indicadores y panel.">
+  <link rel="stylesheet" href="styles.css">
+  <script>document.documentElement.classList.add('js');</script>
+  <script src="main.js" defer></script>
+</head>
+<body>
+  <header class="top">
+    <span class="brand">DataPulse</span>
+    <nav aria-label="Secciones">
+      <a href="#recorrido">Recorrido</a>
+      <a href="#numeros">En números</a>
+      <a href="#capturas">Capturas</a>
+      <a href="#pruebalo">Pruébalo</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Hero · B1 split text -->
+    <section class="hero">
+      <p class="kicker">Ingeniería de datos de punta a punta</p>
+      <h1 class="split">De archivos sueltos a indicadores en los que se puede confiar.</h1>
+      <p class="lede">CSV, JSON y una API REST paginada entran por contratos de validación, se cargan de forma
+        idempotente, se modelan con dbt y salen como indicadores por una API de solo lectura.
+        Todo se levanta con un comando y se verifica en CI en cada push.</p>
+      <p class="actions">
+        <a class="btn" href="#recorrido">Ver el recorrido de los datos</a>
+        <a class="btn ghost" href="https://github.com/JuanSGarciaC/datapulse">Código en GitHub</a>
+      </p>
+    </section>
+
+    <!-- Recorrido · C3 scrub (efecto estrella) + C13 color por paso -->
+    <section id="recorrido" class="scrub-wrap" aria-labelledby="recorrido-t">
+      <div class="scrub-sticky">
+        <div class="bgs" aria-hidden="true">
+          <div class="bg bg-0" data-steps="0"></div>
+          <div class="bg bg-1" data-steps="1"></div>
+          <div class="bg bg-2" data-steps="2"></div>
+          <div class="bg bg-3" data-steps="3"></div>
+          <div class="bg bg-4" data-steps="4"></div>
+          <div class="bg bg-5" data-steps="5"></div>
+          <div class="bg bg-6" data-steps="6"></div>
+        </div>
+
+        <div class="scrub-inner">
+          <header class="scrub-head">
+            <h2 id="recorrido-t">Seis registros reales cruzan las capas</h2>
+            <div class="meter" aria-hidden="true">
+              <span>Paso <b class="step-n">1</b> / 7</span>
+              <span class="meter-bar"><i></i></span>
+            </div>
+            <p class="hint">Los registros salen de <code>data/samples</code> y sus defectos están anotados en
+              <code>manifest.json</code>. Este es su estado final; con JavaScript, el recorrido avanza y retrocede con el scroll.</p>
+            <ul class="legend">
+              <li class="lg-q">cuarentena</li>
+              <li class="lg-o">omitido</li>
+              <li class="lg-v">versión</li>
+              <li class="lg-m">en marts</li>
+              <li class="lg-n">nº = registros que llegaron a la capa</li>
+            </ul>
+          </header>
+
+          <ol class="notes">
+            <li data-steps="0">
+              <h3><small>1/7</small>Fuentes</h3>
+              <p>Llegan seis registros de cinco archivos, todavía sin tipos: texto de CSV y JSON.</p>
+              <ul class="log"><li>2 clientes · CSV</li><li>3 pedidos · JSON</li><li>1 archivo reenviado · CSV</li></ul>
+            </li>
+            <li data-steps="1">
+              <h3><small>2/7</small>Validación</h3>
+              <p>Los contratos de Polars revisan cada fila. Lo inválido no se pierde: se aparta con su motivo.</p>
+              <ul class="log"><li class="q">C00009 → cuarentena: email sin @</li><li class="q">O000231 → cuarentena: items.quantity = 0</li></ul>
+            </li>
+            <li data-steps="2">
+              <h3><small>3/7</small>raw</h3>
+              <p>Lo válido se carga tal como llega y solo se añaden filas. Cada fila guarda la huella de su lote.</p>
+              <ul class="log"><li>C00003 → lote 2ca922fd…</li><li>O000065 v1 → lote eeca346e…</li><li>O000065 v2 → lote 97dbbfca…</li></ul>
+            </li>
+            <li data-steps="3">
+              <h3><small>4/7</small>Idempotencia</h3>
+              <p>Un archivo reenviado con otro nombre pero el mismo contenido no crea un lote nuevo.</p>
+              <ul class="log"><li class="o">customers_2026-01-02_resend.csv → omitido</li><li class="o">sha256 2ff346bc… ya estaba cargado</li></ul>
+            </li>
+            <li data-steps="4">
+              <h3><small>5/7</small>staging</h3>
+              <p>dbt tipa y normaliza. O000065 llegó dos veces: gana la versión más reciente y la vieja se queda en raw.</p>
+              <ul class="log"><li class="v">O000065 v1 · paid · 01-01 15:56 ✗</li><li class="v">O000065 v2 · cancelled · 01-03 19:53 ✓</li></ul>
+            </li>
+            <li data-steps="5">
+              <h3><small>6/7</small>marts</h3>
+              <p>El modelo estrella: dimensiones con historial SCD2 y hechos por línea de pedido.</p>
+              <ul class="log"><li class="m">C00003 → dim_customer</li><li class="m">O000065 → fct_order_items (is_revenue = false)</li><li class="m">fct_daily_sales ⇄ fct_order_items (prueba dbt)</li></ul>
+            </li>
+            <li data-steps="6">
+              <h3><small>7/7</small>Antes y después</h3>
+              <dl class="ba">
+                <dt>Antes</dt><dd>6 registros de 5 archivos, sin tipos</dd>
+                <dt>Después</dt><dd>2 en marts y 1 agregado conciliado<br>2 en cuarentena, con su motivo<br>1 lote omitido<br>1 versión superada (sigue en raw)</dd>
+              </dl>
+              <p>En las muestras completas hay 37 defectos anotados, y una prueba exige que el pipeline detecte exactamente esos.</p>
+            </li>
+          </ol>
+
+          <div class="board">
+            <div class="lanes" aria-hidden="true">
+              <div class="lane" data-lane="0">Fuentes <b>0</b></div>
+              <div class="lane" data-lane="1">Validación <b>0</b></div>
+              <div class="lane" data-lane="2">raw <b>0</b></div>
+              <div class="lane" data-lane="3">staging <b>0</b></div>
+              <div class="lane" data-lane="4">marts <b>0</b></div>
+            </div>
+
+            <article class="tk t-c" data-tk="c3">
+              <header><b>C00003</b><span class="kind">cliente</span></header>
+              <p>Sebastián Rodríguez · Medellín, CO</p>
+              <p>segment retail · alta 2024-11-13</p>
+              <p class="meta"><span class="m-src" data-steps="0-1">customers_2026-01-01.csv</span> <span class="m-lote" data-steps="2-6">lote 2ca922fd…</span></p>
+              <span class="stamp m" data-steps="5-6">dim_customer</span>
+            </article>
+
+            <article class="tk t-c" data-tk="c9">
+              <header><b>C00009</b><span class="kind">cliente</span></header>
+              <p>Natalia Peña · Guadalajara, MX</p>
+              <p class="bad">email natalia.pena.9.at.example.com</p>
+              <p class="meta"><span class="m-src">customers_2026-01-01.csv</span></p>
+              <span class="stamp q" data-steps="1-6">Cuarentena</span>
+            </article>
+
+            <article class="tk t-o" data-tk="o231">
+              <header><b>O000231</b><span class="kind">pedido</span></header>
+              <p>cliente C00180 · producto 162</p>
+              <p class="bad">quantity 0</p>
+              <p class="meta"><span class="m-src">orders_batch_002.json</span></p>
+              <span class="stamp q" data-steps="1-6">Cuarentena</span>
+            </article>
+
+            <article class="tk t-o" data-tk="o65a">
+              <header><b>O000065</b><span class="kind">pedido</span></header>
+              <p>cliente C00102</p>
+              <p class="strike" data-steps="4-6">status paid · 01-01 15:56</p>
+              <p class="meta"><span class="m-src" data-steps="0-1">orders_batch_001.json</span> <span class="m-lote" data-steps="2-6">lote eeca346e…</span></p>
+              <span class="stamp old" data-steps="4-6">Versión 1</span>
+            </article>
+
+            <article class="tk t-o" data-tk="o65b">
+              <header><b>O000065</b><span class="kind">pedido</span></header>
+              <p>cliente C00102</p>
+              <p>status cancelled · 01-03 19:53</p>
+              <p class="meta"><span class="m-src" data-steps="0-1">orders_batch_003.json</span> <span class="m-lote" data-steps="2-6">lote 97dbbfca…</span></p>
+              <span class="stamp v" data-steps="4">Versión 2</span>
+              <span class="stamp m" data-steps="5-6">fct_order_items</span>
+            </article>
+
+            <article class="tk t-f" data-tk="rs">
+              <header><b>reenvío</b><span class="kind">archivo</span></header>
+              <p>customers_2026-01-02_resend.csv</p>
+              <p>35 filas · sha256 2ff346bc…</p>
+              <p class="meta"><span class="m-src">= customers_2026-01-02.csv</span></p>
+              <span class="stamp o" data-steps="3-6">Omitido</span>
+            </article>
+
+            <article class="tk t-m" data-tk="daily" data-steps="5-6">
+              <header><b>fct_daily_sales</b><span class="kind">agregado</span></header>
+              <p>ventas por día</p>
+              <p>⇄ fct_order_items</p>
+              <p class="meta"><span>prueba dbt de conciliación</span></p>
+              <span class="stamp m" data-steps="5-6">Concilia ✓</span>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- En números · A7 count-up -->
+    <section id="numeros" class="band reveal" aria-labelledby="numeros-t">
+      <h2 id="numeros-t">En números</h2>
+      <ul class="stats stagger">
+        <li><span class="num" data-count="345">345</span><span class="lbl">pruebas Python: unitarias, de integración contra PostgreSQL, de contrato y E2E</span></li>
+        <li><span class="num" data-count="39">39</span><span class="lbl">pruebas de dbt, con 5 conciliaciones</span></li>
+        <li><span class="num" data-count="91" data-suffix=" %">91 %</span><span class="lbl">de cobertura de líneas y ramas (el CI exige ≥ 90 %)</span></li>
+        <li><span class="num" data-count="37">37</span><span class="lbl">defectos sintéticos que el pipeline debe detectar, ni uno más ni uno menos</span></li>
+        <li><span class="num" data-count="9">9</span><span class="lbl">ADRs con sus alternativas descartadas</span></li>
+      </ul>
+      <p class="source">Pruebas contadas el 2026-11-21; cobertura medida en el CI del 2026-11-10 (ubuntu-24.04, Python 3.13, PostgreSQL en contenedor).</p>
+    </section>
+
+    <!-- Qué demuestra · A2 stagger -->
+    <section class="band reveal" aria-labelledby="demuestra-t">
+      <h2 id="demuestra-t">Qué demuestra</h2>
+      <ul class="cards stagger">
+        <li><h3>Calidad de datos</h3><p>Contratos por fuente, cuarentena con motivo y presupuesto de errores por lote. Las columnas nuevas de una fuente van a <code>_extra</code>.</p></li>
+        <li><h3>Idempotencia</h3><p>Huella del contenido de cada lote y de cada registro, y marcas de agua con solapamiento. Repetir una carga no duplica nada.</p></li>
+        <li><h3>Resiliencia</h3><p>Reintentos que respetan <code>Retry-After</code>, con espera exponencial aleatorizada. Carga atómica por lote y bloqueo por fuente.</p></li>
+        <li><h3>Orquestación real</h3><p>Prefect 3: despliegues programados, reintentos solo ante fallos transitorios y disparo por API.</p></li>
+        <li><h3>Modelado analítico</h3><p>Modelo estrella con SCD2 que reconstruye cualquier fecha pasada y admite versiones tardías. El modo incremental da lo mismo que reconstruir todo.</p></li>
+        <li><h3>Mínimo privilegio</h3><p>Un rol por componente. La API solo lee <code>marts</code> y <code>ops</code>, y el panel no tiene credenciales de la base de datos.</p></li>
+      </ul>
+    </section>
+
+    <!-- Capturas · A1 -->
+    <section id="capturas" class="band" aria-labelledby="capturas-t">
+      <h2 id="capturas-t" class="reveal">Capturas del panel</h2>
+      <figure class="shot wide reveal">
+        <img src="../docs/img/panel-demo.gif" alt="Grabación del panel: se carga el ejemplo con defectos en «Probar contratos» y se sigue el pedido O000065 en «Linaje»" loading="lazy" width="960" height="608">
+        <figcaption>Grabación real: el validador aparta tres filas con su motivo y el linaje lleva O000065 hasta su archivo.</figcaption>
+      </figure>
+      <div class="shots stagger">
+        <figure class="shot reveal"><img src="../docs/img/dashboard-negocio.png" alt="Vista de negocio del panel" loading="lazy"><figcaption>Indicadores de negocio</figcaption></figure>
+        <figure class="shot reveal"><img src="../docs/img/dashboard-calidad.png" alt="Vista de calidad de datos del panel" loading="lazy"><figcaption>Calidad de datos y cuarentena</figcaption></figure>
+        <figure class="shot reveal"><img src="../docs/img/dashboard-lotes.png" alt="Lotes de ingesta con su huella SHA-256" loading="lazy"><figcaption>Lotes de ingesta con su SHA-256</figcaption></figure>
+        <figure class="shot reveal"><img src="../docs/img/prefect-runs.png" alt="Ejecuciones de los flujos en Prefect" loading="lazy"><figcaption>Orquestación en Prefect</figcaption></figure>
+      </div>
+    </section>
+
+    <!-- Pruébalo · H3 terminal + enlaces a la demo en marcha -->
+    <section id="pruebalo" class="band reveal" aria-labelledby="pruebalo-t">
+      <h2 id="pruebalo-t">Pruébalo en tu equipo</h2>
+      <p>Requisitos: Windows con Docker Desktop abierto y Git. Un comando crea <code>.env</code> con
+        secretos aleatorios, levanta el stack, ejecuta el flujo diario y deja el panel listo.</p>
+      <div class="term" role="img" aria-label="Terminal de PowerShell ejecutando scripts/demo.ps1">
+        <div class="term-bar" aria-hidden="true"><i></i><i></i><i></i><span>PowerShell</span></div>
+<pre class="term-body"><span class="cmd">git clone https://github.com/JuanSGarciaC/datapulse.git</span>
+<span class="cmd">cd datapulse</span>
+<span class="cmd">.\scripts\demo.ps1</span>
+<span class="out">.env creado con secretos aleatorios (no se versiona).</span>
+<span class="dim"># … salida de docker compose up --build …</span>
+<span class="out">Esperando a que el worker y Prefect estén listos...</span>
+<span class="dim"># … ingesta + dbt del flujo diario …</span>
+<span class="out"> </span>
+<span class="out good">DataPulse está listo:</span>
+<span class="out">  Dashboard   http://localhost:8501</span>
+<span class="out">  API (docs)  http://localhost:8000/docs</span>
+<span class="out">              Authorize con la clave de lectura: ‹clave aleatoria›</span>
+<span class="out">  Prefect     http://localhost:4200</span>
+<span class="out">Para apagarlo: docker compose down</span></pre>
+      </div>
+      <p class="source">Las líneas sin <code>#</code> son las que imprime <code>scripts/demo.ps1</code>
+        (la clave cambia en cada equipo); lo comentado resume la salida de Docker y del flujo.</p>
+
+      <h3 class="try-title">Y después, tres cosas que tocar</h3>
+      <p class="live" data-live aria-live="polite"><span class="live-dot" aria-hidden="true"></span><span class="live-text">Con
+        la demo en marcha, estos enlaces abren tu panel y tu API.</span>
+        <button type="button" class="btn ghost live-check" hidden>Comprobar si está en marcha</button></p>
+      <ul class="try stagger">
+        <li>
+          <h4>Prueba los contratos</h4>
+          <p>Sube un CSV de clientes o un JSON de pedidos, o carga el ejemplo con filas reales
+            defectuosas: verás qué filas irían a cuarentena y por qué. No se guarda nada.</p>
+          <p class="where">Panel → <b>Probar contratos</b></p>
+          <a class="btn ghost" data-href="panel" href="http://localhost:8501">Abrir el panel</a>
+        </li>
+        <li>
+          <h4>Mira la cuarentena</h4>
+          <p>Lo que los contratos apartaron de verdad, con su motivo, el valor que falló, el archivo y
+            el lote. El email llega enmascarado.</p>
+          <p class="where">Panel → <b>Calidad de datos</b></p>
+          <a class="btn ghost" data-href="panel" href="http://localhost:8501">Abrir el panel</a>
+        </li>
+        <li>
+          <h4>Sigue un pedido hasta su archivo</h4>
+          <p>O000065 llegó dos veces: la versión vigente, la superada, el sha256 de su lote, el
+            archivo y la ejecución que lo cargó.</p>
+          <p class="where">Panel → <b>Linaje</b> · API → <code>/v1/lineage/orders/O000065</code></p>
+          <a class="btn ghost" data-href="docs" href="http://localhost:8000/docs">Abrir la API</a>
+        </li>
+      </ul>
+      <p class="source">Para comprobar si la demo está en marcha, la página solo consulta
+        <code>/health</code> en tu propio equipo. No envía nada a ningún otro sitio.</p>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <p>DataPulse · © 2026 Juan Sebastián García C. Todos los derechos reservados (ver <code>LICENSE</code>).</p>
+    <p><a href="https://github.com/JuanSGarciaC/datapulse">github.com/JuanSGarciaC/datapulse</a></p>
+  </footer>
+</body>
+</html>

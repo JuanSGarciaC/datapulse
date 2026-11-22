@@ -22,6 +22,9 @@ class ApiSettings(BaseSettings):
     docs_enabled: bool = True
     max_page_size: Annotated[int, Field(ge=1, le=10_000)] = 500
     default_page_size: Annotated[int, Field(ge=1, le=10_000)] = 50
+    # Una fuente está «atrasada» si su última carga buena es más vieja que esto. 26 h: el
+    # flujo diario (cada 24 h) más un margen para reintentos.
+    freshness_sla_hours: Annotated[float, Field(gt=0, le=24 * 365)] = 26.0
 
     @field_validator("keys", mode="before")
     @classmethod

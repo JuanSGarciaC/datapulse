@@ -27,9 +27,16 @@ texto y color.
 - Al pasar el puntero (o el foco del teclado) por un nodo se ve su detalle y se encienden sus
   aristas.
 
-![Mapa del pipeline en movimiento](img/dashboard-demo.gif)
+![Mapa del pipeline, con las insignias de frescura y los botones de disparo y de caos](img/panel-frescura.png)
 
-![Mapa del pipeline](img/dashboard-mapa.png)
+### Frescura por fuente
+
+Cada nodo de fuente lleva a la derecha una insignia: **al día** (verde) si su última carga
+buena es más reciente que el SLA, **atrasada N h** (rojo) si no, y **sin cargas** si nunca
+cargó bien. Cuenta la última carga buena, no el último intento: un fallo puntual no vuelve
+vieja una fuente que cargó hace una hora. El detalle del nodo dice la antigüedad y el SLA
+(`GET /v1/quality/freshness`). Para verla roja en la demo basta con bajar
+`DATAPULSE_API_FRESHNESS_SLA_HOURS`.
 
 ### Disparar un pipeline desde el panel (opcional)
 
@@ -42,24 +49,49 @@ Sin esa variable los botones no existen y el panel es de solo lectura. `scripts/
 activa; `.env.example` la trae comentada. El motivo y los límites están en
 [ADR-0009](adr/0009-dashboard-visual-system-and-trigger.md).
 
+### Caos en un clic (opcional, solo demo)
+
+Con la clave de administración y además `DATAPULSE_DASHBOARD_MOCK_ADMIN_TOKEN` (el token de la
+fuente simulada), el mapa suma **Provocar fallos y ejecutar productos** y **Restaurar fuente**.
+El primero pide a la fuente simulada seis errores 503 seguidos en la primera página y dispara
+la ingesta de productos. Lo que se ve:
+
+1. El cliente HTTP reintenta cinco veces con espera creciente y se rinde («reintentos
+   agotados… HTTP 503»).
+2. Prefect considera el fallo transitorio y reintenta la tarea; la segunda vez la fuente ya
+   responde y la carga termina bien.
+3. En **Pipelines → Detalle de una ejecución**, la tarea `ingest:products_api` aparece dos
+   veces: `attempt` 1 fallido con su error y `attempt` 2 con éxito.
+
+Sin el token los botones no existen. El panel solo toca `/_mock/faults` de la fuente
+simulada, nunca una fuente real, y `scripts/demo.ps1` lo activa.
+
 ## Vistas
 
 | Pestaña | Qué responde | Fuente (API) |
 |---------|--------------|--------------|
 | **Negocio** | ¿Cuánto vendimos, a quién y qué? Ingresos, pedidos, ticket medio, unidades, clientes activos, cancelaciones; ingresos por día (con filtro de categoría) y por categoría; productos más vendidos por ingresos o por unidades | `/v1/kpis/summary`, `/v1/sales/*`, `/v1/products/top` |
-| **Calidad de datos** | ¿Qué datos rechazamos o señalamos y por qué? Reglas evaluadas, filas en cuarentena (error) y avisos, por regla y por capa (antes de cargar o tras transformar) | `/v1/quality/summary`, `/v1/quality/results` |
+| **Calidad de datos** | ¿Qué datos rechazamos o señalamos y por qué? Reglas evaluadas, filas en cuarentena (error) y avisos, por regla y por capa (antes de cargar o tras transformar). Arriba, la **cuarentena por ejecución**: el porcentaje de filas apartadas en cada ingesta, por fuente, con la línea roja del presupuesto de errores (20 % por lote; por encima, el lote se rechaza entero). Debajo, la **bandeja de cuarentena**: cada fila apartada con su motivo, el valor que falló (email enmascarado), el archivo y el lote, con filtros por fuente, campo y clave | `/v1/quality/summary`, `/v1/quality/results`, `/v1/quality/quarantine` |
+| **Probar contratos** | ¿Qué haría la ingesta con este archivo? Se sube un CSV de clientes o un JSON de pedidos (máximo 1 MB), o se carga un ejemplo con filas reales defectuosas de `data/samples`, y se ve qué filas irían a cuarentena, con campo, regla y motivo. Usa las mismas funciones que la ingesta y no guarda nada | `POST /v1/contracts/{fuente}/validate` |
+| **Linaje** | ¿De dónde sale este número? Se escribe un pedido (por defecto O000065, que llegó dos veces) y se sigue su rastro en cuatro pasos: líneas del hecho y si cuentan como ingreso → versiones recibidas (vigente y superada) → lote con su sha256 completo, archivo y fila → ejecución que lo cargó. Si el pedido fue a cuarentena, se muestra el motivo | `/v1/lineage/orders/{id}` |
 | **Pipelines** | ¿Funcionan los pipelines? Ejecuciones (con filtro de estado), fallos, filas cargadas/rechazadas por día, duración por flujo; detalle de cada ejecución (tareas, disparo, fallos de calidad, parámetros, error) y lotes de ingesta con su huella | `/v1/pipeline-runs`, `/v1/metrics/volumes`, `/v1/ingestion/batches` |
+
+![Del validador al linaje, en movimiento](img/panel-demo.gif)
 
 ![Negocio](img/dashboard-negocio.png)
 ![Calidad de datos](img/dashboard-calidad.png)
 ![Pipelines](img/dashboard-pipelines.png)
-![Ejecuciones, detalle y lotes de ingesta](img/dashboard-lotes.png)
+![Lotes de ingesta](img/dashboard-lotes.png)
+![Probar contratos](img/panel-validador.png)
+![Bandeja de cuarentena](img/panel-cuarentena.png)
+![Linaje de O000065](img/panel-linaje.png)
+![Caos en un clic: los dos intentos](img/panel-caos.png)
 
-*Capturas con los datos sintéticos de `data/samples` tras dos ejecuciones del flujo diario.
-La ejecución con fallo es real: la primera vez la fuente de productos no era alcanzable, los
-reintentos se agotaron (por eso `ingest_products` tiene la duración media más alta) y el error
-quedó registrado con su causa; la segunda ejecución omitió los archivos ya cargados (0 filas
-nuevas de clientes y pedidos) y cargó los productos.*
+*Capturas del 2026-11-21 con los datos sintéticos de `data/samples`, tras una ejecución del
+flujo diario y otra del caos en un clic. En esta última la fuente de productos devolvió seis
+503 seguidos: el primer intento de `ingest:products_api` agotó sus reintentos y el segundo
+entró. Por eso `ingest_products` tiene la segunda duración media más alta, por detrás de
+`transform` (dbt).*
 
 ## Cómo leer los números de calidad
 

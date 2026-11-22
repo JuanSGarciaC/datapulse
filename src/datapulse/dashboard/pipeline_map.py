@@ -29,6 +29,29 @@ class Node:
     state: str  # success | partial | failed | running | idle
     line: str
     detail: str
+    fresh: str = ""  # fresh | stale | never | "" (sin dato de frescura)
+    fresh_label: str = ""
+
+
+# Nodo de fuente → nombre de la fuente en la API de frescura.
+SOURCE_OF: Final = {
+    "customers": "customers_csv",
+    "orders": "orders_json",
+    "products": "products_api",
+}
+
+
+def _with_freshness(node: Node, row: dict[str, Any] | None) -> Node:
+    if row is None:
+        return node
+    sla = f"{row['sla_hours']:g} h"
+    if row["status"] == "never":
+        label, extra = "sin cargas", f"Frescura: nunca cargó con éxito (SLA {sla})."
+    else:
+        age = f"{row['age_hours']:.0f} h"
+        label = "al día" if row["status"] == "fresh" else f"atrasada {age}"
+        extra = f"Frescura: última carga buena hace {age} (SLA {sla})."
+    return replace(node, fresh=row["status"], fresh_label=label, detail=f"{node.detail} · {extra}")
 
 
 def _latest(runs: list[dict[str, Any]], flow: str) -> dict[str, Any] | None:
@@ -121,6 +144,8 @@ _CSS: Final = """
 .dp-map .state{fill:var(--c);font-size:11px;font-weight:600;letter-spacing:.04em;
   text-transform:uppercase}
 .dp-map .dot{fill:var(--c)}
+.dp-map .fresh{font-size:11px;font-weight:600;text-anchor:end}
+.dp-map .f-fresh{fill:#3ddc84}.dp-map .f-stale{fill:#ff5d5d}.dp-map .f-never{fill:#8a93a8}
 .dp-map .detail,.dp-map .hint{fill:#c5cde0;font-size:13px;text-anchor:middle;transition:opacity .2s}
 .dp-map .detail{opacity:0}
 .dp-map .node:hover .detail,.dp-map .node:focus .detail{opacity:1}
@@ -169,19 +194,32 @@ def _node(n: Node) -> str:
         f'<text class="title" x="{n.x + 28}" y="{n.y + 25}">{escape(n.title)}</text>'
         f'<text class="line" x="{n.x + 16}" y="{n.y + 45}">{escape(n.line)}</text>'
         f'<text class="state" x="{n.x + 16}" y="{n.y + 62}">{escape(label)}</text>'
-        f'<text class="detail" x="{VIEW[0] // 2}" y="{VIEW[1] - 16}">{escape(n.detail)}</text>'
+        + (
+            f'<text class="fresh f-{n.fresh}" x="{n.x + W - 12}" y="{n.y + 62}">'
+            f"{escape(n.fresh_label)}</text>"
+            if n.fresh
+            else ""
+        )
+        + f'<text class="detail" x="{VIEW[0] // 2}" y="{VIEW[1] - 16}">{escape(n.detail)}</text>'
         "</g>"
     )
 
 
 def render(
-    runs: list[dict[str, Any]], quality: list[dict[str, Any]], batches: list[dict[str, Any]]
+    runs: list[dict[str, Any]],
+    quality: list[dict[str, Any]],
+    batches: list[dict[str, Any]],
+    freshness: list[dict[str, Any]] | None = None,
 ) -> str:
+    fresh = {f["source_name"]: f for f in freshness or []}
     # Sin saltos de línea: st.markdown cierra el bloque HTML en una línea en blanco, y los
     # mensajes de error de la base de datos suelen traerlos.
     items = [
         replace(n, line=" ".join(n.line.split()), detail=" ".join(n.detail.split()))
-        for n in nodes(runs, quality, batches)
+        for n in (
+            _with_freshness(n, fresh.get(SOURCE_OF.get(n.key, "")))
+            for n in nodes(runs, quality, batches)
+        )
     ]
     by_key = {n.key: n for n in items}
     summary = "; ".join(f"{n.title}: {STATUS_LABEL.get(n.state, 'sin datos')}" for n in items)

@@ -26,6 +26,10 @@ curl -H "X-API-Key: $key" "http://localhost:8000/v1/kpis/summary"
 
 ## Endpoints
 
+`/docs` (Swagger) abre con una guía de un minuto: dónde está la clave de lectura (la imprime
+`scripts/demo.ps1` al terminar), qué probar primero (linaje de `O000065`, el validador con su
+ejemplo y la bandeja de cuarentena) y una descripción por grupo de endpoints.
+
 | Método y ruta | Descripción | Parámetros |
 |---------------|-------------|------------|
 | `GET /health` | Vida del proceso (sin auth, sin BD) | — |
@@ -37,9 +41,13 @@ curl -H "X-API-Key: $key" "http://localhost:8000/v1/kpis/summary"
 | `GET /v1/pipeline-runs` | Ejecuciones (paginado) | `status`, `flow_name` |
 | `GET /v1/pipeline-runs/{run_id}` | Detalle: tareas, intentos, duraciones, fallos de calidad | — |
 | `GET /v1/ingestion/batches` | Lotes ingeridos con su sha256 (trazabilidad) | `source`, `status` |
+| `GET /v1/lineage/orders/{order_id}` | Linaje de un pedido: sus líneas en `marts.fct_order_items`, cada versión recibida (la vigente es la que eligió dbt), su lote con sha256, el archivo, la fila y la ejecución; o su paso por cuarentena. Lee la vista `ops.v_order_lineage` (404 si no hay rastro) | `order_id` con forma `O000065` |
 | `GET /v1/metrics/volumes` | Volúmenes y duraciones por día y flujo | `days` ≤ 366 |
 | `GET /v1/quality/summary` | Resumen por regla (filas evaluadas y fallidas, último resultado) | `since`, `layer` |
 | `GET /v1/quality/results` | Resultados individuales (paginado) | `table_name`, `passed` |
+| `GET /v1/quality/freshness` | Frescura por fuente: última carga buena (éxito o parcial; una ingesta sin cambios también cuenta), último intento y su estado, antigüedad en horas y `fresh`/`stale`/`never` frente al SLA (`DATAPULSE_API_FRESHNESS_SLA_HOURS`, 26 h por defecto) | — |
+| `GET /v1/quality/quarantine` | Filas apartadas por los contratos: errores, archivo, lote y ejecución. Lee la vista `ops.v_quarantine`, que quita los nombres y enmascara el email antes de que lleguen a la API (paginado) | `source`, `rule`, `field`, `record_key` |
+| `POST /v1/contracts/{customers\|orders}/validate` | Prueba un archivo contra los contratos y devuelve qué filas irían a cuarentena y por qué. **No escribe nada** (funciona aunque la BD esté caída). Cuerpo: el archivo tal cual, hasta 1 MB (413 si lo supera) | clave de lectura |
 | `POST /v1/admin/pipelines/{daily\|products}/runs` | Dispara un despliegue de Prefect (202) | clave admin |
 
 **Paginación:** `limit` (por defecto 50, máximo 500) y `offset`. La respuesta trae `total`,
@@ -49,6 +57,11 @@ calculado con `count(*) OVER ()` en la misma consulta.
 flotante. Así el cliente no pierde precisión en dinero.
 
 ## Decisiones de seguridad
+
+- **CORS solo para comprobar la salud desde la landing.** La landing (`site/`) pregunta a
+  `GET /health` si la demo está en marcha en el propio equipo. Se admiten orígenes
+  `localhost` y `127.0.0.1`, solo `GET` y ninguna cabecera propia: un navegador no puede
+  enviar `X-API-Key` desde otro origen, así que `/v1` sigue cerrado a cualquier página.
 
 | Medida | Por qué |
 |--------|---------|

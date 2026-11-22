@@ -160,6 +160,9 @@ services:
       DATAPULSE_DASHBOARD_API_KEY: ${DATAPULSE_DASHBOARD_API_KEY:?Define DATAPULSE_DASHBOARD_API_KEY}
       # Opcional: vacía = panel de solo lectura, sin botones de disparo (ADR-0009).
       DATAPULSE_DASHBOARD_ADMIN_KEY: ${DATAPULSE_DASHBOARD_ADMIN_KEY:-}
+      # Opcional, solo demo: con el token, botón «Provocar fallos y ejecutar productos».
+      DATAPULSE_DASHBOARD_MOCK_URL: http://mock-source:8081
+      DATAPULSE_DASHBOARD_MOCK_ADMIN_TOKEN: ${DATAPULSE_DASHBOARD_MOCK_ADMIN_TOKEN:-}
     ports:
       - "127.0.0.1:${DASHBOARD_HOST_PORT:-8501}:8501"
     healthcheck:

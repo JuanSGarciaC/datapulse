@@ -1,0 +1,252 @@
+{
+  "batch_ref": "orders-2026-01-02",
+  "exported_at": "2026-01-02T23:59:00Z",
+  "orders": [
+    {
+      "order_id": "O000151",
+      "customer_id": "C00005",
+      "order_ts": "2026-01-02T01:01:00Z",
+      "status": "delivered",
+      "currency": "USD",
+      "updated_at": "2026-01-02T01:45:00Z",
+      "items": [
+        {
+          "line_no": 1,
+          "product_id": 36,
+          "quantity": 5,
+          "unit_price": 581.18
+        },
+        {
+          "line_no": 2,
+          "product_id": 68,
+          "quantity": 3,
+          "unit_price": 823.74
+        },
+        {
+          "line_no": 3,
+          "product_id": 71,
+          "quantity": 3,
+          "unit_price": 1237.19
+        },
+        {
+          "line_no": 4,
+          "product_id": 139,
+          "quantity": 3,
+          "unit_price": 662.63
+        }
+      ]
+    },
+    {
+      "order_id": "O000152",
+      "customer_id": "C00155",
+      "order_ts": "2026-01-02T18:36:00Z",
+      "status": "paid",
+      "currency": "USD",
+      "updated_at": "2026-01-02T19:48:00Z",
+      "items": [
+        {
+          "line_no": 1,
+          "product_id": 151,
+          "quantity": 4,
+          "unit_price": 817.88
+        },
+        {
+          "line_no": 2,
+          "product_id": 161,
+          "quantity": 3,
+          "unit_price": 422.21
+        }
+      ]
+    },
+    {
+      "order_id": "O000153",
+      "customer_id": "C00160",
+      "order_ts": "2026-01-02T21:35:00Z",
+      "status": "paid",
+      "currency": "USD",
+      "updated_at": "2026-01-02T22:10:00Z",
+      "items": [
+        {
+          "line_no": 1,
+          "product_id": 187,
+          "quantity": 3,
+          "unit_price": 1504.98
+        }
+      ]
+    },
+    {
+      "order_id": "O000154",
+      "customer_id": "C00160",
+      "order_ts": "2026-01-02T02:47:00Z",
+      "status": "shipped",
+      "currency": "USD",
+      "updated_at": "2026-01-02T03:48:00Z",
+      "items": [
+        {
+          "line_no": 1,
+          "product_id": 157,
+          "quantity": 1,
+          "unit_price": 1783.55
+        }
+      ]
+    },
+    {
+      "order_id": "O000155",
+      "customer_id": "C00121",
+      "order_ts": "2026-01-02T14:14:00Z",
+      "status": "cancelled",
+      "currency": "USD",
+      "updated_at": "2026-01-02T16:12:00Z",
+      "items": [
+        {
+          "line_no": 1,
+          "product_id": 120,
+          "quantity": 2,
+          "unit_price": 1294.37
+        }
+      ]
+    },
+    {
+      "order_id": "O000156",
+      "customer_id": "C00006",
+      "order_ts": "2026-01-02T01:26:00Z",
+      "status": "delivered",
+      "currency": "USD",
+      "updated_at": "2026-01-02T03:16:00Z",
+      "items": [
+        {
+          "line_no": 1,
+          "product_id": 173,
+          "quantity": 1,
+          "unit_price": 1246.35
+        },
+        {
+          "line_no": 2,
+          "product_id": 50,
+          "quantity": 3,
+          "unit_price": 1329.5
+        }
+      ]
+    },
+    {
+      "order_id": "O000157",
+      "customer_id": "C00146",
+      "order_ts": "2026-01-02T00:52:00Z",
+      "status": "paid",
+      "currency": "USD",
+      "updated_at": "2026-01-02T02:32:00Z",
+      "items": [
+        {
+          "line_no": 1,
+          "product_id": 168,
+          "quantity": 1,
+          "unit_price": 1234.83
+        },
+        {
+          "line_no": 2,
+          "product_id": 29,
+          "quantity": 5,
+          "unit_price": 1039.27
+        },
+        {
+          "line_no": 3,
+          "product_id": 89,
+          "quantity": 3,
+          "unit_price": 144.78
+        }
+      ]
+    },
+    {
+      "order_id": "O000158",
+      "customer_id": "C00137",
+      "order_ts": "2026-01-02T18:50:00Z",
+      "status": "delivered",
+      "currency": "USD",
+      "updated_at": "2026-01-02T20:03:00Z",
+      "items": [
+        {
+          "line_no": 1,
+          "product_id": 134,
+          "quantity": 4,
+          "unit_price": 320.64
+        },
+        {
+          "line_no": 2,
+          "product_id": 142,
+          "quantity": 3,
+          "unit_price": 792.08
+        }
+      ]
+    },
+    {
+      "order_id": "O000159",
+      "customer_id": "C00178",
+      "order_ts": "2026-01-02T18:05:00Z",
+      "status": "placed",
+      "currency": "USD",
+      "updated_at": "2026-01-02T19:05:00Z",
+      "items": [
+        {
+          "line_no": 1,
+          "product_id": 194,
+          "quantity": 1,
+          "unit_price": 281.78
+        },
+        {
+          "line_no": 2,
+          "product_id": 143,
+          "quantity": 3,
+          "unit_price": 514.83
+        }
+      ]
+    },
+    {
+      "order_id": "O000160",
+      "customer_id": "C00111",
+      "order_ts": "2026-01-02T17:41:00Z",
+      "status": "shipped",
+      "currency": "USD",
+      "updated_at": "2026-01-02T19:18:00Z",
+      "items": [
+        {
+          "line_no": 1,
+          "product_id": 194,
+          "quantity": 3,
+          "unit_price": 281.78
+        }
+      ]
+    },
+    {
+      "order_id": "O000170",
+      "customer_id": null,
+      "order_ts": "2026-01-02T01:57:00Z",
+      "status": "shipped",
+      "currency": "USD",
+      "updated_at": "2026-01-02T02:51:00Z",
+      "items": [
+        {
+          "line_no": 1,
+          "product_id": 160,
+          "quantity": 2,
+          "unit_price": 1801.56
+        }
+      ]
+    },
+    {
+      "order_id": "O000231",
+      "customer_id": "C00180",
+      "order_ts": "2026-01-02T03:01:00Z",
+      "status": "shipped",
+      "currency": "USD",
+      "updated_at": "2026-01-02T03:52:00Z",
+      "items": [
+        {
+          "line_no": 1,
+          "product_id": 162,
+          "quantity": 0,
+          "unit_price": 951.99
+        }
+      ]
+    }
+  ]
+}

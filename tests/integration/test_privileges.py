@@ -40,6 +40,20 @@ def test_reader_can_only_read_ops(migrated_db: Engine) -> None:
         assert not _has_table_priv(migrated_db, "dp_reader", "ops.pipeline_runs", priv)
 
 
+def test_ops_views_over_raw_are_read_only_for_the_api_and_closed_to_the_rest(
+    migrated_db: Engine,
+) -> None:
+    # La vista corre con permisos de su dueño: si alguien más pudiera escribir en ella,
+    # sería una puerta a raw.
+    for view in ("ops.v_quarantine", "ops.v_order_lineage"):
+        assert _has_table_priv(migrated_db, "dp_reader", view, "SELECT")
+        for priv in ("INSERT", "UPDATE", "DELETE"):
+            assert not _has_table_priv(migrated_db, "dp_reader", view, priv)
+        for role in ("dp_pipeline", "dp_transform"):
+            for priv in ("SELECT", "INSERT", "UPDATE", "DELETE"):
+                assert not _has_table_priv(migrated_db, role, view, priv)
+
+
 def test_reader_cannot_see_raw_or_staging(migrated_db: Engine) -> None:
     assert not _has_schema_priv(migrated_db, "dp_reader", "raw", "USAGE")
     assert not _has_schema_priv(migrated_db, "dp_reader", "staging", "USAGE")
