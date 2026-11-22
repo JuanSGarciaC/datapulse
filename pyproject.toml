@@ -84,7 +84,9 @@ markers = [
 ]
 
 [tool.coverage.run]
-source = ["datapulse"]
+# Por ruta, no por nombre de módulo: Streamlit ejecuta la página del panel como módulo «app»
+# (AppTest), y con el nombre del paquete quedaba fuera de la medición.
+source = ["src/datapulse"]
 branch = true
 
 [tool.coverage.report]

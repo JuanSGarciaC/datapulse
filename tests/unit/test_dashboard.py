@@ -816,3 +816,28 @@ def test_quality_tab_shows_the_trend_or_says_there_is_none() -> None:
     assert any("presupuesto" in c.value for c in at.caption)
     assert not any("Aún no hay ingestas" in i.value for i in at.info)
     assert any("Aún no hay ingestas" in i.value for i in _page(FakeClient()).info)
+
+
+def test_client_calls_for_the_new_features() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path == "/v1/quality/quarantine":
+            return httpx.Response(200, json={"items": [{"record_key": "C00009"}], "total": 1})
+        if request.url.path == "/v1/quality/freshness":
+            return httpx.Response(200, json=[{"source_name": "orders_json", "status": "fresh"}])
+        if request.url.path == "/v1/lineage/orders/O999999":
+            return httpx.Response(404, json={"detail": "pedido no encontrado"})
+        return httpx.Response(200, json={"ok": request.url.path})
+
+    client, seen = _client(handler)
+    assert client.validate_file("customers", b"a,b\n1,2\n") == {
+        "ok": "/v1/contracts/customers/validate"
+    }
+    post = seen[-1]
+    assert post.method == "POST"
+    assert post.content == b"a,b\n1,2\n"
+    assert post.headers["X-API-Key"] == KEY
+    assert client.quarantine() == [{"record_key": "C00009"}]
+    assert client.freshness() == [{"source_name": "orders_json", "status": "fresh"}]
+    assert client.order_lineage("O000065") == {"ok": "/v1/lineage/orders/O000065"}
+    with pytest.raises(ApiError, match="404"):
+        client.order_lineage("O999999")
